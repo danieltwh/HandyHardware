@@ -11,20 +11,20 @@ class customerItem_Page(Frame):
         Frame.__init__(self, master)
         self.master = master
 
-        e=Label(self,width=10,text='item',borderwidth=2, relief='ridge',anchor='w',bg='yellow')
-        e.grid(row=0,column=0)
-        e=Label(self,width=10,text='quantity',borderwidth=2, relief='ridge',anchor='w',bg='yellow')
-        e.grid(row=0,column=1)
-        e=Label(self,width=10,text='price',borderwidth=2, relief='ridge',anchor='w',bg='yellow')
-        e.grid(row=0,column=2)
+        # e=Label(self,width=10,text='item',borderwidth=2, relief='ridge',anchor='w',bg='yellow')
+        # e.grid(row=0,column=0)
+        # e=Label(self,width=10,text='quantity',borderwidth=2, relief='ridge',anchor='w',bg='yellow')
+        # e.grid(row=0,column=1)
+        # e=Label(self,width=10,text='price',borderwidth=2, relief='ridge',anchor='w',bg='yellow')
+        # e.grid(row=0,column=2)
 
-        i=1
+        # i=1
 
-        r_set=my_conn.execute("SELECT * FROM items")
-        for items in r_set: 
-            for j in range(len(items)):
-                e = Entry(self, width=10, fg='blue') 
-                e.grid(row=i, column=j) 
-                e.insert(END, items[j])
-            i=i+1
+        # r_set=my_conn.execute("SELECT * FROM items")
+        # for items in r_set: 
+        #     for j in range(len(items)):
+        #         e = Entry(self, width=10, fg='blue') 
+        #         e.grid(row=i, column=j) 
+        #         e.insert(END, items[j])
+        #     i=i+1
         
