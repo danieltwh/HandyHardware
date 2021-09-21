@@ -3,6 +3,8 @@ from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
 from login import Login_Page
+from request_page import Request_Page
+from admin_request import Admin_Request_Page
 
 
 #print(TkVersion)
@@ -11,7 +13,7 @@ class App(Tk):
     def __init__(self):
         Tk.__init__(self)
         self._frame = None
-        self.switch_frame(Login_Page)
+        self.switch_frame(Admin_Request_Page)
 
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
