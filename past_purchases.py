@@ -1,6 +1,5 @@
 from tkinter import *
 from typing import Match
-from PIL import ImageTk, Image
 import sqlite3
 
 # “N/A”: customer has not submitted a request for this item. 
@@ -12,7 +11,7 @@ import sqlite3
 
 
 # main frame: shows all the items that the user has previously bought 
-#   has a search and filter textbox/dropdown menu for the items 
+#   has a filter textbox/dropdown menu for the items 
 #   for each item, show its request status, as well as a button at the side 
 
 # items with past requests:
@@ -31,51 +30,78 @@ import sqlite3
 
 class Past_Purchase_Page(Frame):
     def __init__(self, master):
+
         Frame.__init__(self, master)
         self.master = master
-
-        new_request_btn = Button(self, text="Make a new request", command=lambda: master.switch_frame(Request_Submission_Page))
-
-        request_details_btn = Button(self, text="Request details", command=lambda: master.switch_frame(Request_Details_Page))
-
-
-
 
         # dropdown menu for filtering items by service status 
         global clicked
         clicked = StringVar()
-        clicked.set('NA')
+        clicked.set('NONE')
 
-        dropdown_label = Label(self, text="Request status")
+        dropdown_label = Label(self, text="Filter by:")
+        dropdown_label.pack()
 
-        dropdown = OptionMenu(self, clicked, 'Battery', 'USB','NA', 'SUBMITTED', 'WAITING FOR PAYMENT', 'IN PROGRESS', 'APPROVED', 'CANCELLED', 'RESET')
+        dropdown = OptionMenu(self, clicked, 'Battery', 'USB','NA', 'SUBMITTED', 'WAITING FOR PAYMENT', 'IN PROGRESS', 'APPROVED', 'CANCELLED', 'NONE', command=self.filter)
         dropdown.pack()
-
-        # button to filter by service status
-        filter_btn = Button(self, text="FILTER", command = self.show)
-        filter_btn.pack()
 
         global items_frame
         items_frame = Frame(self)
         items_frame.pack()
 
+        # database connection 
+        conn = sqlite3.connect('items.db')
+        global c
+        c = conn.cursor()
+
+        c.execute(
+            '''
+            SELECT Model, PowerSupply 
+            FROM items
+            LIMIT 20
+            '''
+            )
+
+        self.show_items()
+
         # returns to the catalogue page  
         back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Past_Purchase_Page))
+        back_btn.pack()
+
+        conn.commit()
 
 
-    def show(self):
 
+    def filter(self, event):
+
+        # destroying the old frame entries 
         for widgets in items_frame.winfo_children():
              widgets.destroy()
 
-        conn = sqlite3.connect('items.db')
+        # should be Model, Price, Warranty, ServiceStatus instead of powersupply 
 
-        c = conn.cursor()
+        if clicked.get() == 'NONE':  # show all items without filter
+            c.execute(
+                '''
+                SELECT Model, PowerSupply 
+                FROM items
+                LIMIT 20
+                '''
+                )
+        else :  # show the items with specified filter 
+            c.execute(
+                '''
+                SELECT Model, PowerSupply 
+                FROM items
+                WHERE PowerSupply = ? 
+                LIMIT 5
+                ''', 
+                [clicked.get()]
+                )
 
-        c.execute('''
-            SELECT Model, PowerSupply, ProductionYear FROM items
-            WHERE PowerSupply = ? 
-        ''', [clicked.get()])
+        self.show_items()
+    
+    def show_items(self):
 
         for record in c.fetchall():
             individual_item_frame = Frame(items_frame)
@@ -85,29 +111,10 @@ class Past_Purchase_Page(Frame):
             txt.insert('1.0',record)
             txt.pack(side = LEFT)
 
-            request_btn = Button(individual_item_frame, text="Request details", command = self.show)
-            request_btn.pack(side = LEFT)
+            # if there are no requests for the item, redirect to new page to make a new request (marvin side)
+            new_request_btn = Button(individual_item_frame, text="Make a new request")
+            new_request_btn.pack(side = LEFT)
 
-        conn.commit()
-        conn.close()
-        
-        
-
-
-# submit new request for items 
-class Request_Submission_Page(Frame):
-    def __init__(self, master):
-        Frame.__init__(self, master)
-        self.master = master
-
-        # returns to the request page  
-        back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Request_Page))
-
-# viewing the request details for items that already have a request 
-class Request_Details_Page(Frame):
-    def __init__(self, master):
-        Frame.__init__(self, master)
-        self.master = master
-
-        # returns to the request page  
-        back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Request_Page))
+            # if there are requests for the item, redirect to new page to view the request details (marvin side)
+            # request_details_btn = Button(individual_item_frame, text="Request details")
+            # request_details_btn.pack(side = LEFT)
