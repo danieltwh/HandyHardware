@@ -1,8 +1,10 @@
+import tkinter  as tk 
 from tkinter import *
 from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
 from login import Login_Page
+from customerItem import customerItem_Page
 
 
 #print(TkVersion)
@@ -11,7 +13,7 @@ class App(Tk):
     def __init__(self):
         Tk.__init__(self)
         self._frame = None
-        self.switch_frame(Login_Page)
+        self.switch_frame(customerItem_Page)
 
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
