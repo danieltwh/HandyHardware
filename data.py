@@ -23,11 +23,11 @@ for row in data:
   INSERT INTO products VALUES (?,?,?,?,?,?)
   ''',
   [row['Category'],
-  row['Cost ($)'],
+  row['Cost'],
   row['Model'],
-  row['Price ($)'],
+  row['Price'],
   row['ProductID'],
-  row['Warranty (months)']]
+  row['Warranty']]
   )
 
 # cursor.execute('''

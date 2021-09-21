@@ -8,20 +8,15 @@ class customerItem_Page(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
         self.master = master
-        
-        def show():
-            conn = sqlite3.connect('products.db')
+        getProducts()
 
-            c = conn.cursor()
-
-            c.execute('''
-                SELECT * FROM products
-            ''', [''])
-
-            for product in c.fetchall():
-                print(product)
-            
-            conn.commit()
-            conn.close()
-        
-        filter_btn = Button(self, text="FILTER", command = show)
+    def getProducts():
+        my_conn = sqlite3.connect('products.db')
+        r_set=my_conn.execute('''SELECT * from products''');
+        i=0 # row value inside the loop 
+        for product in r_set: 
+            for j in range(len(product)):
+                e = Entry(self, width=10, fg='blue') 
+                e.grid(row=i, column=j) 
+                e.insert(END, product[j])
+            i=i+1
