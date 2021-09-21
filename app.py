@@ -5,7 +5,8 @@ from PIL import ImageTk, Image
 import sqlite3
 from login import Login_Page
 from customerItem import customerItem_Page
-from customer_request import Request_Page
+from past_purchases import Past_Purchase_Page
+
 
 
 #print(TkVersion)
@@ -14,7 +15,7 @@ class App(Tk):
     def __init__(self):
         Tk.__init__(self)
         self._frame = None
-        self.switch_frame(Request_Page)
+        self.switch_frame(Past_Purchase_Page)
 
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
@@ -22,8 +23,6 @@ class App(Tk):
             self._frame.destroy()
         self._frame = new_frame
         self._frame.pack(side="top", fill="both", expand=True)
-
-
 
 def main():
     # root = Tk()

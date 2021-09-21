@@ -29,49 +29,69 @@ import sqlite3
 #   when the admin modifies the request, must reflect in the customer side as well
 #   vice versa for customer 
 
-class Request_Page(Frame):
+class Past_Purchase_Page(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
         self.master = master
 
         new_request_btn = Button(self, text="Make a new request", command=lambda: master.switch_frame(Request_Submission_Page))
 
-
         request_details_btn = Button(self, text="Request details", command=lambda: master.switch_frame(Request_Details_Page))
 
 
-        # returns to the catalogue page  
-        back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Request_Page))
 
 
-        # dropdown menu for filtering by service status 
+        # dropdown menu for filtering items by service status 
+        global clicked
         clicked = StringVar()
         clicked.set('NA')
 
         dropdown_label = Label(self, text="Request status")
 
-        dropdown = OptionMenu(self, clicked, 'NA', 'SUBMITTED', 'WAITING FOR PAYMENT', 'IN PROGRESS', 'APPROVED', 'CANCELLED')
-
-        # shows items according to filter specified 
-        def show():
-
-            conn = sqlite3.connect('items.db')
-
-            c = conn.cursor()
-
-            c.execute('''
-                SELECT * FROM items
-                WHERE ServiceStatus = ?
-            ''', [''])
-
-            for record in c.fetchall():
-                print(record)
-
-            conn.commit()
-            conn.close()
+        dropdown = OptionMenu(self, clicked, 'Battery', 'USB','NA', 'SUBMITTED', 'WAITING FOR PAYMENT', 'IN PROGRESS', 'APPROVED', 'CANCELLED', 'RESET')
+        dropdown.pack()
 
         # button to filter by service status
-        filter_btn = Button(self, text="FILTER", command = show)
+        filter_btn = Button(self, text="FILTER", command = self.show)
+        filter_btn.pack()
+
+        global items_frame
+        items_frame = Frame(self)
+        items_frame.pack()
+
+        # returns to the catalogue page  
+        back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Past_Purchase_Page))
+
+
+    def show(self):
+
+        for widgets in items_frame.winfo_children():
+             widgets.destroy()
+
+        conn = sqlite3.connect('items.db')
+
+        c = conn.cursor()
+
+        c.execute('''
+            SELECT Model, PowerSupply, ProductionYear FROM items
+            WHERE PowerSupply = ? 
+        ''', [clicked.get()])
+
+        for record in c.fetchall():
+            individual_item_frame = Frame(items_frame)
+            individual_item_frame.pack()
+
+            txt = Text(individual_item_frame, height=1)
+            txt.insert('1.0',record)
+            txt.pack(side = LEFT)
+
+            request_btn = Button(individual_item_frame, text="Request details", command = self.show)
+            request_btn.pack(side = LEFT)
+
+        conn.commit()
+        conn.close()
+        
+        
 
 
 # submit new request for items 
