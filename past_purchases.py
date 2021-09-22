@@ -31,7 +31,7 @@ import sqlite3
 class Past_Purchase_Page(Frame):
     def __init__(self, master):
 
-        Frame.__init__(self, master)
+        LabelFrame.__init__(self, master)
         self.master = master
 
         # dropdown menu for filtering items by service status 
@@ -45,9 +45,28 @@ class Past_Purchase_Page(Frame):
         dropdown = OptionMenu(self, clicked, 'Battery', 'USB','NA', 'SUBMITTED', 'WAITING FOR PAYMENT', 'IN PROGRESS', 'APPROVED', 'CANCELLED', 'NONE', command=self.filter)
         dropdown.pack()
 
-        global items_frame
-        items_frame = Frame(self)
-        items_frame.pack()
+        # wrapper frame
+        items_frame = LabelFrame(self)
+
+        # canvas 
+        canvas = Canvas(items_frame)
+        canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+
+        # scrollbar 
+        scrollbar = Scrollbar(items_frame, command=canvas.yview)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        # configuring canvas 
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox('all')))
+
+        # canvas frame 
+        global canvas_frame
+        canvas_frame = Frame(canvas)
+        canvas.create_window((0,0), window=canvas_frame, anchor='nw')
+
+        # canvas frame
+        items_frame.pack(fill=BOTH, expand=YES)
 
         # database connection 
         conn = sqlite3.connect('items.db')
@@ -58,11 +77,14 @@ class Past_Purchase_Page(Frame):
             '''
             SELECT Model, PowerSupply 
             FROM items
-            LIMIT 20
+
             '''
             )
 
         self.show_items()
+
+
+            
 
         # returns to the catalogue page  
         back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Past_Purchase_Page))
@@ -75,7 +97,7 @@ class Past_Purchase_Page(Frame):
     def filter(self, event):
 
         # destroying the old frame entries 
-        for widgets in items_frame.winfo_children():
+        for widgets in canvas_frame.winfo_children():
              widgets.destroy()
 
         # should be Model, Price, Warranty, ServiceStatus instead of powersupply 
@@ -85,7 +107,6 @@ class Past_Purchase_Page(Frame):
                 '''
                 SELECT Model, PowerSupply 
                 FROM items
-                LIMIT 20
                 '''
                 )
         else :  # show the items with specified filter 
@@ -94,7 +115,6 @@ class Past_Purchase_Page(Frame):
                 SELECT Model, PowerSupply 
                 FROM items
                 WHERE PowerSupply = ? 
-                LIMIT 5
                 ''', 
                 [clicked.get()]
                 )
@@ -104,17 +124,25 @@ class Past_Purchase_Page(Frame):
     def show_items(self):
 
         for record in c.fetchall():
-            individual_item_frame = Frame(items_frame)
-            individual_item_frame.pack()
+            temp_frame = Frame(canvas_frame)
+            txt = Text(temp_frame, height=1)
+            txt.insert('1.0', record)
+            txt.pack(side=LEFT)
+            Button(temp_frame, text='Request details').pack(side=LEFT)
+            temp_frame.pack()
 
-            txt = Text(individual_item_frame, height=1)
-            txt.insert('1.0',record)
-            txt.pack(side = LEFT)
+    #     for record in c.fetchall():
+    #         individual_item_frame = Frame(canvas_frame)
+    #         individual_item_frame.pack()
 
-            # if there are no requests for the item, redirect to new page to make a new request (marvin side)
-            new_request_btn = Button(individual_item_frame, text="Make a new request")
-            new_request_btn.pack(side = LEFT)
+    #         txt = Text(individual_item_frame, height=1)
+    #         txt.insert('1.0',record)
+    #         txt.pack(side = LEFT)
 
-            # if there are requests for the item, redirect to new page to view the request details (marvin side)
-            # request_details_btn = Button(individual_item_frame, text="Request details")
-            # request_details_btn.pack(side = LEFT)
+    #         if there are no requests for the item, redirect to new page to make a new request (marvin side)
+    #         new_request_btn = Button(individual_item_frame, text="Make a new request")
+    #         new_request_btn.pack(side = LEFT)
+
+    #         if there are requests for the item, redirect to new page to view the request details (marvin side)
+    #         request_details_btn = Button(individual_item_frame, text="Request details")
+    #         request_details_btn.pack(side = LEFT)
