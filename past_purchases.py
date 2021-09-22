@@ -9,7 +9,6 @@ import sqlite3
 # “Approved”: this request has been approved by the Administrator when the service fee is paid successfully.
 # “Canceled”: customer has canceled or the service fee has not been paid within the time period.
 
-
 # main frame: shows all the items that the user has previously bought 
 #   has a filter textbox/dropdown menu for the items 
 #   for each item, show its request status, as well as a button at the side 
@@ -27,6 +26,10 @@ import sqlite3
 # customer's interaction with admins 
 #   when the admin modifies the request, must reflect in the customer side as well
 #   vice versa for customer 
+
+# query from items database and products database 
+# when customer submits request, update requests table 
+# when customer makes payment, update request status in requests table 
 
 class Past_Purchase_Page(Frame):
     def __init__(self, master):
