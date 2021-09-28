@@ -7,6 +7,18 @@ import sqlite3
 
 from ScrollableFrame import ScrollableFrame
 
+# database connection 
+conn = sqlite3.connect('items.db')
+global c
+c = conn.cursor()
+
+c.execute(
+    '''
+    SELECT * 
+    FROM items
+    LIMIT 30
+    '''
+    )
 
 class App(Tk):
     def __init__(self):
@@ -30,21 +42,11 @@ def main():
 
 
 class Past_Purchases(ScrollableFrame):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, data, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # database connection 
-        conn = sqlite3.connect('items.db')
-        global c
-        c = conn.cursor()
-
-        c.execute(
-            '''
-            SELECT * 
-            FROM items
-            LIMIT 30
-            '''
-            )
+        self.data = data
+        
 
         tk.Label(self.frame, text="Product", anchor="w").grid(
             row=1, column=0, sticky="ew", padx=10)
@@ -122,6 +124,7 @@ class Past_Purchases(ScrollableFrame):
             row += 1
         
         self.launch()
+
         
 if __name__ == "__main__":
     main()
