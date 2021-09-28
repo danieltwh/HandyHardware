@@ -139,7 +139,7 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         self.master = master
 
 
-        tab1 = tk.Button(self, text="All Request", command= lambda: master.refresh("All"))
+        tab1 = tk.Button(self, text="Shopping Catalogue", command= lambda: master.refresh("All"))
         tab1.grid(row=0, column=0, padx=(10, 5))
 
         tab3 = tk.Button(self, text="Cart", command= lambda: master.goCart("Cart"))
