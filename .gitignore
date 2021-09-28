@@ -1,5 +1,4 @@
-__pycache__
-data.py 
+__pycache__/
+data.py
 Visualisation.ipynb
-items.json
-products.json
+*.json
