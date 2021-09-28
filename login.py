@@ -220,4 +220,3 @@ class Admin_Login_Page(Frame):
 
         signup_btn = Button(self, text="Sign Up", command= lambda: master.switch_frame(Signup_Page))
         signup_btn.grid(row=4, column=0, columnspan=2)
-
