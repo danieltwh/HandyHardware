@@ -1,75 +1,37 @@
+from sys import platform
 from tkinter import *
+import tkinter as tk
 from typing import Match
+from PIL import ImageTk, Image
 import sqlite3
 
-# “N/A”: customer has not submitted a request for this item. 
-# “Submitted”: customer who does not have a service fee has submitted a request successfully to the Administrator. 
-# “Submitted and Waiting for payment” customer who has service fee has submitted a request but has not yet paid for this service. 
-# “In progress”: this request is being processed. 
-# “Approved”: this request has been approved by the Administrator when the service fee is paid successfully.
-# “Canceled”: customer has canceled or the service fee has not been paid within the time period.
+from ScrollableFrame import ScrollableFrame
 
-# main frame: shows all the items that the user has previously bought 
-#   has a filter textbox/dropdown menu for the items 
-#   for each item, show its request status, as well as a button at the side 
 
-# items with past requests:
-#   the button will be named 'make a new request'
-#   this button will redirect to a new frame, where they can input details about the request 
-#   after submitting the new request, update the request status, and notify the administrator 
+class App(Tk):
+    def __init__(self):
+        Tk.__init__(self)
+        self._frame = None
+        self.switch_frame(Past_Purchases)
 
-# items with past requests: 
-#   the button will be named 'request details'
-#   this button will redirect to a new frame, where they can view the details regarding the request / cancel the request / make payment 
-#   after cancellation or payment, update the request status
+    def switch_frame(self, frame_class):
+        new_frame = frame_class(self)
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = new_frame
+        self._frame.pack(side="top", fill="both", expand=True)
 
-# customer's interaction with admins 
-#   when the admin modifies the request, must reflect in the customer side as well
-#   vice versa for customer 
+def main():
 
-# query from items database and products database 
-# when customer submits request, update requests table 
-# when customer makes payment, update request status in requests table 
+    app = App()
+    app.geometry("800x800")
+    app.mainloop()
 
-class Past_Purchase_Page(Frame):
-    def __init__(self, master):
 
-        LabelFrame.__init__(self, master)
-        self.master = master
 
-        # dropdown menu for filtering items by service status 
-        global clicked
-        clicked = StringVar()
-        clicked.set('NONE')
-
-        dropdown_label = Label(self, text="Filter by:")
-        dropdown_label.pack()
-
-        dropdown = OptionMenu(self, clicked, 'Battery', 'USB','NA', 'SUBMITTED', 'WAITING FOR PAYMENT', 'IN PROGRESS', 'APPROVED', 'CANCELLED', 'NONE', command=self.filter)
-        dropdown.pack()
-
-        # wrapper frame
-        items_frame = LabelFrame(self)
-
-        # canvas 
-        canvas = Canvas(items_frame)
-        canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
-
-        # scrollbar 
-        scrollbar = Scrollbar(items_frame, command=canvas.yview)
-        scrollbar.pack(side=RIGHT, fill=Y)
-
-        # configuring canvas 
-        canvas.configure(yscrollcommand=scrollbar.set)
-        canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox('all')))
-
-        # canvas frame 
-        global canvas_frame
-        canvas_frame = Frame(canvas)
-        canvas.create_window((0,0), window=canvas_frame, anchor='nw')
-
-        # canvas frame
-        items_frame.pack(fill=BOTH, expand=YES)
+class Past_Purchases(ScrollableFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         # database connection 
         conn = sqlite3.connect('items.db')
@@ -80,68 +42,86 @@ class Past_Purchase_Page(Frame):
             '''
             SELECT * 
             FROM items
-            LIMIT 10
+            LIMIT 30
             '''
             )
 
-        self.show_items()
+        tk.Label(self.frame, text="Product", anchor="w").grid(
+            row=1, column=0, sticky="ew", padx=10)
 
-        # returns to the catalogue page  
-        back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Past_Purchase_Page))
-        back_btn.pack()
+        tk.Label(self.frame, text="Model", anchor="w").grid(
+            row=1, column=1, sticky="ew", padx=10)
 
-        conn.commit()
+        tk.Label(self.frame, text="Colour", anchor="w").grid(
+            row=1, column=2, sticky="ew", padx=10)
 
-    def filter(self, event):
+        tk.Label(self.frame, text="Power Supply", anchor="w").grid(
+            row=1, column=3, sticky="ew", padx=10)
 
-        # destroying the old frame entries 
-        for widgets in canvas_frame.winfo_children():
-             widgets.destroy()
+        tk.Label(self.frame, text="Production Year", anchor="w").grid(
+            row=1, column=4, sticky="ew", padx=10)
 
-        # should be Model, Price, Warranty, ServiceStatus instead of powersupply 
+        tk.Label(self.frame, text="Factory", anchor="w").grid(
+            row=1, column=5, sticky="ew", padx=10)
 
-        if clicked.get() == 'NONE':  # show all items without filter
-            c.execute(
-                '''
-                SELECT Model, PowerSupply 
-                FROM items
-                '''
-                )
-        else :  # show the items with specified filter 
-            c.execute(
-                '''
-                SELECT Model, PowerSupply 
-                FROM items
-                WHERE PowerSupply = ? 
-                ''', 
-                [clicked.get()]
-                )
+        tk.Label(self.frame, text="Service Status", anchor="w").grid(
+            row=1, column=6, sticky="ew", padx=10)
 
-        self.show_items()
-    
-    def show_items(self):
+        global clicked
+        clicked = StringVar()
+        clicked.set('NONE')
+        OptionMenu(self.frame, clicked, 'Battery', 'USB','NA', 'SUBMITTED', 'WAITING FOR PAYMENT', 'IN PROGRESS', 'APPROVED', 'CANCELLED', 'NONE').grid(
+            row=0, column=6, sticky="ew", padx=10
+        )
 
-        for record in c.fetchall():
-            temp_frame = Frame(canvas_frame)
-            txt = Label
-            txt = Text(temp_frame, height=1)
-            txt.insert('1.0', record)
-            txt.pack(side=LEFT)
-            Button(temp_frame, text='Request details').pack(side=LEFT)
-            temp_frame.pack()
+        row = 2
 
-    #     for record in c.fetchall():
-    #         individual_item_frame = Frame(canvas_frame)
-    #         individual_item_frame.pack()
+        bg = ["#ffffff", "#d9e1f2"]
 
-    #         txt = Text(individual_item_frame, height=1)
-    #         txt.insert('1.0',record)
-    #         txt.pack(side = LEFT)
+        highlight = {
+            "Red": "#f8696b",
+            "Green": "#63be7b",
+            "Yellow": "#ffeb84"
+        }
 
-    #         if there are no requests for the item, redirect to new page to make a new request (marvin side)
-    #         new_request_btn = Button(individual_item_frame, text="Make a new request")
-    #         new_request_btn.pack(side = LEFT)
+        for (ItemID, category, colour, factory, powerSupply, PurchaseStatus, ProductionYear, Model, ServiceStatus) in c.fetchall():
+            
+            product_label = tk.Label(self.frame, text=str(
+                category), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
-    #         if there are requests for the item, redirect to new page to view the request details (marvin side)
-    #         request_details_btn = Button(individual_item_frame, text="Request details")
-    #         request_details_btn.pack(side = LEFT)
+            model_label = tk.Label(self.frame, text=str(
+                Model), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+
+            colour_label = tk.Label(self.frame, text=str(
+                colour), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+
+            powerSupply_label = tk.Label(self.frame, text=str(
+                powerSupply), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+
+            productionYear_label = tk.Label(self.frame, text=str(
+                ProductionYear), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+
+            factory_label = tk.Label(self.frame, text=str(
+                factory), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+                        
+            serviceStatus_label = tk.Label(self.frame, text=str(
+                ServiceStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+
+
+            product_label.grid(row=row, column=0, sticky="ew", pady=2.5, ipady=5)
+            model_label.grid(row=row, column=1, sticky="ew", pady=2.5, ipady=5)
+            colour_label.grid(row=row, column=2, sticky="ew", pady=2.5, ipady=5)
+            powerSupply_label.grid(row=row, column=3, sticky="ew", pady=2.5, ipady=5)
+            productionYear_label.grid(row=row, column=4, sticky="ew", pady=2.5, ipady=5)
+            factory_label.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
+            serviceStatus_label.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
+
+            requestButton = tk.Button(self.frame, text='Request details')
+            requestButton.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)
+
+            row += 1
+        
+        self.launch()
+        
+if __name__ == "__main__":
+    main()
