@@ -78,24 +78,19 @@ class Past_Purchase_Page(Frame):
 
         c.execute(
             '''
-            SELECT Model, PowerSupply 
+            SELECT * 
             FROM items
-
+            LIMIT 10
             '''
             )
 
         self.show_items()
-
-
-            
 
         # returns to the catalogue page  
         back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Past_Purchase_Page))
         back_btn.pack()
 
         conn.commit()
-
-
 
     def filter(self, event):
 
@@ -128,6 +123,7 @@ class Past_Purchase_Page(Frame):
 
         for record in c.fetchall():
             temp_frame = Frame(canvas_frame)
+            txt = Label
             txt = Text(temp_frame, height=1)
             txt.insert('1.0', record)
             txt.pack(side=LEFT)
