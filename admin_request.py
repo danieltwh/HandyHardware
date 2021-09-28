@@ -21,6 +21,10 @@ class App(Tk):
         self._frame = new_frame
         self._frame.pack(side="top", fill="both", expand=True)
 
+    # def print_hello(self):
+    #     print("Hello")
+    #     self.after(2000, self.print_hello)
+
 
 def main():
     # root = Tk()
@@ -33,6 +37,7 @@ def main():
 
     app = App()
     app.geometry("800x800")
+    # app.after(2000, app.print_hello)
     app.mainloop()
 
 
