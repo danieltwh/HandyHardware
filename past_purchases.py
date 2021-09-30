@@ -4,6 +4,7 @@ import tkinter as tk
 from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
+import datetime
 
 from ScrollableFrame import ScrollableFrame
 
@@ -47,7 +48,7 @@ def main():
     app.geometry("800x800")
     app.mainloop()
 
-# contains the table of items
+# table of items only
 class Past_Purchases_Table(ScrollableFrame):
     def __init__(self, data, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -61,14 +62,14 @@ class Past_Purchases_Table(ScrollableFrame):
         tk.Label(self.frame, text="Power Supply", anchor="w").grid(row=1, column=3, sticky="ew", padx=10)
         tk.Label(self.frame, text="Production Year", anchor="w").grid(row=1, column=4, sticky="ew", padx=10)
         tk.Label(self.frame, text="Factory", anchor="w").grid(row=1, column=5, sticky="ew", padx=10)
-        tk.Label(self.frame, text="Service Status", anchor="w").grid(row=1, column=6, sticky="ew", padx=10)
+        tk.Label(self.frame, text="Request Status", anchor="w").grid(row=1, column=6, sticky="ew", padx=10)
 
         row = 2
 
         bg = ["#ffffff", "#d9e1f2"]
 
         # populating the table row by row
-        for (ItemID, category, colour, factory, powerSupply, PurchaseStatus, ProductionYear, Model, ServiceStatus) in data:
+        for (ItemID, category, colour, factory, powerSupply, PurchaseStatus, ProductionYear, Model, RequestStatus) in data:
 
             product_label = tk.Label(self.frame, text=str(category), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self.frame, text=str(Model), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
@@ -76,8 +77,8 @@ class Past_Purchases_Table(ScrollableFrame):
             powerSupply_label = tk.Label(self.frame, text=str(powerSupply), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             productionYear_label = tk.Label(self.frame, text=str(ProductionYear), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             factory_label = tk.Label(self.frame, text=str(factory), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])   
-            serviceStatus_label = tk.Label(self.frame, text=str(ServiceStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            requestButton = tk.Button(self.frame, text="Request details")
+            requestStatus_label = tk.Label(self.frame, text=str(RequestStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            
 
             product_label.grid(row=row, column=0, sticky="ew", pady=2.5, ipady=5)
             model_label.grid(row=row, column=1, sticky="ew", pady=2.5, ipady=5)
@@ -85,14 +86,24 @@ class Past_Purchases_Table(ScrollableFrame):
             powerSupply_label.grid(row=row, column=3, sticky="ew", pady=2.5, ipady=5)
             productionYear_label.grid(row=row, column=4, sticky="ew", pady=2.5, ipady=5)
             factory_label.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
-            serviceStatus_label.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)      
+            requestStatus_label.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)    
+
+            if RequestStatus in ['Completed', 'Canceled']:
+                requestButton = tk.Button(self.frame, text="Make new request")  
+            else:
+                requestButton = tk.Button(self.frame, text="Request details")  
             requestButton.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)
 
             row += 1
         
         self.launch()
 
-# header 
+    # check if payment is due 
+    def checkPaymentTime(self, paymentCreationDate):
+        timeNow = datetime.datetime.now()
+
+
+# header only 
 class Past_Purchase_Page_Header(tk.LabelFrame):
     def __init__(self, master, *args, **kwargs):
         tk.LabelFrame.__init__(self, master, *args, **kwargs)
@@ -102,9 +113,12 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
         clicked = tk.StringVar()
         clicked.set("None")
 
+        # dropdown filter
         OptionMenu(self, clicked, "Submitted", "Approved", "Submitted and Waiting for payment", "In progress", "Canceled", "Completed", "None", 
-        command=lambda clicked = clicked: master.filter_status(clicked)).grid(
-            row=0, column=6, sticky="ew", padx=10)
+        command=lambda clicked = clicked: master.filter_status(clicked)).grid(row=0, column=6, sticky="ew", padx=10)
+
+        # back button 
+        Button(self, text = 'Back').grid(row=0, column=0)
 
 # main frame consisting of table and header 
 class Past_Purchase_Page(Frame):
