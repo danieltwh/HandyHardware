@@ -1,4 +1,4 @@
 
 USERNAME = "root"
 
-MYSQL_PASSWORD = "<your password>"
+MYSQL_PASSWORD = "Tigertwh148*"
