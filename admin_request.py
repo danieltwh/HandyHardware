@@ -285,11 +285,11 @@ class Request_Table(ScrollableFrame):
             if requestStatus == "In progress":
                 action_button = tk.Button(
                     self.frame, text="Approve", command=lambda requestId=requestId: self.approve(requestId))
-                action_button.grid(row=row, column=5, sticky="ew")
+                action_button.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
             elif requestStatus == "Approved":
                 action_button = tk.Button(
                     self.frame, text="Service", command=lambda requestId=requestId: self.service(requestId))
-                action_button.grid(row=row, column=5, sticky="ew")
+                action_button.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
 
             row += 1
         
