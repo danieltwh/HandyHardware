@@ -29,29 +29,12 @@ data = [
     ("1013", "Lights", "Blue", "Malaysia", "Battery", "Sold", "2014", "Light1", "Completed")
     ]
 
-class App(Tk):
-    def __init__(self):
-        Tk.__init__(self)
-        self._frame = None
-        self.switch_frame(Past_Purchase_Page)
 
-    def switch_frame(self, frame_class):
-        new_frame = frame_class(self)
-        if self._frame is not None:
-            self._frame.destroy()
-        self._frame = new_frame
-        self._frame.pack(side="top", fill="both", expand=True)
-
-def main():
-
-    app = App()
-    app.geometry("800x800")
-    app.mainloop()
 
 # table of items only
 class Past_Purchases_Table(ScrollableFrame):
     def __init__(self, data, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(width=800, height=800, *args, **kwargs)
 
         self.data = data
 
@@ -168,4 +151,22 @@ class Past_Purchase_Page(Frame):
         self._frame.pack(side="top", fill="both", expand=True)
 
 if __name__ == "__main__":
+    class App(Tk):
+        def __init__(self):
+            Tk.__init__(self)
+            self._frame = None
+            self.switch_frame(Past_Purchase_Page)
+
+        def switch_frame(self, frame_class):
+            new_frame = frame_class(self)
+            if self._frame is not None:
+                self._frame.destroy()
+            self._frame = new_frame
+            self._frame.pack(side="top", fill="both", expand=True)
+
+    def main():
+
+        app = App()
+        app.geometry("1200x800")
+        app.mainloop()
     main()

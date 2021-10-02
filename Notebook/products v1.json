@@ -1,0 +1,58 @@
+[
+    {
+        "ProductID": "001",
+        "Category": "Lights",
+        "Model": "Light1",
+        "Price": 50.0,
+        "Cost": 20.0,
+        "Warranty": "10 months"
+    },
+    {
+        "ProductID": "002",
+        "Category": "Lights",
+        "Model": "Light2",
+        "Price": 60.0,
+        "Cost": 22.0,
+        "Warranty": "6 months"
+    },
+    {
+        "ProductID": "003",
+        "Category": "Lights",
+        "Model": "SmartHome1",
+        "Price": 70.0,
+        "Cost": 30.0,
+        "Warranty": "8 months"
+    },
+    {
+        "ProductID": "004",
+        "Category": "Locks",
+        "Model": "Safe1",
+        "Price": 100.0,
+        "Cost": 30.0,
+        "Warranty": "10 months"
+    },
+    {
+        "ProductID": "005",
+        "Category": "Locks",
+        "Model": "Safe2",
+        "Price": 120.0,
+        "Cost": 50.0,
+        "Warranty": "10 months"
+    },
+    {
+        "ProductID": "006",
+        "Category": "Locks",
+        "Model": "Safe3",
+        "Price": 125.0,
+        "Cost": 50.0,
+        "Warranty": "10 months"
+    },
+    {
+        "ProductID": "007",
+        "Category": "Locks",
+        "Model": "SmartHome1",
+        "Price": 200.0,
+        "Cost": 100.0,
+        "Warranty": "12 months"
+    }
+]

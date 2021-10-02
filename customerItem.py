@@ -30,7 +30,7 @@ def main():
     # root.mainloop()
 
     app = App()
-    app.geometry("800x800")
+    app.geometry("1200x800")
     app.mainloop()
 
 data = [
@@ -46,7 +46,7 @@ cart = []
 
 class Catalogue_Table(tk.LabelFrame):
     def __init__(self, data, *args, **kwargs):
-        tk.LabelFrame.__init__(self, *args, **kwargs)
+        tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
 
         self.data = data
 
