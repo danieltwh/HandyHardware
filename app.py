@@ -13,6 +13,7 @@ from admin_request import Admin_Request_Page
 from cus_request_details import Request_Details
 from customerItem import Customer_Shopping_Catalogue_Page
 from past_purchases import Past_Purchase_Page
+from ResetDB import RESET_DB
 
 PAGES = {
     "login": Login_Page, 
@@ -60,6 +61,15 @@ class AdminSideBar(Frame):
         logout_btn = Button(self, text="Logout", padx=10,  
             command=lambda: master.logout())
         logout_btn.grid(row=3, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+
+        DB_reset_btn = Button(self, text = "Reset DB", padx=10,
+            command=lambda: self.resetDB())
+        DB_reset_btn.grid(row=4, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+
+    
+    def resetDB(self):
+        RESET_DB()
+        self.master.switch_frame(PAGES.get("customer_shopping_catalogue"))
         
         
 
