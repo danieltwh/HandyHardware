@@ -18,7 +18,6 @@ db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/
 # Import custom Scrollable Frame
 from ScrollableFrame import ScrollableFrame
 
-
 class App(Tk):
     def __init__(self):
         Tk.__init__(self)
@@ -204,8 +203,40 @@ service = [
     ("036", "Haaland", "Light3", "Issue", "Waiting for approval")
 ]
 
+
+####### Admin Request Pages ###########
+
+
 request_view = "All"
 service_view = "All"
+
+ORDER_BY_SERVICE_STATUS = """
+ORDER BY 
+	CASE s.serviceStatus
+      WHEN 'In progress' THEN 1
+      WHEN 'Waiting for approval' THEN 2
+      WHEN 'Completed' THEN 3
+	END, 
+    CASE r.requestStatus
+      WHEN 'Approved' THEN 1
+      WHEN 'Completed' THEN 2
+      WHEN 'Cancelled' THEN 3
+	END,
+    r.requestID
+"""
+
+ORDER_BY_REQUEST_STATUS = """
+ORDER BY 
+    CASE r.requestStatus
+      WHEN 'Submitted' THEN 1
+      WHEN 'In progress' THEN 2
+      WHEN 'Submitted and Waiting for payment' THEN 3
+	  WHEN 'Approved' THEN 4
+      WHEN 'Completed' THEN 5
+      WHEN 'Canceled' THEN 6
+	END,
+    r.requestID
+"""
 
 
 class Request_Table(ScrollableFrame):
@@ -233,6 +264,7 @@ class Request_Table(ScrollableFrame):
                 LEFT JOIN Items i USING(itemID)
                 LEFT JOIN Products p ON i.productID = p.productID
                 {view_mapping.get(curr_view)}
+                {ORDER_BY_REQUEST_STATUS}
                 ;
                 """, db)
 
@@ -358,13 +390,14 @@ class Service_Table(ScrollableFrame):
         }
 
         self.data = pd.read_sql_query(f"""
-        SELECT r.requestID, c.customerID, p.model, r.requestDetails, r.requestStatus, s.serviceStatus
+        SELECT r.requestID, c.customerID, p.model, r.requestDetails, r.requestStatus, s.serviceStatus, r.administratorID
         FROM Requests r 
         LEFT JOIN Services s USING(requestID)
         LEFT JOIN Payments c USING (itemID)
         LEFT JOIN Items i USING(itemID)
         LEFT JOIN Products p ON i.productID = p.productID
         WHERE s.serviceStatus IS NOT NULL {view_mapping.get(curr_view)}
+        {ORDER_BY_SERVICE_STATUS}
         ;
         """, db)
 
@@ -395,6 +428,7 @@ class Service_Table(ScrollableFrame):
             issue = request.requestDetails
             requestStatus = request.requestStatus
             serviceStatus = request.serviceStatus
+            request_admin = request.administratorID
 
             serviceId_label = tk.Label(self.frame, text=str(
                 serviceId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
@@ -426,9 +460,14 @@ class Service_Table(ScrollableFrame):
             serviceStatus_label.grid_columnconfigure(0, weight=5)
             # active_cb.grid(row=row, column=4, sticky="ew")
 
-            if serviceStatus == "In progress":
+            # if serviceStatus == "In progress":
+            #     action_button = tk.Button(
+            #         self.frame, text="View", command=lambda serviceId=serviceId: self.view(serviceId))
+            #     action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
+
+            if request_admin == self.master.adminId and serviceStatus == "In progress":
                 action_button = tk.Button(
-                    self.frame, text="View", command=lambda serviceId=serviceId: self.view(serviceId))
+                    self.frame, text="Edit", command=lambda serviceId=serviceId: self.view(serviceId))
                 action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
             elif serviceStatus == "Completed":
                 action_button = tk.Button(
@@ -479,64 +518,87 @@ class Service_Info_Page(Frame):
         
 
         # Creatinag Text Boxes
-        f_name = Entry(self, width = 30)
-        f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
-        f_name.insert(0, curr_name)
-        f_name.configure(state="disabled")
 
-        email = Entry(self, width = 30)
-        email.grid(row=3, column=1, padx=20)
-        email.insert(0, curr_email)
-        email.configure(state="disabled")
+        f_name = Label(self, padx= 5, width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
+        f_name.grid(row=0, column=1, padx=20, pady=(10, 2.5), ipady=5)
 
-        phone = Entry(self, width = 30)
-        phone.grid(row=4, column=1, padx=20)
-        phone.insert(0, curr_phone)
-        phone.configure(state="disabled")
+        email = Label(self, padx= 5,width = 30, text=curr_email, borderwidth=2, relief="groove", justify="left", anchor="w")
+        email.grid(row=3, column=1, padx=20, pady=2.5, ipady=5)
 
-        address = Entry(self, width = 30)
-        address.grid(row=5, column=1, padx=20)
-        address.insert(0, curr_address)
-        address.configure(state="disabled")
+        phone = Label(self, padx= 5,width = 30, text=curr_phone, borderwidth=2, relief="groove", justify="left", anchor="w")
+        phone.grid(row=4, column=1, padx=20, pady=2.5, ipady=5)
 
-        model = Entry(self, width = 30)
-        model.grid(row=6, column=1, padx=20)
-        model.insert(0, curr_model)
-        model.configure(state="disabled")
+        address = Label(self, padx= 5,width = 30, text=curr_address, borderwidth=2, relief="groove", justify="left", anchor="w")
+        address.grid(row=5, column=1, padx=20, pady=2.5, ipady=5)
 
-        requestStatus = Entry(self, width=30, justify="center")
-        requestStatus.grid(row=7, column=1, padx=20)
-        requestStatus.insert(0, curr_requestStatus)
-        requestStatus.configure(state="disabled") 
+        model = Label(self, padx= 5, width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
+        model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
 
-        serviceStatus = Entry(self, width=30, justify="center")
-        serviceStatus.grid(row=8, column=1, padx=20)
-        serviceStatus.insert(0, curr_serviceStatus)
-        serviceStatus.configure(state="disabled") 
+        requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
+        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+
+        serviceStatus = Label(self, padx= 5, width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
+        serviceStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
+
+
+        # f_name = Entry(self, width = 30)
+        # f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
+        # f_name.insert(0, curr_name)
+        # f_name.configure(state="disabled")
+
+        # email = Entry(self, width = 30)
+        # email.grid(row=3, column=1, padx=20)
+        # email.insert(0, curr_email)
+        # email.configure(state="disabled")
+
+        # phone = Entry(self, width = 30)
+        # phone.grid(row=4, column=1, padx=20)
+        # phone.insert(0, curr_phone)
+        # phone.configure(state="disabled")
+
+        # address = Entry(self, width = 30)
+        # address.grid(row=5, column=1, padx=20)
+        # address.insert(0, curr_address)
+        # address.configure(state="disabled")
+
+        # model = Entry(self, width = 30)
+        # model.grid(row=6, column=1, padx=20)
+        # model.insert(0, curr_model)
+        # model.configure(state="disabled")
+
+        # requestStatus = Entry(self, width=30, justify="center")
+        # requestStatus.grid(row=7, column=1, padx=20)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
+
+        # serviceStatus = Entry(self, width=30, justify="center")
+        # serviceStatus.grid(row=8, column=1, padx=20)
+        # serviceStatus.insert(0, curr_serviceStatus)
+        # serviceStatus.configure(state="disabled") 
 
 
 
         # Creating Text Box Labels
         f_name_label = Label(self, text="First Name")
-        f_name_label.grid(row=0, column=0, pady=(10, 0))
+        f_name_label.grid(row=0, column=0, pady=(10, 2.5), ipady=5)
 
         email_label = Label(self, text="Email Address")
-        email_label.grid(row=3, column=0)
+        email_label.grid(row=3, column=0, pady=2.5, ipady=5)
 
         phone_label = Label(self, text="Phone Number")
-        phone_label.grid(row=4, column=0)
+        phone_label.grid(row=4, column=0, pady=2.5, ipady=5)
 
         address_label = Label(self, text="Address")
-        address_label.grid(row=5, column=0)
+        address_label.grid(row=5, column=0, pady=2.5, ipady=5)
 
         model_label = Label(self, text="Model")
-        model_label.grid(row=6, column=0)
+        model_label.grid(row=6, column=0, pady=2.5, ipady=5)
 
         requestStatus_label = Label(self, text="Request Status")
-        requestStatus_label.grid(row=7, column=0)
+        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
 
         serviceStatus_label = Label(self, text="Service Status")
-        serviceStatus_label.grid(row=8, column=0)
+        serviceStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
         back_btn = Button(self, text="Back", command=lambda: master.back_to_service())
         back_btn.grid(row=9, column=0, padx=(10,0), sticky="W")
@@ -574,30 +636,24 @@ class Approval_Info_Page(Frame):
         curr_model, curr_requestDetails, curr_requestStatus) = list(data.to_records(index=False))[0]
         
         # Creatinag Text Boxes
-        f_name = Entry(self, width = 30)
-        f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
-        f_name.insert(0, curr_name)
-        f_name.configure(state="disabled")
+        f_name = Label(self, padx= 5, width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
+        f_name.grid(row=0, column=1, padx=20, pady=(10, 2.5), ipady=5)
 
-        email = Entry(self, width = 30)
-        email.grid(row=3, column=1, padx=20)
-        email.insert(0, curr_email)
-        email.configure(state="disabled")
 
-        phone = Entry(self, width = 30)
-        phone.grid(row=4, column=1, padx=20)
-        phone.insert(0, curr_phone)
-        phone.configure(state="disabled")
+        email = Label(self, padx= 5, width = 30, text=curr_email, borderwidth=2, relief="groove", justify="left", anchor="w")
+        email.grid(row=3, column=1, padx=20, pady=2.5, ipady=5)
+  
 
-        address = Entry(self, width = 30)
-        address.grid(row=5, column=1, padx=20)
-        address.insert(0, curr_address)
-        address.configure(state="disabled")
+        phone = Label(self, padx= 5, width = 30, text=curr_phone, borderwidth=2, relief="groove", justify="left", anchor="w")
+        phone.grid(row=4, column=1, padx=20, pady=2.5, ipady=5)
+ 
 
-        model = Entry(self, width = 30)
-        model.grid(row=6, column=1, padx=20)
-        model.insert(0, curr_model)
-        model.configure(state="disabled")
+        address = Label(self, padx= 5, width = 30, text=curr_address, borderwidth=2, relief="groove", justify="left", anchor="w")
+        address.grid(row=5, column=1, padx=20, pady=2.5, ipady=5)
+
+
+        model = Label(self, padx= 5, width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
+        model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
 
         REQUEST_STATUS = [
             "In progress",
@@ -608,39 +664,42 @@ class Approval_Info_Page(Frame):
         # curr_requestStatus.set(curr_requestStatus)
 
         # requestStatus = OptionMenu(self, curr_requestStatus, *REQUEST_STATUS)
-        requestStatus = Entry(self, width=30, justify="center")
-        # requestStatus.config(width=28)
-        requestStatus.grid(row=7, column=1, padx=20)
-        requestStatus.insert(0, curr_requestStatus)
-        requestStatus.configure(state="disabled") 
+        requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
+        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
+        # requestStatus = Entry(self, width=30, justify="center")
+        # # requestStatus.config(width=28)
+        # requestStatus.grid(row=7, column=1, padx=20)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
         
 
         # Creating Text Box Labels
         f_name_label = Label(self, text="First Name")
-        f_name_label.grid(row=0, column=0, pady=(10, 0))
+        f_name_label.grid(row=0, column=0, pady=(10, 2.5), ipady=5)
 
         email_label = Label(self, text="Email Address")
-        email_label.grid(row=3, column=0)
+        email_label.grid(row=3, column=0, pady=2.5, ipady=5)
 
         phone_label = Label(self, text="Phone Number")
-        phone_label.grid(row=4, column=0)
+        phone_label.grid(row=4, column=0, pady=2.5, ipady=5)
 
         address_label = Label(self, text="Address")
-        address_label.grid(row=5, column=0)
+        address_label.grid(row=5, column=0, pady=2.5, ipady=5)
 
         model_label = Label(self, text="Model")
-        model_label.grid(row=6, column=0)
+        model_label.grid(row=6, column=0, pady=2.5, ipady=5)
 
         requestStatus_label = Label(self, text="Request Status")
-        requestStatus_label.grid(row=7, column=0)
+        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
 
         back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
-        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W")
+        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W", pady=5)
         
         
-
         complete_btn = Button(self, text="Approve", command=lambda requestId = requestId: master.approve_request(requestId))
-        complete_btn.grid(row=8, column=1, padx=(0, 10), sticky="E")
+        complete_btn.grid(row=8, column=1, padx=(0, 10), sticky="E", pady=5)
 
     
 class Request_Info_Page(Frame):
@@ -667,60 +726,59 @@ class Request_Info_Page(Frame):
         (requestId, curr_name, curr_email, curr_phone, curr_address,
         curr_model, curr_requestDetails, curr_requestStatus) = list(data.to_records(index=False))[0]
         
-        # Creatinag Text Boxes
-        f_name = Entry(self, width = 30)
-        f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
-        f_name.insert(0, curr_name)
-        f_name.configure(state="disabled")
+        f_name = Label(self, padx= 5,width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
+        f_name.grid(row=0, column=1, padx=20, pady=(10,2.5), ipady=5)
+        # f_name.insert(0, curr_name)
+        # f_name.configure(state="disabled")
 
-        email = Entry(self, width = 30)
-        email.grid(row=3, column=1, padx=20)
-        email.insert(0, curr_email)
-        email.configure(state="disabled")
+        email = Label(self, padx= 5,width = 30, text=curr_email, borderwidth=2, relief="groove", justify="left", anchor="w")
+        email.grid(row=3, column=1, padx=20, pady=2.5, ipady=5)
+        # email.insert(0, curr_email)
+        # email.configure(state="disabled")
 
-        phone = Entry(self, width = 30)
-        phone.grid(row=4, column=1, padx=20)
-        phone.insert(0, curr_phone)
-        phone.configure(state="disabled")
+        phone = Label(self, padx= 5,width = 30, text=curr_phone, borderwidth=2, relief="groove", justify="left", anchor="w")
+        phone.grid(row=4, column=1, padx=20, pady=2.5, ipady=5)
+        # phone.insert(0, curr_phone)
+        # phone.configure(state="disabled")
 
-        address = Entry(self, width = 30)
-        address.grid(row=5, column=1, padx=20)
-        address.insert(0, curr_address)
-        address.configure(state="disabled")
+        address = Label(self, padx= 5,width = 30, text=curr_address, borderwidth=2, relief="groove", justify="left", anchor="w")
+        address.grid(row=5, column=1, padx=20, pady=2.5, ipady=5)
+        # address.insert(0, curr_address)
+        # address.configure(state="disabled")
 
-        model = Entry(self, width = 30)
-        model.grid(row=6, column=1, padx=20)
-        model.insert(0, curr_model)
-        model.configure(state="disabled")
+        model = Label(self, padx= 5,width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
+        model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
+        # model.insert(0, curr_model)
+        # model.configure(state="disabled")
 
+        requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
+        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
 
-        requestStatus = Entry(self, width=30, justify="center")
-        # requestStatus.config(width=28)
-        requestStatus.grid(row=7, column=1, padx=20)
-        requestStatus.insert(0, curr_requestStatus)
-        requestStatus.configure(state="disabled") 
         
 
         # Creating Text Box Labels
         f_name_label = Label(self, text="First Name")
-        f_name_label.grid(row=0, column=0, pady=(10, 0))
+        f_name_label.grid(row=0, column=0, pady=(10, 2.5), ipady=5)
 
         email_label = Label(self, text="Email Address")
-        email_label.grid(row=3, column=0)
+        email_label.grid(row=3, column=0, pady=2.5, ipady=5)
 
         phone_label = Label(self, text="Phone Number")
-        phone_label.grid(row=4, column=0)
+        phone_label.grid(row=4, column=0, pady=2.5, ipady=5)
 
         address_label = Label(self, text="Address")
-        address_label.grid(row=5, column=0)
+        address_label.grid(row=5, column=0, pady=2.5, ipady=5)
 
         model_label = Label(self, text="Model")
-        model_label.grid(row=6, column=0)
+        model_label.grid(row=6, column=0, pady=2.5, ipady=5)
 
         requestStatus_label = Label(self, text="Request Status")
-        requestStatus_label.grid(row=7, column=0)
+        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
+
         back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
-        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W")
+        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W", pady=5)
         
 
 
@@ -750,67 +808,67 @@ class Completed_Service_Info_Page(Frame):
         
 
         # Creatinag Text Boxes
-        f_name = Entry(self, width = 30)
-        f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
-        f_name.insert(0, curr_name)
-        f_name.configure(state="disabled")
+        f_name = Label(self, padx= 5, width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
+        f_name.grid(row=0, column=1, padx=20, pady=(10, 2.5), ipady=5)
+        # f_name.insert(0, curr_name)
+        # f_name.configure(state="disabled")
 
-        email = Entry(self, width = 30)
-        email.grid(row=3, column=1, padx=20)
-        email.insert(0, curr_email)
-        email.configure(state="disabled")
+        email = Label(self, padx= 5,width = 30, text=curr_email, borderwidth=2, relief="groove", justify="left", anchor="w")
+        email.grid(row=3, column=1, padx=20, pady=2.5, ipady=5)
+        # email.insert(0, curr_email)
+        # email.configure(state="disabled")
 
-        phone = Entry(self, width = 30)
-        phone.grid(row=4, column=1, padx=20)
-        phone.insert(0, curr_phone)
-        phone.configure(state="disabled")
+        phone = Label(self, padx= 5,width = 30, text=curr_phone, borderwidth=2, relief="groove", justify="left", anchor="w")
+        phone.grid(row=4, column=1, padx=20, pady=2.5, ipady=5)
+        # phone.insert(0, curr_phone)
+        # phone.configure(state="disabled")
 
-        address = Entry(self, width = 30)
-        address.grid(row=5, column=1, padx=20)
-        address.insert(0, curr_address)
-        address.configure(state="disabled")
+        address = Label(self, padx= 5,width = 30, text=curr_address, borderwidth=2, relief="groove", justify="left", anchor="w")
+        address.grid(row=5, column=1, padx=20, pady=2.5, ipady=5)
+        # address.insert(0, curr_address)
+        # address.configure(state="disabled")
 
-        model = Entry(self, width = 30)
-        model.grid(row=6, column=1, padx=20)
-        model.insert(0, curr_model)
-        model.configure(state="disabled")
+        model = Label(self, padx= 5, width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
+        model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
+        # model.insert(0, curr_model)
+        # model.configure(state="disabled")
 
-        requestStatus = Entry(self, width=30, justify="center")
-        requestStatus.grid(row=7, column=1, padx=20)
-        requestStatus.insert(0, curr_requestStatus)
-        requestStatus.configure(state="disabled") 
+        requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
+        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
 
-        serviceStatus = Entry(self, width=30, justify="center")
-        serviceStatus.grid(row=8, column=1, padx=20)
-        serviceStatus.insert(0, curr_serviceStatus)
-        serviceStatus.configure(state="disabled") 
+        serviceStatus = Label(self, padx= 5, width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
+        serviceStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
+        # serviceStatus.insert(0, curr_serviceStatus)
+        # serviceStatus.configure(state="disabled") 
 
 
 
         # Creating Text Box Labels
         f_name_label = Label(self, text="First Name")
-        f_name_label.grid(row=0, column=0, pady=(10, 0))
+        f_name_label.grid(row=0, column=0, pady=(10, 2.5), ipady=5)
 
         email_label = Label(self, text="Email Address")
-        email_label.grid(row=3, column=0)
+        email_label.grid(row=3, column=0, pady=2.5, ipady=5)
 
         phone_label = Label(self, text="Phone Number")
-        phone_label.grid(row=4, column=0)
+        phone_label.grid(row=4, column=0, pady=2.5, ipady=5)
 
         address_label = Label(self, text="Address")
-        address_label.grid(row=5, column=0)
+        address_label.grid(row=5, column=0, pady=2.5, ipady=5)
 
         model_label = Label(self, text="Model")
-        model_label.grid(row=6, column=0)
+        model_label.grid(row=6, column=0, pady=2.5, ipady=5)
 
         requestStatus_label = Label(self, text="Request Status")
-        requestStatus_label.grid(row=7, column=0)
+        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
 
         serviceStatus_label = Label(self, text="Service Status")
-        serviceStatus_label.grid(row=8, column=0)
+        serviceStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
         back_btn = Button(self, text="Back", command=lambda: master.back_to_service())
-        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W")
+        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W", pady=5)
 
 
 
@@ -986,10 +1044,41 @@ class Admin_Request_Page(Frame):
         
     
     def complete_service(self, requestId):
-        print("Service completed for ", requestId)
-        
+        # print("Service completed for ", requestId)
+        status = False
 
-    
+        # Approve request in database
+        with db.begin() as conn:
+            savepoint = conn.begin_nested()
+            try:
+                # Create a service for the request        
+                conn.execute(f"""
+                UPDATE Services
+                SET serviceStatus = "Completed"
+                WHERE requestID = {requestId}
+                ;
+                """)
+
+                # Update the request status
+                conn.execute(f"""
+                UPDATE Requests
+                SET requestStatus = "Completed"
+                WHERE requestID = {requestId}
+                ;
+                """)
+                
+                # Commit changes to database
+                savepoint.commit()
+
+                # Update the progress status
+                status = True
+            except:
+                # If fail, rollback the changes
+                savepoint.rollback()
+                print("Failed to complete service")
+        
+        if status:
+            self.show_service("My Service Jobs")        
 
 
 
