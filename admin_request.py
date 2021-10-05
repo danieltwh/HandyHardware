@@ -5,8 +5,18 @@ from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
 
-from ScrollableFrame import ScrollableFrame
+# For SQL query
+from sqlalchemy import create_engine
+from pymysql.constants import CLIENT
+import pandas as pd
 
+from config import USERNAME, MYSQL_PASSWORD
+db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/ECOMMERCE", 
+        connect_args = {"client_flag": CLIENT.MULTI_STATEMENTS}
+    )
+
+# Import custom Scrollable Frame
+from ScrollableFrame import ScrollableFrame
 
 class App(Tk):
     def __init__(self):
@@ -194,10 +204,43 @@ service = [
 ]
 
 
+####### Admin Request Pages ###########
+
+
+request_view = "All"
+service_view = "All"
+
+ORDER_BY_SERVICE_STATUS = """
+ORDER BY 
+	CASE s.serviceStatus
+      WHEN 'In progress' THEN 1
+      WHEN 'Waiting for approval' THEN 2
+      WHEN 'Completed' THEN 3
+	END, 
+    CASE r.requestStatus
+      WHEN 'Approved' THEN 1
+      WHEN 'Completed' THEN 2
+      WHEN 'Cancelled' THEN 3
+	END,
+    r.requestID
+"""
+
+ORDER_BY_REQUEST_STATUS = """
+ORDER BY 
+    CASE r.requestStatus
+      WHEN 'Submitted' THEN 1
+      WHEN 'In progress' THEN 2
+      WHEN 'Submitted and Waiting for payment' THEN 3
+	  WHEN 'Approved' THEN 4
+      WHEN 'Completed' THEN 5
+      WHEN 'Canceled' THEN 6
+	END,
+    r.requestID
+"""
 
 
 class Request_Table(ScrollableFrame):
-    def __init__(self, data, *args, **kwargs):
+    def __init__(self, curr_view, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # data = [
         #     # Nr. Name  Active
@@ -206,7 +249,24 @@ class Request_Table(ScrollableFrame):
         #     [3,   "SX", True],
         #     ]
 
-        self.data = data
+        global request_view
+
+        view_mapping = {
+            "All": "WHERE r.requestID IS NOT NULL",
+            "Pending Approval": "WHERE r.requestStatus in ('In Progress', 'Submitted')"
+        }
+
+        self.data = pd.read_sql_query(f"""
+                SELECT r.requestID, c.customerID, p.model, r.requestDetails, r.requestStatus
+                FROM Requests r 
+                LEFT JOIN Services s USING(requestID)
+                LEFT JOIN Payments c USING (itemID)
+                LEFT JOIN Items i USING(itemID)
+                LEFT JOIN Products p ON i.productID = p.productID
+                {view_mapping.get(curr_view)}
+                {ORDER_BY_REQUEST_STATUS}
+                ;
+                """, db)
 
 
         # self.vscrollbar = AutoScrollbar(self)
@@ -253,7 +313,12 @@ class Request_Table(ScrollableFrame):
             "Yellow": "#ffeb84"
         }
 
-        for (requestId, name, model, issue, requestStatus) in data:
+        for request in self.data.itertuples():
+            requestId = int(request.requestID)
+            name = str(request.customerID)
+            model = str(request.model)
+            issue = str(request.requestDetails)
+            requestStatus = str(request.requestStatus)
             
             requestId_label = tk.Label(self.frame, text=str(
                 requestId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
@@ -282,14 +347,19 @@ class Request_Table(ScrollableFrame):
             requestStatus_label.grid_columnconfigure(0, weight=5, )
             # active_cb.grid(row=row, column=4, sticky="ew")
 
-            if requestStatus == "In progress":
+            if requestStatus in ["In progress", "Submitted"]:
                 action_button = tk.Button(
-                    self.frame, text="Approve", command=lambda requestId=requestId: self.approve(requestId))
+                    self.frame, text="Approve", command=lambda requestId = requestId: self.master.show_approval_details(requestId))
                 action_button.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
-            elif requestStatus == "Approved":
+            else:
                 action_button = tk.Button(
-                    self.frame, text="Service", command=lambda requestId=requestId: self.service(requestId))
+                    self.frame, text="View", command=lambda requestId = requestId: self.master.show_request_details(requestId))
                 action_button.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
+
+            # elif requestStatus == "Approved":
+                # action_button = tk.Button(
+                #     self.frame, text="Service", command=lambda requestId=requestId: self.service(requestId))
+                # action_button.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
 
             row += 1
         
@@ -305,18 +375,31 @@ class Request_Table(ScrollableFrame):
     #     elif platform == "win32":
     #         self.canvas.yview_scroll(-1 * (event.delta/120), "units") 
 
-    def approve(self, requestId):
-        print("Show approving page for ", requestId)
-
-    def service(self, requestId):
-        print("Show service page for ", requestId)
 
 
 class Service_Table(ScrollableFrame):
-    def __init__(self, data, *args, **kwargs):
+    def __init__(self, curr_view, adminId, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.data = data
+        # self.data = data
+
+        view_mapping = {
+            "All": "AND r.requestID IS NOT NULL",
+            "Pending Service": "AND s.serviceStatus in ('In Progress')",
+            "My Service Jobs": f"AND r.administratorID = \"{str(adminId)}\""
+        }
+
+        self.data = pd.read_sql_query(f"""
+        SELECT r.requestID, c.customerID, p.model, r.requestDetails, r.requestStatus, s.serviceStatus, r.administratorID
+        FROM Requests r 
+        LEFT JOIN Services s USING(requestID)
+        LEFT JOIN Payments c USING (itemID)
+        LEFT JOIN Items i USING(itemID)
+        LEFT JOIN Products p ON i.productID = p.productID
+        WHERE s.serviceStatus IS NOT NULL {view_mapping.get(curr_view)}
+        {ORDER_BY_SERVICE_STATUS}
+        ;
+        """, db)
 
         tk.Label(self.frame, text="Service ID", anchor="w").grid(
             row=0, column=0, sticky="ew", padx=10)
@@ -326,16 +409,27 @@ class Service_Table(ScrollableFrame):
             row=0, column=2, sticky="ew", padx=10)
         tk.Label(self.frame, text="Issue", anchor="w").grid(
             row=0, column=3, sticky="ew", padx=10)
-        tk.Label(self.frame, text="Service Status", anchor="w").grid(
+        tk.Label(self.frame, text="Request Status", anchor="w").grid(
             row=0, column=4, sticky="ew", padx=10)
-        tk.Label(self.frame, text="Action", anchor="w").grid(
+        tk.Label(self.frame, text="Service Status", anchor="w").grid(
             row=0, column=5, sticky="ew", padx=10)
+        tk.Label(self.frame, text="Action", anchor="w").grid(
+            row=0, column=6, sticky="ew", padx=10)
 
         row = 1
 
         bg = ["#ffffff", "#d9e1f2"]
 
-        for (serviceId, name, model, issue, serviceStatus) in data:
+        for request in self.data.itertuples():
+
+            serviceId = request.requestID
+            name = request.customerID
+            model = request.model
+            issue = request.requestDetails
+            requestStatus = request.requestStatus
+            serviceStatus = request.serviceStatus
+            request_admin = request.administratorID
+
             serviceId_label = tk.Label(self.frame, text=str(
                 serviceId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             name_label = tk.Label(self.frame, text=str(
@@ -344,6 +438,8 @@ class Service_Table(ScrollableFrame):
                 model), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             issue_label = tk.Label(self.frame, text=str(
                 issue), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            requestStatus_label = tk.Label(self.frame, text=str(
+                requestStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             serviceStatus_label = tk.Label(self.frame, text=str(
                 serviceStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
@@ -359,22 +455,28 @@ class Service_Table(ScrollableFrame):
             model_label.grid(row=row, column=2, sticky="ew", pady=2.5, ipady=5)
             issue_label.grid(row=row, column=3, sticky="ew", pady=2.5, ipady=5)
             issue_label.grid_columnconfigure(0, weight=5)
-            serviceStatus_label.grid(row=row, column=4, sticky="ew", pady=2.5, ipady=5)
+            requestStatus_label.grid(row=row, column=4, sticky="ew", pady=2.5, ipady=5)
+            serviceStatus_label.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
             serviceStatus_label.grid_columnconfigure(0, weight=5)
             # active_cb.grid(row=row, column=4, sticky="ew")
 
-            if serviceStatus == "In progress":
+            # if serviceStatus == "In progress":
+            #     action_button = tk.Button(
+            #         self.frame, text="View", command=lambda serviceId=serviceId: self.view(serviceId))
+            #     action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
+
+            if request_admin == self.master.adminId and serviceStatus == "In progress":
                 action_button = tk.Button(
-                    self.frame, text="View", command=lambda serviceId=serviceId: self.view(serviceId))
-                action_button.grid(row=row, column=5, sticky="ew")
+                    self.frame, text="Edit", command=lambda serviceId=serviceId: self.view(serviceId))
+                action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
             elif serviceStatus == "Completed":
                 action_button = tk.Button(
                     self.frame, text="View", command=lambda serviceId=serviceId: self.view_completed(serviceId))
-                action_button.grid(row=row, column=5, sticky="ew")
+                action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
             else:
                 action_button = tk.Button(
                     self.frame, text="View", command=lambda serviceId=serviceId: self.view(serviceId))
-                action_button.grid(row=row, column=5, sticky="ew")
+                action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
 
             row += 1
         
@@ -391,178 +493,383 @@ class Service_Table(ScrollableFrame):
 
 
 class Service_Info_Page(Frame):
-    def __init__(self, curr_serviceId, master):
+    def __init__(self, curr_requestId, adminId, master):
         Frame.__init__(self, master)
         self.master = master
 
-        data = list(filter(lambda row: row[0] == curr_serviceId, service))[0]
-        print(data)
+        # data = list(filter(lambda row: row[0] == curr_serviceId, service))[0]
+        # print(data)
+
+        data = pd.read_sql_query(f"""
+        SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, 
+        r.requestDetails, r.requestStatus, s.serviceStatus, r.administratorID
+        FROM Requests r 
+        LEFT JOIN Services s USING(requestID)
+        LEFT JOIN Payments pay USING (itemID)
+        LEFT JOIN Items i USING(itemID)
+        LEFT JOIN Products p ON i.productID = p.productID
+        LEFT JOIN Customers c ON pay.customerID = c.customerID
+        WHERE r.requestID = {curr_requestId}
+        ;
+        """, db)
+
+        (requestId, curr_name, curr_email, curr_phone, curr_address,
+        curr_model, curr_requestDetails, curr_requestStatus, curr_serviceStatus, curr_adminId) = list(data.to_records(index=False))[0]
         
+
         # Creatinag Text Boxes
-        f_name = Entry(self, width = 30)
-        f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
-        f_name.insert(0, data[1])
 
-        # l_name = Entry(self, width = 30)
-        # l_name .grid(row=1, column=1, padx=20)
+        f_name = Label(self, padx= 5, width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
+        f_name.grid(row=0, column=1, padx=20, pady=(10, 2.5), ipady=5)
 
-        # GENDER = [
-        #     ("Male", "M"),
-        #     ("Female", "F"),
-        #     ("Others", "Others")
-        # ]
+        email = Label(self, padx= 5,width = 30, text=curr_email, borderwidth=2, relief="groove", justify="left", anchor="w")
+        email.grid(row=3, column=1, padx=20, pady=2.5, ipady=5)
 
-        # gender = StringVar()
-        # gender.set("null")
+        phone = Label(self, padx= 5,width = 30, text=curr_phone, borderwidth=2, relief="groove", justify="left", anchor="w")
+        phone.grid(row=4, column=1, padx=20, pady=2.5, ipady=5)
 
-        # gender_frame = LabelFrame(self, borderwidth = 0)
-        # gender_frame.grid(row=2, column=1, padx=20)
+        address = Label(self, padx= 5,width = 30, text=curr_address, borderwidth=2, relief="groove", justify="left", anchor="w")
+        address.grid(row=5, column=1, padx=20, pady=2.5, ipady=5)
 
-        # for text, sex in GENDER:
-        #     Radiobutton(gender_frame, text=text, variable=gender, value=sex).pack(side=LEFT, anchor=W)
+        model = Label(self, padx= 5, width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
+        model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
 
-        email = Entry(self, width = 30)
-        email.grid(row=3, column=1, padx=20)
+        requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
+        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
 
-        phone = Entry(self, width = 30)
-        phone.grid(row=4, column=1, padx=20)
-
-        address = Entry(self, width = 30)
-        address.grid(row=5, column=1, padx=20)
-
-        model = Entry(self, width = 30)
-        model.grid(row=6, column=1, padx=20)
-        model.insert(0, data[2])
+        serviceStatus = Label(self, padx= 5, width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
+        serviceStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
 
 
-        SERVICE_STATUS = [
-            "In progress",
-            "Completed"
-        ]
+        # f_name = Entry(self, width = 30)
+        # f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
+        # f_name.insert(0, curr_name)
+        # f_name.configure(state="disabled")
 
-        curr_serviceStatus = StringVar()
-        curr_serviceStatus.set(data[4])
+        # email = Entry(self, width = 30)
+        # email.grid(row=3, column=1, padx=20)
+        # email.insert(0, curr_email)
+        # email.configure(state="disabled")
 
-        serviceStatus = OptionMenu(self, curr_serviceStatus, *SERVICE_STATUS)
-        serviceStatus.config(width=28)
-        serviceStatus.grid(row=7, column=1, padx=20)
+        # phone = Entry(self, width = 30)
+        # phone.grid(row=4, column=1, padx=20)
+        # phone.insert(0, curr_phone)
+        # phone.configure(state="disabled")
+
+        # address = Entry(self, width = 30)
+        # address.grid(row=5, column=1, padx=20)
+        # address.insert(0, curr_address)
+        # address.configure(state="disabled")
+
+        # model = Entry(self, width = 30)
+        # model.grid(row=6, column=1, padx=20)
+        # model.insert(0, curr_model)
+        # model.configure(state="disabled")
+
+        # requestStatus = Entry(self, width=30, justify="center")
+        # requestStatus.grid(row=7, column=1, padx=20)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
+
+        # serviceStatus = Entry(self, width=30, justify="center")
+        # serviceStatus.grid(row=8, column=1, padx=20)
+        # serviceStatus.insert(0, curr_serviceStatus)
+        # serviceStatus.configure(state="disabled") 
+
+
 
         # Creating Text Box Labels
         f_name_label = Label(self, text="First Name")
-        f_name_label.grid(row=0, column=0, pady=(10, 0))
-
-        # l_name_label = Label(self, text="Last Name")
-        # l_name_label.grid(row=1, column=0)
-
-        # gender_label = Label(self, text="Gender")
-        # gender_label.grid(row=2, column=0)
+        f_name_label.grid(row=0, column=0, pady=(10, 2.5), ipady=5)
 
         email_label = Label(self, text="Email Address")
-        email_label.grid(row=3, column=0)
+        email_label.grid(row=3, column=0, pady=2.5, ipady=5)
 
         phone_label = Label(self, text="Phone Number")
-        phone_label.grid(row=4, column=0)
+        phone_label.grid(row=4, column=0, pady=2.5, ipady=5)
 
         address_label = Label(self, text="Address")
-        address_label.grid(row=5, column=0)
+        address_label.grid(row=5, column=0, pady=2.5, ipady=5)
 
         model_label = Label(self, text="Model")
-        model_label.grid(row=6, column=0)
+        model_label.grid(row=6, column=0, pady=2.5, ipady=5)
+
+        requestStatus_label = Label(self, text="Request Status")
+        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
 
         serviceStatus_label = Label(self, text="Service Status")
-        serviceStatus_label.grid(row=7, column=0)
+        serviceStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
-        back_btn = Button(self, text="Back", command=lambda: master.show_service("All"))
-        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W")
+        back_btn = Button(self, text="Back", command=lambda: master.back_to_service())
+        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W")
+
+
+        if curr_adminId == adminId:
+            complete_btn = Button(self, text="Complete Service", command=lambda requestId = requestId: master.complete_service(requestId))
+            complete_btn.grid(row=9, column=1, padx=(0, 10), sticky="E")
+
+
+class Approval_Info_Page(Frame):
+    def __init__(self, curr_requestId, master):
+        Frame.__init__(self, master)
+        self.master = master
+
+        print(curr_requestId)
+
+        # data = list(filter(lambda row: row[0] == curr_serviceId, service))[0]
+        # print(data)
+
+        data = pd.read_sql_query(f"""
+        SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, r.requestDetails, r.requestStatus
+        FROM Requests r 
+        LEFT JOIN Services s USING(requestID)
+        LEFT JOIN Payments pay USING (itemID)
+        LEFT JOIN Items i USING(itemID)
+        LEFT JOIN Products p ON i.productID = p.productID
+        LEFT JOIN Customers c ON pay.customerID = c.customerID
+        WHERE r.requestID = {curr_requestId}
+        ;
+        """, db)
+
+
+        (requestId, curr_name, curr_email, curr_phone, curr_address,
+        curr_model, curr_requestDetails, curr_requestStatus) = list(data.to_records(index=False))[0]
         
-        complete_btn = Button(self, text="Confirm")
-        complete_btn.grid(row=8, column=1, padx=(0, 10), sticky="E")
+        # Creatinag Text Boxes
+        f_name = Label(self, padx= 5, width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
+        f_name.grid(row=0, column=1, padx=20, pady=(10, 2.5), ipady=5)
+
+
+        email = Label(self, padx= 5, width = 30, text=curr_email, borderwidth=2, relief="groove", justify="left", anchor="w")
+        email.grid(row=3, column=1, padx=20, pady=2.5, ipady=5)
+  
+
+        phone = Label(self, padx= 5, width = 30, text=curr_phone, borderwidth=2, relief="groove", justify="left", anchor="w")
+        phone.grid(row=4, column=1, padx=20, pady=2.5, ipady=5)
+ 
+
+        address = Label(self, padx= 5, width = 30, text=curr_address, borderwidth=2, relief="groove", justify="left", anchor="w")
+        address.grid(row=5, column=1, padx=20, pady=2.5, ipady=5)
+
+
+        model = Label(self, padx= 5, width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
+        model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
+
+        REQUEST_STATUS = [
+            "In progress",
+            "Submitted"
+        ]
+
+        # curr_requestStatus = StringVar()
+        # curr_requestStatus.set(curr_requestStatus)
+
+        # requestStatus = OptionMenu(self, curr_requestStatus, *REQUEST_STATUS)
+        requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
+        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
+        # requestStatus = Entry(self, width=30, justify="center")
+        # # requestStatus.config(width=28)
+        # requestStatus.grid(row=7, column=1, padx=20)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
+        
+
+        # Creating Text Box Labels
+        f_name_label = Label(self, text="First Name")
+        f_name_label.grid(row=0, column=0, pady=(10, 2.5), ipady=5)
+
+        email_label = Label(self, text="Email Address")
+        email_label.grid(row=3, column=0, pady=2.5, ipady=5)
+
+        phone_label = Label(self, text="Phone Number")
+        phone_label.grid(row=4, column=0, pady=2.5, ipady=5)
+
+        address_label = Label(self, text="Address")
+        address_label.grid(row=5, column=0, pady=2.5, ipady=5)
+
+        model_label = Label(self, text="Model")
+        model_label.grid(row=6, column=0, pady=2.5, ipady=5)
+
+        requestStatus_label = Label(self, text="Request Status")
+        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
+
+        back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
+        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W", pady=5)
+        
+        
+        complete_btn = Button(self, text="Approve", command=lambda requestId = requestId: master.approve_request(requestId))
+        complete_btn.grid(row=8, column=1, padx=(0, 10), sticky="E", pady=5)
+
+    
+class Request_Info_Page(Frame):
+    def __init__(self, curr_requestId, master):
+        Frame.__init__(self, master)
+        self.master = master
+
+        # data = list(filter(lambda row: row[0] == curr_serviceId, service))[0]
+        # print(data)
+
+        data = pd.read_sql_query(f"""
+        SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, r.requestDetails, r.requestStatus
+        FROM Requests r 
+        LEFT JOIN Services s USING(requestID)
+        LEFT JOIN Payments pay USING (itemID)
+        LEFT JOIN Items i USING(itemID)
+        LEFT JOIN Products p ON i.productID = p.productID
+        LEFT JOIN Customers c ON pay.customerID = c.customerID
+        WHERE r.requestID = {curr_requestId}
+        ;
+        """, db)
+
+
+        (requestId, curr_name, curr_email, curr_phone, curr_address,
+        curr_model, curr_requestDetails, curr_requestStatus) = list(data.to_records(index=False))[0]
+        
+        f_name = Label(self, padx= 5,width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
+        f_name.grid(row=0, column=1, padx=20, pady=(10,2.5), ipady=5)
+        # f_name.insert(0, curr_name)
+        # f_name.configure(state="disabled")
+
+        email = Label(self, padx= 5,width = 30, text=curr_email, borderwidth=2, relief="groove", justify="left", anchor="w")
+        email.grid(row=3, column=1, padx=20, pady=2.5, ipady=5)
+        # email.insert(0, curr_email)
+        # email.configure(state="disabled")
+
+        phone = Label(self, padx= 5,width = 30, text=curr_phone, borderwidth=2, relief="groove", justify="left", anchor="w")
+        phone.grid(row=4, column=1, padx=20, pady=2.5, ipady=5)
+        # phone.insert(0, curr_phone)
+        # phone.configure(state="disabled")
+
+        address = Label(self, padx= 5,width = 30, text=curr_address, borderwidth=2, relief="groove", justify="left", anchor="w")
+        address.grid(row=5, column=1, padx=20, pady=2.5, ipady=5)
+        # address.insert(0, curr_address)
+        # address.configure(state="disabled")
+
+        model = Label(self, padx= 5,width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
+        model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
+        # model.insert(0, curr_model)
+        # model.configure(state="disabled")
+
+        requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
+        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
+
+        
+
+        # Creating Text Box Labels
+        f_name_label = Label(self, text="First Name")
+        f_name_label.grid(row=0, column=0, pady=(10, 2.5), ipady=5)
+
+        email_label = Label(self, text="Email Address")
+        email_label.grid(row=3, column=0, pady=2.5, ipady=5)
+
+        phone_label = Label(self, text="Phone Number")
+        phone_label.grid(row=4, column=0, pady=2.5, ipady=5)
+
+        address_label = Label(self, text="Address")
+        address_label.grid(row=5, column=0, pady=2.5, ipady=5)
+
+        model_label = Label(self, text="Model")
+        model_label.grid(row=6, column=0, pady=2.5, ipady=5)
+
+        requestStatus_label = Label(self, text="Request Status")
+        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
+
+        back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
+        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W", pady=5)
+        
 
 
 class Completed_Service_Info_Page(Frame):
-    def __init__(self, curr_serviceId, master):
+    def __init__(self, curr_requestId, master):
         Frame.__init__(self, master)
         self.master = master
 
-        data = list(filter(lambda row: row[0] == curr_serviceId, service))[0]
-        print(data)
+        # data = list(filter(lambda row: row[0] == curr_serviceId, service))[0]
+        # print(data)
+
+        data = pd.read_sql_query(f"""
+        SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, 
+        r.requestDetails, r.requestStatus, s.serviceStatus
+        FROM Requests r 
+        LEFT JOIN Services s USING(requestID)
+        LEFT JOIN Payments pay USING (itemID)
+        LEFT JOIN Items i USING(itemID)
+        LEFT JOIN Products p ON i.productID = p.productID
+        LEFT JOIN Customers c ON pay.customerID = c.customerID
+        WHERE r.requestID = {curr_requestId}
+        ;
+        """, db)
+
+        (requestId, curr_name, curr_email, curr_phone, curr_address,
+        curr_model, curr_requestDetails, curr_requestStatus, curr_serviceStatus) = list(data.to_records(index=False))[0]
         
+
         # Creatinag Text Boxes
-        f_name = tk.Label(self, text=data[1], anchor="w", borderwidth=1, relief="solid", padx=10, width=30)
-        f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
+        f_name = Label(self, padx= 5, width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
+        f_name.grid(row=0, column=1, padx=20, pady=(10, 2.5), ipady=5)
+        # f_name.insert(0, curr_name)
+        # f_name.configure(state="disabled")
 
-        # l_name = Entry(self, width = 30)
-        # l_name .grid(row=1, column=1, padx=20)
+        email = Label(self, padx= 5,width = 30, text=curr_email, borderwidth=2, relief="groove", justify="left", anchor="w")
+        email.grid(row=3, column=1, padx=20, pady=2.5, ipady=5)
+        # email.insert(0, curr_email)
+        # email.configure(state="disabled")
 
-        # GENDER = [
-        #     ("Male", "M"),
-        #     ("Female", "F"),
-        #     ("Others", "Others")
-        # ]
+        phone = Label(self, padx= 5,width = 30, text=curr_phone, borderwidth=2, relief="groove", justify="left", anchor="w")
+        phone.grid(row=4, column=1, padx=20, pady=2.5, ipady=5)
+        # phone.insert(0, curr_phone)
+        # phone.configure(state="disabled")
 
-        # gender = StringVar()
-        # gender.set("null")
+        address = Label(self, padx= 5,width = 30, text=curr_address, borderwidth=2, relief="groove", justify="left", anchor="w")
+        address.grid(row=5, column=1, padx=20, pady=2.5, ipady=5)
+        # address.insert(0, curr_address)
+        # address.configure(state="disabled")
 
-        # gender_frame = LabelFrame(self, borderwidth = 0)
-        # gender_frame.grid(row=2, column=1, padx=20)
+        model = Label(self, padx= 5, width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
+        model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
+        # model.insert(0, curr_model)
+        # model.configure(state="disabled")
 
-        # for text, sex in GENDER:
-        #     Radiobutton(gender_frame, text=text, variable=gender, value=sex).pack(side=LEFT, anchor=W)
+        requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
+        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        # requestStatus.insert(0, curr_requestStatus)
+        # requestStatus.configure(state="disabled") 
 
-        email = tk.Label(self, text="", anchor="w", borderwidth=1, relief="solid", padx=10, width=30)
-        email.grid(row=3, column=1, padx=20)
-
-        phone = tk.Label(self, text="", anchor="w", borderwidth=1, relief="solid", padx=10, width=30)
-        phone.grid(row=4, column=1, padx=20)
-
-        address = tk.Label(self, text="", anchor="w", borderwidth=1, relief="solid", padx=10, width=30)
-        address.grid(row=5, column=1, padx=20)
-
-        model = tk.Label(self, text=data[2], anchor="w", borderwidth=1, relief="solid", padx=10, width=30)
-        model.grid(row=6, column=1, padx=20)
+        serviceStatus = Label(self, padx= 5, width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
+        serviceStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
+        # serviceStatus.insert(0, curr_serviceStatus)
+        # serviceStatus.configure(state="disabled") 
 
 
-        # SERVICE_STATUS = [
-        #     "In progress",
-        #     "Completed"
-        # ]
-
-        # curr_serviceStatus = StringVar()
-        # curr_serviceStatus.set(data[4])
-
-        serviceStatus = tk.Label(self, text="Completed", borderwidth=1, relief="solid", padx=10, width=30, anchor=CENTER)
-        serviceStatus.grid(row=7, column=1, padx=30)
 
         # Creating Text Box Labels
         f_name_label = Label(self, text="First Name")
-        f_name_label.grid(row=0, column=0, pady=(10, 0))
-
-        # l_name_label = Label(self, text="Last Name")
-        # l_name_label.grid(row=1, column=0)
-
-        # gender_label = Label(self, text="Gender")
-        # gender_label.grid(row=2, column=0)
+        f_name_label.grid(row=0, column=0, pady=(10, 2.5), ipady=5)
 
         email_label = Label(self, text="Email Address")
-        email_label.grid(row=3, column=0)
+        email_label.grid(row=3, column=0, pady=2.5, ipady=5)
 
         phone_label = Label(self, text="Phone Number")
-        phone_label.grid(row=4, column=0)
+        phone_label.grid(row=4, column=0, pady=2.5, ipady=5)
 
         address_label = Label(self, text="Address")
-        address_label.grid(row=5, column=0)
+        address_label.grid(row=5, column=0, pady=2.5, ipady=5)
 
         model_label = Label(self, text="Model")
-        model_label.grid(row=6, column=0)
+        model_label.grid(row=6, column=0, pady=2.5, ipady=5)
+
+        requestStatus_label = Label(self, text="Request Status")
+        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
 
         serviceStatus_label = Label(self, text="Service Status")
-        serviceStatus_label.grid(row=7, column=0)
+        serviceStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
-        back_btn = Button(self, text="Back", command=lambda: master.show_service("All"))
-        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W")
-        
-        # complete_btn = Button(self, text="Confirm")
-        # complete_btn.grid(row=8, column=1, padx=(0, 10), sticky="E")
+        back_btn = Button(self, text="Back", command=lambda: master.back_to_service())
+        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W", pady=5)
+
 
 
 
@@ -582,13 +889,16 @@ class Admin_Request_Page_Header(tk.LabelFrame):
         tab2.grid(row=0, column=1, padx=5)
 
         tab3 = tk.Button(self, text="Pending Service",
-                         command=lambda: master.show_request("Pending Service"))
-        # tab2.pack(side="left", fill="both")
+                         command=lambda: master.show_service("Pending Service"))
         tab3.grid(row=0, column=2, padx=5)
 
-        tab3 = tk.Button(self, text="Service Jobs",
+        tab4 = tk.Button(self, text="My Service Jobs",
+                         command=lambda: master.show_service("My Service Jobs"))
+        tab4.grid(row=0, column=3, padx=5)
+
+        tab5 = tk.Button(self, text="All Service Jobs",
                          command=lambda: master.show_service("All"))
-        tab3.grid(row=0, column=3, padx=5)
+        tab5.grid(row=0, column=4, padx=5)
 
 
 class Admin_Request_Page(Frame):
@@ -599,8 +909,7 @@ class Admin_Request_Page(Frame):
         self.header = Admin_Request_Page_Header(
             self, borderwidth=0, highlightthickness=0, pady=10)
 
-        global data
-        self.table = Request_Table(data, self)
+        self.table = Request_Table("All", self)
 
         self.header.pack(side="top", fill="x", expand=False)
         self.table.pack(side="top", fill="both", expand=True)
@@ -611,9 +920,8 @@ class Admin_Request_Page(Frame):
             "Pending Service": lambda row: row[4] == "Approved"
         }
 
-        self.service_filter = {
+        self.adminId = "EddMing321"
 
-        }
 
     def show_header():
         self.header = Admin_Request_Page_Header(
@@ -624,11 +932,19 @@ class Admin_Request_Page(Frame):
 
         self.table.destroy()
 
-        global data
-        curr_data = data.copy()
-        curr_data = filter(self.request_filter.get(curr_view), curr_data)
+        global request_view
+        request_view = curr_view
 
-        self.table = Request_Table(curr_data, self)
+        self.table = Request_Table(curr_view, self)
+        self.table.pack(side="top", fill="both", expand=True)
+    
+    def back_to_request(self):
+
+        self.table.destroy()
+
+        global request_view
+
+        self.table = Request_Table(request_view, self)
         self.table.pack(side="top", fill="both", expand=True)
 
 
@@ -636,19 +952,39 @@ class Admin_Request_Page(Frame):
 
         self.table.destroy()
 
-        global service
-        curr_data = service.copy()
-        # curr_data = filter(self.filter.get(curr_view), curr_data)
+        global service_view
+        service_view = curr_view
 
-        self.table = Service_Table(curr_data, self)
+        self.table = Service_Table(curr_view, self.adminId, self)
         self.table.pack(side="top", fill="both", expand=True)
     
+    def back_to_service(self):
+
+        self.table.destroy()
+
+        global service_view
+
+        self.table = Service_Table(service_view, self.adminId, self)
+        self.table.pack(side="top", fill="both", expand=True)
+
     
     def show_service_details(self, serviceId):
         self.table.destroy()
         
-        self.table = Service_Info_Page(serviceId, self)
+        self.table = Service_Info_Page(serviceId, self.adminId, self)
         self.table.pack(side="top", fill="both", expand=True)
+
+    def show_approval_details(self, requestId):
+        self.table.destroy()
+        self.table = Approval_Info_Page(requestId, self)
+        self.table.pack(side="top", fill="both", expand=True)
+
+    
+    def show_request_details(self, requestId):
+        self.table.destroy()
+        self.table = Request_Info_Page(requestId, self)
+        self.table.pack(side="top", fill="both", expand=True)
+
 
     
     def show_completed_service_details(self, serviceId):
@@ -665,7 +1001,84 @@ class Admin_Request_Page(Frame):
         self._frame = new_frame
         self._frame.pack(side="top", fill="both", expand=True)
 
+    def approve_request(self, requestId):
+        # print(requestId)
+        # print(self.adminId)
+
+        status = False
+
+        # Approve request in database
+        with db.begin() as conn:
+            savepoint = conn.begin_nested()
+            try:
+                # Create a service for the request        
+                conn.execute(f"""
+                INSERT INTO Services(requestID, serviceStatus)VALUES
+                ({requestId}, "In Progress")
+                ;
+                """)
+
+                # Update the request status
+                conn.execute(f"""
+                UPDATE Requests
+                SET requestStatus = "Approved",
+                administratorID = "{self.adminId}"
+                WHERE requestID = {requestId}
+                ;
+                """)
+                
+                # Commit changes to database
+                savepoint.commit()
+
+                # Update the progress status
+                status = True
+            except:
+                # If fail, rollback the changes
+                savepoint.rollback()
+                print("Failed to approve request")
+        
+        if status:
+            self.show_service("My Service Jobs")
+
+
+        
     
+    def complete_service(self, requestId):
+        # print("Service completed for ", requestId)
+        status = False
+
+        # Approve request in database
+        with db.begin() as conn:
+            savepoint = conn.begin_nested()
+            try:
+                # Create a service for the request        
+                conn.execute(f"""
+                UPDATE Services
+                SET serviceStatus = "Completed"
+                WHERE requestID = {requestId}
+                ;
+                """)
+
+                # Update the request status
+                conn.execute(f"""
+                UPDATE Requests
+                SET requestStatus = "Completed"
+                WHERE requestID = {requestId}
+                ;
+                """)
+                
+                # Commit changes to database
+                savepoint.commit()
+
+                # Update the progress status
+                status = True
+            except:
+                # If fail, rollback the changes
+                savepoint.rollback()
+                print("Failed to complete service")
+        
+        if status:
+            self.show_service("My Service Jobs")        
 
 
 
