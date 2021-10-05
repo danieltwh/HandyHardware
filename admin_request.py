@@ -317,11 +317,11 @@ class Request_Table(ScrollableFrame):
 
             if requestStatus in ["In progress", "Submitted"]:
                 action_button = tk.Button(
-                    self.frame, text="Approve", command=lambda: self.master.show_approval_details(requestId))
+                    self.frame, text="Approve", command=lambda requestId = requestId: self.master.show_approval_details(requestId))
                 action_button.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
             else:
                 action_button = tk.Button(
-                    self.frame, text="View", command=lambda requestId=requestId: self.master.show_request_details(requestId))
+                    self.frame, text="View", command=lambda requestId = requestId: self.master.show_request_details(requestId))
                 action_button.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
 
             # elif requestStatus == "Approved":
@@ -543,7 +543,7 @@ class Service_Info_Page(Frame):
 
 
         if curr_adminId == adminId:
-            complete_btn = Button(self, text="Complete Service", command=lambda: master.complete_service(requestId))
+            complete_btn = Button(self, text="Complete Service", command=lambda requestId = requestId: master.complete_service(requestId))
             complete_btn.grid(row=9, column=1, padx=(0, 10), sticky="E")
 
 
@@ -551,6 +551,8 @@ class Approval_Info_Page(Frame):
     def __init__(self, curr_requestId, master):
         Frame.__init__(self, master)
         self.master = master
+
+        print(curr_requestId)
 
         # data = list(filter(lambda row: row[0] == curr_serviceId, service))[0]
         # print(data)
@@ -635,7 +637,9 @@ class Approval_Info_Page(Frame):
         back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
         back_btn.grid(row=8, column=0, padx=(10,0), sticky="W")
         
-        complete_btn = Button(self, text="Approve", command=lambda: master.approve_request(curr_requestId))
+        
+
+        complete_btn = Button(self, text="Approve", command=lambda requestId = requestId: master.approve_request(requestId))
         complete_btn.grid(row=8, column=1, padx=(0, 10), sticky="E")
 
     
@@ -940,7 +944,46 @@ class Admin_Request_Page(Frame):
         self._frame.pack(side="top", fill="both", expand=True)
 
     def approve_request(self, requestId):
-        print("Approving ", requestId)
+        # print(requestId)
+        # print(self.adminId)
+
+        status = False
+
+        # Approve request in database
+        with db.begin() as conn:
+            savepoint = conn.begin_nested()
+            try:
+                # Create a service for the request        
+                conn.execute(f"""
+                INSERT INTO Services(requestID, serviceStatus)VALUES
+                ({requestId}, "In Progress")
+                ;
+                """)
+
+                # Update the request status
+                conn.execute(f"""
+                UPDATE Requests
+                SET requestStatus = "Approved",
+                administratorID = "{self.adminId}"
+                WHERE requestID = {requestId}
+                ;
+                """)
+                
+                # Commit changes to database
+                savepoint.commit()
+
+                # Update the progress status
+                status = True
+            except:
+                # If fail, rollback the changes
+                savepoint.rollback()
+                print("Failed to approve request")
+        
+        if status:
+            self.show_service("My Service Jobs")
+
+
+        
     
     def complete_service(self, requestId):
         print("Service completed for ", requestId)
