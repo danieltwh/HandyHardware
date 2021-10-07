@@ -3,31 +3,22 @@ import tkinter as tk
 from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
+import pymongo
 
 # For SQL query
 from sqlalchemy import create_engine
 from pymysql.constants import CLIENT
 import pandas as pd
 
-from config import USERNAME, MYSQL_PASSWORD
-db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/ECOMMERCE", 
-        connect_args = {"client_flag": CLIENT.MULTI_STATEMENTS}
-    )
+# For mongodb query
+from pymongo import MongoClient
 
-# data = [('Lights',20,'Light1',50,1,10, 10),
-#     ('Lights',22,'Light2',60,2,6, 10),
-#     ('Lights',30,'SmartHome1',70,3,8, 10),
-#     ('Locks',30,'Safe1',100,4,10, 20),
-#     ('Locks',50,'Safe2',120,5,10, 20),
-#     ('Locks',50,'Safe3',125,6,10, 20),
-#     ('Locks',100,'SmartHome1',200,7,12, 20)
-# ]
-
-# data = pd.read_sql_query(f"""
-#         SELECT p.category p.cost p.model p.price p.productID p.warrantyMonths p.numberOfItems
-#         FROM products p
-#         ;
-#         """, db)
+#get data from mongodb
+client = MongoClient()
+db = client.Assignment
+products = db.products
+items = db.items
+data = products.find({})
 
 class App(Tk):
     def __init__(self):
@@ -44,44 +35,14 @@ class App(Tk):
 
 
 def main():
-    # root = Tk()
-    # root.title("OSHE")
-    # # root.iconbitmap('coffee.ico')
-    # root.geometry("800x800")
-    # # app = Signup_Page(root)
-    # # app = Login_Page(root)
-    # root.mainloop()
-
     app = App()
     app.geometry("1200x800")
     app.mainloop()
-
-data = [
-    ("lights", "Light1", "10", "6 months", "10"),
-    ("lights", "Light2", "15", "6 months", "20"),
-    ("lights", "SmartHome1", "20", "6 months", "30"),
-    ("locks", "Safe1", "40", "6 months", "10"),
-    ("locks", "Safe2", "45", "6 months", "20"),
-    ("locks", "Safe3", "50", "6 months", "30")
-]
-
-# cart = []
 
 class Catalogue_Table(tk.LabelFrame):
     def __init__(self, data, *args, **kwargs):
         tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
 
-
-        # for entry in self.data.itertuples():
-
-        #     categories = str(entry.category)
-        #     model = str(entry.model)
-        #     price = int(entry.price)
-        #     warranty = int(entry.warrantyMonths)
-        #     numberOfItemsAvailable = int(entry.numberOfItems)
-        #     #colour = entry.colour
-        #     #productionYear = entry.productionYear
-        #     #factory = entry.factory
 
 
         self.grid_columnconfigure(1, weight=1)
@@ -94,12 +55,12 @@ class Catalogue_Table(tk.LabelFrame):
         
 
         row = 1
-        for (categories, model, price, warranty, numberOfItemsAvailable) in data:
-            categories_label = tk.Label(self, text=str(categories), anchor="w", borderwidth=2, relief="groove", padx=10)
-            model_label = tk.Label(self, text=str(model), anchor="w", borderwidth=2, relief="groove", padx=10)
-            price_label = tk.Label(self, text=str(price), anchor="w", borderwidth=2, relief="groove", padx=10)
-            warranty_label = tk.Label(self, text=str(warranty), anchor="w", borderwidth=2, relief="groove", padx=10)             
-            numberOfItemsAvailable_label = tk.Label(self, text=str(numberOfItemsAvailable), anchor="w", borderwidth=2, relief="groove", padx=10)
+        for dic in data:
+            categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10)
+            model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10)
+            price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10)
+            warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10)             
+            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Model": dic["Model"]})), anchor="w", borderwidth=2, relief="groove", padx=10)
 
 
             categories_label.grid(row=row, column=0, sticky="ew")
@@ -181,17 +142,17 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         #tab3.grid(row=0, column=1, padx=5)
         global clicked
         clicked1 = tk.StringVar()
-        clicked1.set("Categories")
+        clicked1.set("All Categories")
         clicked2 = tk.StringVar()
-        clicked2.set("Models")
+        clicked2.set("All Models")
         clicked3 = tk.StringVar()
-        clicked3.set("Price")
+        clicked3.set("All Price")
         clicked4 = tk.StringVar()
-        clicked4.set("Color")
+        clicked4.set("All Color")
         clicked5 = tk.StringVar()
-        clicked5.set("Factory")
+        clicked5.set("All Factory")
         clicked6 = tk.StringVar()
-        clicked6.set("Production year")
+        clicked6.set("All Production year")
 
         # dropdown filter
         tab2 = OptionMenu(self, clicked1, "All Categories", "lights", "locks", 
@@ -221,7 +182,7 @@ class Customer_Shopping_Catalogue_Page(Frame):
         self.header = Customer_Shopping_Catalogue_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
 
         global data
-        global cart
+        #global cart
         self.Catalogue_Table = Catalogue_Table(data, self)
         #self.Cart_Table = Cart_Table(cart, self)
 
@@ -244,9 +205,8 @@ class Customer_Shopping_Catalogue_Page(Frame):
 
         self.Catalogue_Table.destroy()
 
-        global data
-        curr_data = data.copy()
-        curr_data = filter(self.filter.get(curr_view), curr_data)
+        curr_data = products.find({})
+        #curr_data = filter(self.filter.get(curr_view), curr_data)
 
         self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
