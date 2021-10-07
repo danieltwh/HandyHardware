@@ -140,38 +140,43 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         #tab3 = tk.Button(self, text="Cart", command= lambda: master.goCart("Cart"))
         #tab2.pack(side="left", fill="both")
         #tab3.grid(row=0, column=1, padx=5)
-        global clicked
+        global clicked1
+        # global clicked2
+        # global clicked3
+        # global clicked4
+        # global clicked5
+        # global clicked6
         clicked1 = tk.StringVar()
-        clicked1.set("All Categories")
-        clicked2 = tk.StringVar()
-        clicked2.set("All Models")
-        clicked3 = tk.StringVar()
-        clicked3.set("All Price")
-        clicked4 = tk.StringVar()
-        clicked4.set("All Color")
-        clicked5 = tk.StringVar()
-        clicked5.set("All Factory")
-        clicked6 = tk.StringVar()
-        clicked6.set("All Production year")
+        clicked1.set("Simple Search")
+        # clicked2 = tk.StringVar()
+        # clicked2.set("All Models")
+        # clicked3 = tk.StringVar()
+        # clicked3.set("All Price")
+        # clicked4 = tk.StringVar()
+        # clicked4.set("All Color")
+        # clicked5 = tk.StringVar()
+        # clicked5.set("All Factory")
+        # clicked6 = tk.StringVar()
+        # clicked6.set("All Production year")
 
         # dropdown filter
-        tab2 = OptionMenu(self, clicked1, "All Categories", "lights", "locks", 
-        command=lambda clicked = clicked1: master.filter_status(clicked1)).grid(row=0, column=1, sticky="ew", padx=5)
+        tab2 = OptionMenu(self, clicked1, "Simple Search", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3",
+        command=lambda clicked1 = clicked1: master.filter_status1(clicked1)).grid(row=0, column=1, sticky="ew", padx=5)
 
-        tab3 = OptionMenu(self, clicked2, "All Models", "Light1", "Light2", "SmartHome1", "locks1", "locks2", "locks3",
-        command=lambda clicked = clicked2: master.filter_status(clicked2)).grid(row=0, column=2, sticky="ew", padx=5)
+        # tab3 = OptionMenu(self, clicked2, "All Models", "Light1", "Light2", "SmartHome1", "Safe1", "Safe2", "Safe3",
+        # command=lambda clicked2 = clicked2: master.filter_status2(clicked2)).grid(row=0, column=2, sticky="ew", padx=5)
     
-        tab4 = OptionMenu(self, clicked3, "All Price", "$50", "$60", "$70", "$100", "$120", "$l25", "$200",
-        command=lambda clicked = clicked3: master.filter_status(clicked3)).grid(row=0, column=3, sticky="ew", padx=5)
+        # tab4 = OptionMenu(self, clicked3, "All Price", "$50", "$60", "$70", "$100", "$120", "$l25", "$200",
+        # command=lambda clicked3 = clicked3: master.filter_status3(clicked3)).grid(row=0, column=3, sticky="ew", padx=5)
 
-        tab5 = OptionMenu(self, clicked4, "All Color", "White", "Blue", "Yellow", "Green", "Black",
-        command=lambda clicked = clicked4: master.filter_status(clicked4)).grid(row=0, column=4, sticky="ew", padx=5)
+        # tab5 = OptionMenu(self, clicked4, "All Color", "White", "Blue", "Yellow", "Green", "Black",
+        # command=lambda clicked4 = clicked4: master.filter_status1(clicked4)).grid(row=0, column=4, sticky="ew", padx=5)
 
-        tab6 = OptionMenu(self, clicked5, "All Factory", "Malaysia", "China", "Philippines", 
-        command=lambda clicked = clicked5: master.filter_status(clicked5)).grid(row=0, column=5, sticky="ew", padx=5)
+        # tab6 = OptionMenu(self, clicked5, "All Factory", "Malaysia", "China", "Philippines", 
+        # command=lambda clicked5 = clicked5: master.filter_status1(clicked5)).grid(row=0, column=5, sticky="ew", padx=5)
     
-        tab7 = OptionMenu(self, clicked6, "All Production Year", "2014", "2015", "2016", "2017", "2018", "2019", "2020",
-        command=lambda clicked = clicked6: master.filter_status(clicked6)).grid(row=0, column=6, sticky="ew", padx=5)
+        # tab7 = OptionMenu(self, clicked6, "All Production Year", "2014", "2015", "2016", "2017", "2018", "2019", "2020",
+        # command=lambda clicked6 = clicked6: master.filter_status1(clicked6)).grid(row=0, column=6, sticky="ew", padx=5)
 
 
 class Customer_Shopping_Catalogue_Page(Frame):
@@ -211,7 +216,6 @@ class Customer_Shopping_Catalogue_Page(Frame):
         self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
     
-    
     # def goCart(self, curr_view):
 
     #     self.Catalogue_Table.destroy()
@@ -221,22 +225,54 @@ class Customer_Shopping_Catalogue_Page(Frame):
 
     #     self.Catalogue_Table = Cart_Table(curr_data, self)
     #     self.Catalogue_Table.pack(side="top", fill="both", expand=True)
-    def filter_status(self, curr_view):
+    def filter_status1(self, curr_view):
         
-        self.table.destroy()
-
-        global data
-        curr_data = data.copy()
-
-        if clicked.get() == 'lights':
-            curr_data = curr_data
+        self.Catalogue_Table.destroy()
+        curr_data = products.find({})
         
-        elif clicked.get() == 'locks':
-            curr_data = curr_data
+        if clicked1.get() == 'Category: Lights':
+            curr_data = products.find({"Category": "Lights"})    
+        elif clicked1.get() == 'Category: Locks':
+            curr_data = products.find({"Category": "Locks"})
+        elif clicked1.get() == 'Model: Light1':
+            curr_data = products.find({"Model": "Light1"})    
+        elif clicked1.get() == 'Model: Light2':
+            curr_data = products.find({"Model": "Light2"})    
+        elif clicked1.get() == 'Model: Safe1':
+            curr_data = products.find({"Model": "Safe1"})
+        elif clicked1.get() == 'Model: Safe2':
+            curr_data = products.find({"Model": "Safe2"})
+        elif clicked1.get() == 'Model: Safe3':
+            curr_data = products.find({"Model": "Safe3"})
+        elif clicked1.get() == 'Model: SmartHome1':
+            curr_data = products.find({"Model": "SmartHome1"})
 
+        self.Catalogue_Table = Catalogue_Table(curr_data, self)
+        self.Catalogue_Table.pack(side="top", fill="both", expand=True)
+    
 
-        self.table = Catalogue_Table(curr_data, self)
-        self.table.pack(side="top", fill="both", expand=True)
+    # def filter_status3(self, curr_view):
+        
+    #     self.Catalogue_Table.destroy()
+    #     curr_data = products.find({})
+
+    #     if clicked3.get() == '$50':
+    #         curr_data = products.find({"Price": 50})    
+    #     elif clicked3.get() == '$60':
+    #         curr_data = products.find({"Price": 60}) 
+    #     elif clicked3.get() == '$70':
+    #         curr_data = products.find({"Price": 70})    
+    #     elif clicked3.get() == '$100':
+    #         curr_data = products.find({"Price": 100})    
+    #     elif clicked3.get() == '$120':
+    #         curr_data = products.find({"Price": 120}) 
+    #     elif clicked3.get() == '$125':
+    #         curr_data = products.find({"Price": 125})    
+    #     elif clicked3.get() == '$200':
+    #         curr_data = products.find({"Price": 200})    
+
+    #     self.Catalogue_Table = Catalogue_Table(curr_data, self)
+    #     self.Catalogue_Table.pack(side="top", fill="both", expand=True)
 
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
