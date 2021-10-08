@@ -134,51 +134,50 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         self.master = master
 
 
-        tab1 = tk.Button(self, text="Shopping Catalogue", command= lambda: master.refresh("All"))
+        tab1 = tk.Button(self, text="Refresh Shopping Catalogue", command= lambda: master.refresh("All"))
         tab1.grid(row=0, column=0, padx=(10, 5))
 
         #tab3 = tk.Button(self, text="Cart", command= lambda: master.goCart("Cart"))
         #tab2.pack(side="left", fill="both")
         #tab3.grid(row=0, column=1, padx=5)
         global clicked1
-        # global clicked2
-        # global clicked3
-        # global clicked4
-        # global clicked5
-        # global clicked6
+        global clicked2
+        global clicked3
+        global clicked4
+        global clicked5
+        global clicked6
         clicked1 = tk.StringVar()
         clicked1.set("Simple Search")
-        # clicked2 = tk.StringVar()
-        # clicked2.set("All Models")
-        # clicked3 = tk.StringVar()
-        # clicked3.set("All Price")
-        # clicked4 = tk.StringVar()
-        # clicked4.set("All Color")
-        # clicked5 = tk.StringVar()
-        # clicked5.set("All Factory")
-        # clicked6 = tk.StringVar()
-        # clicked6.set("All Production year")
+        clicked3 = tk.StringVar()
+        clicked3.set("Filter 1: Price")
+        clicked4 = tk.StringVar()
+        clicked4.set("Filter 2: Color")
+        clicked5 = tk.StringVar()
+        clicked5.set("Filter 3: Factory")
+        clicked6 = tk.StringVar()
+        clicked6.set("Filter 4: Production year")
 
         # dropdown filter
         tab2 = OptionMenu(self, clicked1, "Simple Search", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3",
         command=lambda clicked1 = clicked1: master.filter_status1(clicked1)).grid(row=0, column=1, sticky="ew", padx=5)
 
+        #tk.Label(self, text="Price Filter", anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
+        tab4 = OptionMenu(self, clicked3, "$50", "$60", "$70", "$100", "$120", "$l25", "$200").grid(row=0, column=2, sticky="ew", padx=5)
+
+        #tk.Label(self, text="Color Filter", anchor="w").grid(row=0, column=3, sticky="ew", padx=5)
+        tab5 = OptionMenu(self, clicked4, "White", "Blue", "Yellow", "Green", "Black").grid(row=0, column=3, sticky="ew", padx=5)
+
+        #tk.Label(self, text="Factory Filter", anchor="w").grid(row=0, column=4, sticky="ew", padx=5)
+        tab6 = OptionMenu(self, clicked5, "Malaysia", "China", "Philippines").grid(row=0, column=4, sticky="ew", padx=5)
+    
+        #tk.Label(self, text="Production Year Filter", anchor="w").grid(row=0, column=5, sticky="ew", padx=5)
+        tab7 = OptionMenu(self, clicked6, "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=0, column=5, sticky="ew", padx=5)
+        
+        tab8 = tk.Button(self, text="Advanced Search", command= lambda: master.filter_status2(clicked3, clicked4, clicked5, clicked6)).grid(row=0, column=6, sticky="ew", padx=5)
+
+
         # tab3 = OptionMenu(self, clicked2, "All Models", "Light1", "Light2", "SmartHome1", "Safe1", "Safe2", "Safe3",
         # command=lambda clicked2 = clicked2: master.filter_status2(clicked2)).grid(row=0, column=2, sticky="ew", padx=5)
-    
-        # tab4 = OptionMenu(self, clicked3, "All Price", "$50", "$60", "$70", "$100", "$120", "$l25", "$200",
-        # command=lambda clicked3 = clicked3: master.filter_status3(clicked3)).grid(row=0, column=3, sticky="ew", padx=5)
-
-        # tab5 = OptionMenu(self, clicked4, "All Color", "White", "Blue", "Yellow", "Green", "Black",
-        # command=lambda clicked4 = clicked4: master.filter_status1(clicked4)).grid(row=0, column=4, sticky="ew", padx=5)
-
-        # tab6 = OptionMenu(self, clicked5, "All Factory", "Malaysia", "China", "Philippines", 
-        # command=lambda clicked5 = clicked5: master.filter_status1(clicked5)).grid(row=0, column=5, sticky="ew", padx=5)
-    
-        # tab7 = OptionMenu(self, clicked6, "All Production Year", "2014", "2015", "2016", "2017", "2018", "2019", "2020",
-        # command=lambda clicked6 = clicked6: master.filter_status1(clicked6)).grid(row=0, column=6, sticky="ew", padx=5)
-
-
 class Customer_Shopping_Catalogue_Page(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
@@ -209,10 +208,13 @@ class Customer_Shopping_Catalogue_Page(Frame):
     def refresh(self, curr_view):
 
         self.Catalogue_Table.destroy()
+        self.header.destroy()
 
         curr_data = products.find({})
         #curr_data = filter(self.filter.get(curr_view), curr_data)
 
+        self.header = Customer_Shopping_Catalogue_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
+        self.header.pack(side="top", fill="x", expand=False)
         self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
     
@@ -226,7 +228,7 @@ class Customer_Shopping_Catalogue_Page(Frame):
     #     self.Catalogue_Table = Cart_Table(curr_data, self)
     #     self.Catalogue_Table.pack(side="top", fill="both", expand=True)
     def filter_status1(self, curr_view):
-        
+        print(curr_view)
         self.Catalogue_Table.destroy()
         curr_data = products.find({})
         
@@ -250,6 +252,32 @@ class Customer_Shopping_Catalogue_Page(Frame):
         self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
     
+    def filter_status2(self, c3, c4, c5, c6):
+        
+        self.Catalogue_Table.destroy()
+        curr_data = items.find({})
+
+        mylist = [0, 0, 0, 0]
+        # clicked3.set("Filter 1: Price")
+        # clicked4 = tk.StringVar()
+        # clicked4.set("Filter 2: Color")
+        # clicked5 = tk.StringVar()
+        # clicked5.set("Filter 3: Factory")
+        # clicked6 = tk.StringVar()
+        # clicked6.set("Filter 4: Production year")      
+        if c3 != "Filter 1: Price":
+            mylist[0] = c3
+        if c3 != "Filter 1: Price":
+            mylist[0] = c3
+        if c3 != "Filter 1: Price":
+            mylist[0] = c3
+        if c3 != "Filter 1: Price":
+            mylist[0] = c3
+        
+
+        self.Catalogue_Table = Catalogue_Table(curr_data, self)
+        self.Catalogue_Table.pack(side="top", fill="both", expand=True)
+
 
     # def filter_status3(self, curr_view):
         
