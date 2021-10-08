@@ -2,6 +2,20 @@ from tkinter import *
 from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
+import re
+
+
+# For SQL query
+from sqlalchemy import create_engine
+from pymysql.constants import CLIENT
+import pandas as pd
+
+from config import USERNAME, MYSQL_PASSWORD
+db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/ECOMMERCE", 
+        connect_args = {"client_flag": CLIENT.MULTI_STATEMENTS}
+    )
+
+
 
 ######## Customer Registration & Login ###########
 class Signup_Page(Frame):
@@ -84,6 +98,7 @@ class Login_Page(Frame):
         Frame.__init__(self, master, width=800, height=800)
         self.master = master
 
+
         title = Label(self, text="Customer Login Page")
         title.grid(row=0, column=0, columnspan=1)
 
@@ -96,28 +111,106 @@ class Login_Page(Frame):
         admin_btn = Button(toggle, text="Admin", command= lambda: master.switch_frame(Admin_Login_Page))
         admin_btn.grid(row=0, column=1, columnspan=1)
        
-        email = Entry(self, width = 30)
-        email.grid(row=2, column=1, padx=20)
+        self.username = Entry(self, width = 30)
+        self.username.grid(row=2, column=1, padx=20)
 
-        password = Entry(self, width = 30)
-        password.grid(row=3, column=1, padx=20)
+        self.password = Entry(self, width = 30)
+        self.password.grid(row=4, column=1, padx=20)
 
 
         # Creating Text Box Labels
-        email_label = Label(self, text="Email Address")
-        email_label.grid(row=2, column=0, sticky="EW")
+
+        self.customerId_error_label = Label(self, text= "")
+        self.password_error_label = Label(self, text= "")
+        self.error_label = Label(self, text= "")
+        
+        username_label = Label(self, text="Email Address")
+        username_label.grid(row=2, column=0, sticky="EW")
+
 
         password_label = Label(self, text="Password")
-        password_label.grid(row=3, column=0, sticky="EW")
+        password_label.grid(row=4, column=0, sticky="EW")
 
         signup_btn = Button(self, text="Sign Up", command= lambda: master.switch_frame(Signup_Page))
-        signup_btn.grid(row=4, column=0, columnspan=1)
+        signup_btn.grid(row=6, column=0, columnspan=1)
 
         login_btn = Button(self, text="Login", command= lambda: self.attempt_login())
-        login_btn.grid(row=4, column=1, columnspan=2)
+        login_btn.grid(row=6, column=1, columnspan=2)
 
     def attempt_login(self):
-        self.master.login()
+        customerId = self.username.get()
+        password = self.password.get()
+
+        # Reset the error message
+        self.customerId_error_label.destroy()
+        self.password_error_label.destroy()
+        self.error_label.destroy()
+        self.customerId_error_label = Label(self, text= "", fg="red", anchor="w", width = 30)
+        self.password_error_label = Label(self, text= "", fg="red", anchor="w", width = 30)
+        self.error_label = Label(self, text= "", fg="red", anchor="w", width = 30)
+
+        # General Regex
+        whitespace = re.compile(r"\s+")
+
+        customerId_Error = ""
+        password_Error = ""
+
+        # Checking customerId
+        if len(whitespace.findall(customerId)) > 0:
+            # Whitespaces found in customerId
+            customerId_Error = "Whitespaces not allowed"
+        elif customerId == "":
+            customerId_Error = "Required"
+
+        
+        # Checking customerId
+        if len(whitespace.findall(password)) > 0:
+            # Whitespaces found in customerId
+            password_Error = "Whitespaces not allowed"
+        elif password == "":
+            password_Error = "Required"
+
+
+        # Displaying customerId Error
+        if customerId_Error != "":
+            self.customerId_error_label["text"] = customerId_Error
+            self.customerId_error_label.grid(row=3, column=1, columnspan=1, sticky="EW", padx=20)
+        
+        # Displaying password Error
+        if password_Error != "":
+            self.password_error_label["text"] = password_Error
+            self.password_error_label.grid(row=5, column=1, columnspan=1, sticky="EW", padx=20)
+
+
+        # After the checks, we proceed to login
+        if customerId_Error == "" and password_Error == "":
+            print(customerId, password)
+
+            conn = db.connect()
+            result = conn.execute(f"""
+                    SELECT customerPassword
+                    FROM Customers
+                    WHERE customerID = "{customerId}"
+                    ;
+            """)
+            retrieved_password = result.fetchall()
+
+            if len(retrieved_password) == 0:
+                self.customerId_error_label["text"] = "User does not exist"
+                self.customerId_error_label.grid(row=3, column=1, columnspan=1, sticky="EW", padx=20)
+            else:
+                retrieved_password = retrieved_password[0][0]
+                
+                if retrieved_password == password:
+                    print("success")
+                    self.master.login()
+                else:
+                    # self.error_label["text"] = "I"
+                    # self.error_label.grid(row=5, column=1, columnspan=1, sticky="EW", padx=20)
+
+                    self.password_error_label["text"] = "Incorrect password"
+                    self.password_error_label.grid(row=5, column=1, columnspan=1, sticky="EW", padx=20)
+
 
 
 
