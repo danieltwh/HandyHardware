@@ -60,7 +60,7 @@ class Catalogue_Table(tk.LabelFrame):
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10)
             price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10)
             warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10)             
-            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Model": dic["Model"]})), anchor="w", borderwidth=2, relief="groove", padx=10)
+            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10)
 
 
             categories_label.grid(row=row, column=0, sticky="ew")
@@ -228,7 +228,6 @@ class Customer_Shopping_Catalogue_Page(Frame):
     #     self.Catalogue_Table = Cart_Table(curr_data, self)
     #     self.Catalogue_Table.pack(side="top", fill="both", expand=True)
     def filter_status1(self, curr_view):
-        print(curr_view)
         self.Catalogue_Table.destroy()
         curr_data = products.find({})
         
@@ -255,25 +254,25 @@ class Customer_Shopping_Catalogue_Page(Frame):
     def filter_status2(self, c3, c4, c5, c6):
         
         self.Catalogue_Table.destroy()
-        curr_data = items.find({})
+        curr_data = products.find({})
 
-        mylist = [0, 0, 0, 0]
-        # clicked3.set("Filter 1: Price")
-        # clicked4 = tk.StringVar()
-        # clicked4.set("Filter 2: Color")
-        # clicked5 = tk.StringVar()
-        # clicked5.set("Filter 3: Factory")
-        # clicked6 = tk.StringVar()
-        # clicked6.set("Filter 4: Production year")      
-        if c3 != "Filter 1: Price":
-            mylist[0] = c3
-        if c3 != "Filter 1: Price":
-            mylist[0] = c3
-        if c3 != "Filter 1: Price":
-            mylist[0] = c3
-        if c3 != "Filter 1: Price":
-            mylist[0] = c3
+        # price = ["$50", "$60", "$70", "$100", "$120", "$l25", "$200"]
+        # color = ["White", "Blue", "Yellow", "Green", "Black"]
+        # factory = ["Malaysia", "China", "Philippines"]
+        # year = [2014, 2015, 2016, 2017, 2018, 2019, 2020]
+
+        # mylist = [0, 0, 0, 0]
+
+        # if c3 != "Filter 1: Price":
+        #     mylist[0] = c3.get()
+        # if c4 != "Filter 2: Color":
+        #     mylist[1] = c4.get()
+        # if c5 != "Filter 3: Factory":
+        #     mylist[2] = c5.get()
+        # if c6 != "Filter 4: Production year":
+        #     mylist[3] = c6.get()
         
+        #count = items.count_documents({"Color": c4.get(), "Factory": c5.get(), "PurchaseStatus": "Unsold"})
 
         self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
