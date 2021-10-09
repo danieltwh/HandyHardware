@@ -152,7 +152,8 @@ class Signup_Page(Frame):
         # General Regex
         whitespace = re.compile(r"\s+")
         all_numbers = re.compile(r"\D")
-        sg_number = re.compile(r"^\d{8}$")
+        sg_number = re.compile(r"^[896]\d{7}$")
+        address_checker = re.compile(r"^\s|\s$")
 
 
         # Checking First Name
@@ -178,6 +179,19 @@ class Signup_Page(Frame):
         elif username == "":
             # Required
             username_error = "Required"
+        else:
+            try:
+                conn = db.connect()
+                result = conn.execute(f"""
+                    SELECT *
+                    FROM Customers
+                    WHERE customerID = "{username}"; 
+                """)
+                conn.close()
+                if len(result.all()) != 0:
+                    username_error = "Username taken"
+            except:
+                username_error = "Username check failed. Try again."
         
         # Checking Gender
         if gender == "null":
@@ -207,9 +221,12 @@ class Signup_Page(Frame):
         elif len(phone) < 8:
             # Too short
             phone_error = "Too short...(SG number only)"
+        elif len(phone) > 8:
+            # Too long
+            phone_error = "Max 8 digits"
         elif len(sg_number.findall(phone)) != 1:
             # SG phone number
-            phone_error = "Max 8 digits (SG number only)"
+            phone_error = "SG number only"
         
         # Checking Address
         # if len(whitespace.findall(address)) > 0:
@@ -218,6 +235,9 @@ class Signup_Page(Frame):
         if address == "":
             # Required
             address_error = "Required"
+        elif len(address_checker.findall(address)) != 0:
+            # Required
+            address_error = "Cannot start/end with whitespace(s)"
         
         # Checking Password
         if len(whitespace.findall(password)) > 0:
@@ -226,6 +246,12 @@ class Signup_Page(Frame):
         elif password == "":
             # Required
             password_error = "Required"
+        elif len(password) < 8:
+            # Required
+            password_error = "Too short... Minimum 8 characters"
+        elif len(password) > 30:
+            # Required
+            password_error = "Too long... Maximum 30 characters"
         
         
         # Displaying Errors
@@ -258,18 +284,20 @@ class Signup_Page(Frame):
         if f_name_error == "" and l_name_error == "" and username_error == "" \
             and gender_error == "" and email_error == "" and phone_error == "" and address_error == ""\
             and password_error == "":
-            conn = db.connect()
-            result = conn.execute(f"""
-                INSERT INTO Customers(customerID, customerName, gender, email, phoneNumber, address, customerPassword) VALUES
-                ('{username}', "{f_name + " " + l_name}", "{gender.upper()}", "{email}", "{phone}",
-                "{address}", "{password}");
-            """)
-            conn.close()
-
-
-
+            try:
+                conn = db.connect()
+                result = conn.execute(f"""
+                    INSERT INTO Customers(customerID, customerName, gender, email, phoneNumber, address, customerPassword) VALUES
+                    ('{username}', "{f_name + " " + l_name}", "{gender.upper()}", "{email}", "{phone}",
+                    "{address}", "{password}");
+                """)
+                conn.close()
+                self.master.load_login_page()
+            except:
+                print("error")
 
         print("Check & signup customer")
+        
     
     def email_validator(self, email):
         validator = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,3}")
@@ -389,7 +417,7 @@ class Login_Page(Frame):
                 
                 if retrieved_password == password:
                     print("success")
-                    self.master.login()
+                    self.master.login(customerId)
                 else:
                     # self.error_label["text"] = "I"
                     # self.error_label.grid(row=5, column=1, columnspan=1, sticky="EW", padx=20)
@@ -516,4 +544,4 @@ class Admin_Login_Page(Frame):
         login_btn.grid(row=4, column=1, columnspan=2)
 
     def attempt_login(self):
-        self.master.admin_login()
+        self.master.admin_login("EddMing321")
