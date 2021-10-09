@@ -12,9 +12,7 @@ from pymysql.constants import CLIENT
 import pandas as pd
 from config import USERNAME, MYSQL_PASSWORD
 
-# Need to take the data from item page
-d1 = date(2022, 5, 3) #Warranty end date
-data = ["1001", "Blue", "Battery", "Light1", d1]
+
 db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/ECOMMERCE", 
         connect_args = {"client_flag": CLIENT.MULTI_STATEMENTS}
     )
@@ -73,7 +71,8 @@ class Request_Page(Frame):
 
         warranty_label = Label(self, text="Warranty: ", font=('Aerial 9 bold'))
         warranty_label.grid(row=7, column=0)
-        warranty = Label(self, text=self.getValidity(data[4])) #Need to edit this
+        end_warranty_date = curr_purchaseDate + relativedelta(months=+int(curr_warrantyMonths))
+        warranty = Label(self, text=self.getValidity(end_warranty_date)) 
         warranty.grid(row=7, column=1, padx=20)
 
         issue = Text(self, width = 40,height=3)
@@ -109,13 +108,11 @@ class Request_Page(Frame):
             reqstatus = 'Submitted and Waiting for payment'
             warranty_status = False
 
-        print(curr_purchaseDate)
-        print(end_warranty_date)
-    
-        #self.master.switch_frame(Request_Details)
-        
-        print(issue)
-        print("Warranty status:" + str(warranty_status))
+        print("Purchase Date: " + str(curr_purchaseDate))
+        print("End Warranty Date: " + str(end_warranty_date))
+        print("Issue: " + issue)
+        print("Warranty status: " + str(warranty_status))
+
         #Push into the database of request table
         with db.begin() as conn:
             savepoint = conn.begin_nested()
@@ -156,10 +153,21 @@ class Request_Page(Frame):
                 # Commit changes to database
                 savepoint.commit()
 
+                output = conn.execute("SELECT COUNT(*) FROM Requests")
+                requestID = output.fetchall()[0][0]
+                
             except:
                 # If fail, rollback the changes
                 savepoint.rollback()
                 print("Failed to submit request & servicefee")
+        
+        self.master.switch_frame(requestID, Request_Details)
+
+    # def show_cus_request_details(self, requestId):
+    #     self.table.destroy()
+    #     self.table = Request_Details(self)
+    #     self.table.pack(side="top", fill="both", expand=True)
+
         
 
 
@@ -179,10 +187,10 @@ class App(Tk):
     def __init__(self):
         Tk.__init__(self)
         self._frame = None
-        self.switch_frame(Request_Page)
+        self.switch_frame(1,Request_Page)
 
-    def switch_frame(self, frame_class):
-        new_frame = frame_class(1,self)
+    def switch_frame(self, id, frame_class):
+        new_frame = frame_class(id,self)
         if self._frame is not None:
             self._frame.destroy()
         self._frame = new_frame
