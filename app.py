@@ -94,7 +94,8 @@ class App(Tk):
         self._frame = new_frame
 
         if frame_class in [Login_Page, Signup_Page, Admin_Login_Page, Admin_Signup_Page]:
-            self._frame.pack(fill="both", expand=True, padx=350, pady=250)
+            # self._frame.pack(fill="both", expand=True, padx=0, pady=225, anchor ="center")
+            self._frame.pack(expand=True)
         else:
             self._frame.pack(side="right", fill="both", expand=True, anchor = "nw", padx=(10, 0))
             # self._frame.grid(row=0, column=1, )
@@ -113,7 +114,8 @@ class App(Tk):
         if self._frame is not None:
             self._frame.destroy()
         self._frame = new_frame
-        self._frame.pack(fill="both", expand=True, padx=350, pady=250)
+        # self._frame.pack(fill="both", expand=True, padx=0, pady=225)
+        self._frame.pack(expand=True)
     
     def logout(self):
         self.unmount_sidebar()
