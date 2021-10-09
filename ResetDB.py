@@ -1547,8 +1547,9 @@ def RESET_DB():
         (2,1002,'EddMing321', 'Completed', 'Item broke in half'),
         (3,1003, NULL, 'Submitted and Waiting for payment', 'Item broke in half'),
         
-        (4,1004,'EddMing321', 'Canceled', 'Item broke in half'),
+        (4,1004,'EddMing321', 'Cancelled', 'Item broke in half'),
         (5,1004,NULL, 'Submitted', 'Item broke in half'),
+
         
         (6,1005,NULL, 'Submitted', 'Item broke in half'),
         (7,1006,NULL, 'In progress', 'Item broke in half'),
@@ -1559,7 +1560,7 @@ def RESET_DB():
         (11,1010,'NistraTor654', 'Completed', 'Item does not light up'),
         (12,1011,'NistraTor654', 'Completed', 'Item broke in half'),
         (13,1012,NULL, 'Submitted and Waiting for payment', 'Item broke in half'),
-        (14,1013,'NistraTor654', 'Canceled', 'Item broke in half'),
+        (14,1013,'NistraTor654', 'Cancelled', 'Item broke in half'),
         (15,1014,NULL, 'Submitted', 'Item broke in half'),
         (16,1015,NULL, 'In progress', 'Item broke in half'),
         (17,1016,'BrockBroccoli987', 'Approved', 'Item broke in half'),

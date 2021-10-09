@@ -52,15 +52,13 @@ class Catalogue_Table(tk.LabelFrame):
         tk.Label(self, text="Warranty", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
         tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
 
-        
-
         row = 1
         for dic in data:
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10)
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10)
             price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10)
             warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10)             
-            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10)
+            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10)
 
 
             categories_label.grid(row=row, column=0, sticky="ew")
@@ -224,6 +222,7 @@ class Customer_Shopping_Catalogue_Page(Frame):
         self.header = Customer_Shopping_Catalogue_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
 
         global data
+        data = products.find({})
         #global cart
         self.Catalogue_Table = Catalogue_Table(data, self)
         #self.Cart_Table = Cart_Table(cart, self)
