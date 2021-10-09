@@ -77,17 +77,54 @@ class Catalogue_Table(tk.LabelFrame):
                 action_button.grid(row=row, column=5, sticky="ew")
 
             row += 1
-    
-    def minus(self, numberOfItemsAvailable):
-        print("Inventory reduce by 1")
 
     # def add(self, row):
     #     global data
     #     global cart
     #     newData = data.copy()
     #     cart.append(newData[row - 1][:-1])
+class Advance_Table(tk.LabelFrame):
+    def __init__(self, data, *args, **kwargs):
+        tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
+
+        self.grid_columnconfigure(1, weight=1)
+        tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
+        tk.Label(self, text="Model", anchor="w").grid(row=0, column=1, sticky="ew", padx=10)
+        tk.Label(self, text="Price", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
+        tk.Label(self, text="Warranty", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
+        tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
+        items_data = data
+        products_data = products.find({})
+
+        row = 1
+        for dic in products_data:
+            categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10)
+            model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10)
+            price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10)
+            warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10)  
+            
+            count = 0
+            for idic in items_data:
+                if dic['Category'] == idic['Category']:
+                    if dic['Model'] == idic['Model']:
+                        count += 1
+
+            numberOfItemsAvailable_label = tk.Label(self, text=str(count), anchor="w", borderwidth=2, relief="groove", padx=10)
 
 
+            categories_label.grid(row=row, column=0, sticky="ew")
+            model_label.grid(row=row, column=1, sticky="ew")
+            price_label.grid(row=row, column=2, sticky="ew", )
+            warranty_label.grid(row=row, column=3, sticky="ew")
+            warranty_label.grid_columnconfigure(0, weight=5)
+            numberOfItemsAvailable_label.grid(row=row, column=4, sticky="ew")
+            numberOfItemsAvailable_label.grid_columnconfigure(0, weight=5)
+        
+            if numberOfItemsAvailable_label != "0":
+                action_button = tk.Button(self, text="Add", command=lambda row = row: self.add(row))
+                action_button.grid(row=row, column=5, sticky="ew")
+
+            row += 1
 
 # class Cart_Table(tk.LabelFrame):
 #     def __init__(self, data, *args, **kwargs):
@@ -162,16 +199,16 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         command=lambda clicked1 = clicked1: master.filter_status1(clicked1)).grid(row=0, column=1, sticky="ew", padx=5)
 
         #tk.Label(self, text="Price Filter", anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
-        tab4 = OptionMenu(self, clicked3, "$50", "$60", "$70", "$100", "$120", "$l25", "$200").grid(row=0, column=2, sticky="ew", padx=5)
+        tab4 = OptionMenu(self, clicked3, "Filter 1: Price", "$50", "$60", "$70", "$100", "$120", "$l25", "$200").grid(row=0, column=2, sticky="ew", padx=5)
 
         #tk.Label(self, text="Color Filter", anchor="w").grid(row=0, column=3, sticky="ew", padx=5)
-        tab5 = OptionMenu(self, clicked4, "White", "Blue", "Yellow", "Green", "Black").grid(row=0, column=3, sticky="ew", padx=5)
+        tab5 = OptionMenu(self, clicked4, "Filter 2: Color", "White", "Blue", "Yellow", "Green", "Black").grid(row=0, column=3, sticky="ew", padx=5)
 
         #tk.Label(self, text="Factory Filter", anchor="w").grid(row=0, column=4, sticky="ew", padx=5)
-        tab6 = OptionMenu(self, clicked5, "Malaysia", "China", "Philippines").grid(row=0, column=4, sticky="ew", padx=5)
+        tab6 = OptionMenu(self, clicked5, "Filter 3: Factory", "Malaysia", "China", "Philippines").grid(row=0, column=4, sticky="ew", padx=5)
     
         #tk.Label(self, text="Production Year Filter", anchor="w").grid(row=0, column=5, sticky="ew", padx=5)
-        tab7 = OptionMenu(self, clicked6, "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=0, column=5, sticky="ew", padx=5)
+        tab7 = OptionMenu(self, clicked6, "Filter 4: Production year", "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=0, column=5, sticky="ew", padx=5)
         
         tab8 = tk.Button(self, text="Advanced Search", command= lambda: master.filter_status2(clicked3, clicked4, clicked5, clicked6)).grid(row=0, column=6, sticky="ew", padx=5)
 
@@ -254,27 +291,50 @@ class Customer_Shopping_Catalogue_Page(Frame):
     def filter_status2(self, c3, c4, c5, c6):
         
         self.Catalogue_Table.destroy()
-        curr_data = products.find({})
+        items_data = list(items.find({}))
+        price_list = ["$50", "$60", "$100", "$120", "$l25"]
+        model_list = ["Light1", "Light2", "Safe1", "Safe2", "Safe3"]
 
-        # price = ["$50", "$60", "$70", "$100", "$120", "$l25", "$200"]
-        # color = ["White", "Blue", "Yellow", "Green", "Black"]
-        # factory = ["Malaysia", "China", "Philippines"]
-        # year = [2014, 2015, 2016, 2017, 2018, 2019, 2020]
+        for dic in items_data.copy():
+            if c4.get() != "Filter 2: Color":
+                if dic["Color"] != c4.get():
+                    if dic in items_data:
+                        items_data.remove(dic)
+            if c5.get() != "Filter 3: Factory":
+                if dic['Factory'] != c5.get():
+                    if dic in items_data:
+                        items_data.remove(dic)
+            if c6.get() != "Filter 4: Production year":
+                if dic['ProductionYear'] != int(c6.get()):
+                    if dic in items_data:
+                        items_data.remove(dic)
 
-        # mylist = [0, 0, 0, 0]
+            if c3.get() == "$70":
+                if dic['Category'] != 'Lights':
+                    if dic in items_data:
+                        items_data.remove(dic)
+                else:
+                    if dic['Model'] != 'SmartHome1':
+                        if dic in items_data:
+                            items_data.remove(dic)
 
-        # if c3 != "Filter 1: Price":
-        #     mylist[0] = c3.get()
-        # if c4 != "Filter 2: Color":
-        #     mylist[1] = c4.get()
-        # if c5 != "Filter 3: Factory":
-        #     mylist[2] = c5.get()
-        # if c6 != "Filter 4: Production year":
-        #     mylist[3] = c6.get()
-        
-        #count = items.count_documents({"Color": c4.get(), "Factory": c5.get(), "PurchaseStatus": "Unsold"})
+            if c3.get() == "$200":
+                if dic['Category'] != 'Locks':
+                    if dic in items_data:
+                        items_data.remove(dic)
+                else:
+                    if dic['Model'] != 'SmartHome1':
+                        if dic in items_data:
+                            items_data.remove(dic)   
 
-        self.Catalogue_Table = Catalogue_Table(curr_data, self)
+            for i in range(len(price_list)):
+                if c3.get() == price_list[i]:
+                    if dic['Model'] != model_list[i]:
+                        if dic in items_data:
+                            items_data.remove(dic)
+                            break
+
+        self.Catalogue_Table = Advance_Table(items_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
 
 
