@@ -119,7 +119,7 @@ class Advance_Table(tk.LabelFrame):
             numberOfItemsAvailable_label.grid(row=row, column=4, sticky="ew")
             numberOfItemsAvailable_label.grid_columnconfigure(0, weight=5)
         
-            if numberOfItemsAvailable_label != "0":
+            if count != 0:
                 action_button = tk.Button(self, text="Add", command=lambda row = row: self.add(row))
                 action_button.grid(row=row, column=5, sticky="ew")
 
