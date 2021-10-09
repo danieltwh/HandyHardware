@@ -3,6 +3,7 @@ from PIL import ImageTk,Image
 from tkinter import messagebox
 import sqlite3
 from datetime import *
+from dateutil.relativedelta import relativedelta
 from cus_request_details import Request_Details
 
 # For SQL query
@@ -28,7 +29,8 @@ class Request_Page(Frame):
 
         data2 = pd.read_sql_query(f"""
         SELECT pay.paymentID, pay.itemID, c.customerID, 
-        p.model, p.warrantyMonths, i.powerSupply, i.colour,p.price
+        p.model, p.warrantyMonths, i.powerSupply, i.colour,
+        p.price, pay.purchaseDate
         FROM Payments pay 
         LEFT JOIN Items i USING(itemID)
         LEFT JOIN Products p ON i.productID = p.productID
@@ -40,7 +42,7 @@ class Request_Page(Frame):
         print(data2)
         (paymentId, curr_itemId, curr_customerId, curr_model,
         curr_warrantyMonths,curr_powerSupply,curr_colour,
-        curr_price) = list(data2.to_records(index=False))[0]
+        curr_price, curr_purchaseDate) = list(data2.to_records(index=False))[0]
         
 
         title = Label(self, text="Request Page", font=('Aerial 15 bold'))
@@ -79,13 +81,11 @@ class Request_Page(Frame):
         issue_label = Label(self, text="What is the issue of the item?", font=('Aerial 9 bold'))
         issue_label.grid(row=8)
 
-        # Creating a new relation for Request Database
-        reqData = data.copy()
-
 
         submit_btn = Button(self, text="Submit Request", command= lambda: self.submitRequest(data2,issue.get("1.0",'end-1c')))
         submit_btn.grid(row=9, column=2, columnspan=2)
 
+    #Check todays date with the warranty end date
     def getValidity(self,end_date):
         today = date.today()
         if end_date >= today:
@@ -94,54 +94,64 @@ class Request_Page(Frame):
             return "Invalid"
 
     def submitRequest(self,data2,issue):
-        # Add the request status depending on the warranty status
-        reqstatus = ""
-        if self.getValidity(data[4]) == "Valid":
-            reqstatus = 'Submitted'
-        elif self.getValidity(data[4]) == "Invalid":
-            reqstatus = 'Submitted and Waiting for payment'
-    
-        #self.master.switch_frame(Request_Details)
+        # Get the data into variables
         (paymentId, curr_itemId, curr_customerId, 
         curr_model,curr_warrantyMonths,curr_powerSupply,
-        curr_colour,curr_price) = list(data2.to_records(index=False))[0]
-        #DECLARE @totalNoOfReq int
-        #SELECT @totalNoOfReq=count(1) from Requests
-        
-        #INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate)VALUES
-        #({3}, {40 + 0.2*curr_price},{date.today()},{date.today()}) 
-        #;
-        print(issue)
-        print(reqstatus)
+        curr_colour,curr_price,curr_purchaseDate) = list(data2.to_records(index=False))[0]
 
+        # Checking for the warranty status
+        warranty_status = False
+        end_warranty_date = curr_purchaseDate + relativedelta(months=+int(curr_warrantyMonths))
+        if self.getValidity(end_warranty_date) == "Valid":
+            reqstatus = 'Submitted'
+            warranty_status = True
+        elif self.getValidity(end_warranty_date) == "Invalid":
+            reqstatus = 'Submitted and Waiting for payment'
+            warranty_status = False
+
+        print(curr_purchaseDate)
+        print(end_warranty_date)
+    
+        #self.master.switch_frame(Request_Details)
+        
+        print(issue)
+        print("Warranty status:" + str(warranty_status))
         #Push into the database of request table
         with db.begin() as conn:
             savepoint = conn.begin_nested()
             try:
-                # Create a request and service row (NEED CHANGE SETTLE MENT DATE)     
-                query = "INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES (%s,%s,%s,'%s','%s')" % (31, curr_itemId, 'NULL', reqstatus,issue)
+                
+                query = """
+                SELECT COUNT(*) INTO @r_count FROM Requests;
+                INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES
+                (@r_count + 1,%s,%s,'%s','%s');""" % (curr_itemId, 'NULL', reqstatus,issue)
+
                 conn.execute(query)
-                # conn.execute(f"""
-                # INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES
-                # (28,{curr_itemId},NULL, 'Submitted', 'Item broke in half');
-                # """)
                 print("Added a request row")
 
-                ## NOT DONE Check Warranty
-                query2 = "ServiceFees(requestID, amount, creationDate, settlementDate)VALUES (%s,%s,%s,%s)" % (31, 50, '2021-03-01','2021-03-15')
-                conn.execute(f"""
-                INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate)VALUES
-                (31, 50, '2021-03-01','2021-03-15')
-                ;
-                """)
-                print("Added a service row")
+                # To find the settlement Date (10 days away)
+                now = date.today()
+                dateStr = now.strftime("%Y-%m-%d")
+                end_date = now + timedelta(days = 10)
+                end_dateStr = end_date.strftime("%Y-%m-%d")
+                
+                # 0 Service Fee if it is still in warranty
+                if warranty_status:   
+                    query2 = f"""
+                    SELECT COUNT(*) INTO @r_count FROM Requests;
+                    INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
+                    (@r_count, {0}, '%s', '%s')
+                    ;""" % (dateStr,end_dateStr)
+                    conn.execute(query2)
+                else:
+                    query2 = f"""
+                    SELECT COUNT(*) INTO @r_count FROM Requests;
+                    INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
+                    (@r_count, 40 + {curr_price} * 0.2, '%s', '%s')
+                    ;""" % (dateStr,end_dateStr)
+                    conn.execute(query2)
 
-                # Create a service row
-                # conn.execute(f"""
-                # INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate)VALUES
-                # ({requestId}, "In Progress")
-                # ;
-                # """)
+                print("Added a service row")
                 
                 # Commit changes to database
                 savepoint.commit()
@@ -172,7 +182,7 @@ class App(Tk):
         self.switch_frame(Request_Page)
 
     def switch_frame(self, frame_class):
-        new_frame = frame_class(1,self.master)
+        new_frame = frame_class(1,self)
         if self._frame is not None:
             self._frame.destroy()
         self._frame = new_frame
