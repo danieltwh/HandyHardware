@@ -23,6 +23,8 @@ class Request_Page(Frame):
         Frame.__init__(self, master)
         self.master = master
 
+        curr_adminId = self.master.master.master.adminId
+
         print(curr_paymentId)
 
         data2 = pd.read_sql_query(f"""
@@ -121,7 +123,7 @@ class Request_Page(Frame):
                 query = """
                 SELECT COUNT(*) INTO @r_count FROM Requests;
                 INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES
-                (@r_count + 1,%s,%s,'%s','%s');""" % (curr_itemId, 'NULL', reqstatus,issue)
+                (@r_count + 1,%s,%s,'%s','%s');""" % (curr_itemId, curr_adminId, reqstatus, issue)
 
                 conn.execute(query)
                 print("Added a request row")
@@ -161,7 +163,7 @@ class Request_Page(Frame):
                 savepoint.rollback()
                 print("Failed to submit request & servicefee")
         
-        self.master.switch_frame(requestID, Request_Details)
+        self.master.id_switch_frame(requestID, Request_Details)
 
     # def show_cus_request_details(self, requestId):
     #     self.table.destroy()
@@ -180,27 +182,27 @@ class Request_Submitted_Page(Frame):
         title = Label(self, text="Request submitted.\n We will be processing your request shortly.", font=('Aerial 15 bold'))
         title.grid(row=0, column=400, pady =60)
 
-        submit_btn = Button(self, text="Proceed to Past Payments", command= lambda: master.switch_frame(Request_Page)) ##Go back to the item page
+        submit_btn = Button(self, text="Proceed to Past Payments", command= lambda: self.master.id_switch_frame(Request_Page)) ##Go back to the item page
         submit_btn.grid(row=11, column=400, columnspan=2)
 
-class App(Tk):
-    def __init__(self):
-        Tk.__init__(self)
-        self._frame = None
-        self.switch_frame(1,Request_Page)
+# class App(Tk):
+#     def __init__(self):
+#         Tk.__init__(self)
+#         self._frame = None
+#         self.switch_frame(1,Request_Page)
 
-    def switch_frame(self, id, frame_class):
-        new_frame = frame_class(id,self)
-        if self._frame is not None:
-            self._frame.destroy()
-        self._frame = new_frame
-        self._frame.pack(side="top", fill="both", expand=True)
+#     def switch_frame(self, id, frame_class):
+#         new_frame = frame_class(id,self)
+#         if self._frame is not None:
+#             self._frame.destroy()
+#         self._frame = new_frame
+#         self._frame.pack(side="top", fill="both", expand=True)
 
-def main():
-    app = App()
-    app.geometry("800x800")
-    app.mainloop()
+# def main():
+#     app = App()
+#     app.geometry("800x800")
+#     app.mainloop()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
         

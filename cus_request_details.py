@@ -3,6 +3,7 @@ from PIL import ImageTk,Image
 from tkinter import messagebox
 import sqlite3
 from datetime import *
+from past_purchases import Past_Purchase_Page
 
 # For SQL query
 from sqlalchemy import create_engine
@@ -79,9 +80,10 @@ class Request_Details(Frame):
         cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_requestId))
         cancel_btn.grid(row=9, column=0, pady = 20)
 
-        pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest())
+        pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_requestId))
         pay_btn.grid(row=9, column=2, pady = 20)
 
+        ## If $0, they cannot return to past_purchases page
         if curr_amount > 0:
             return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go o past payments
             return_btn.grid(row=9, column=1, pady = 20)
@@ -91,7 +93,7 @@ class Request_Details(Frame):
             savepoint = conn.begin_nested()
             print(requestId)
             try:
-                # Update the request status
+                # Update the request status to Cancelled
                 query = f"""
                 UPDATE Requests r
                 SET r.requestStatus = 'Cancelled'
@@ -99,32 +101,48 @@ class Request_Details(Frame):
                 ;
                 """
                 conn.execute(query)
-                # conn.execute(f"""
-                # UPDATE Requests
-                # SET requestStatus = 'Cancelled',
-                # WHERE requestID = {requestId}
-                # ;
-                # """)
                 
                 # Commit changes to database
                 savepoint.commit()
 
                 print("The request is cancelled")
             except:
+
                 # If fail, rollback the changes
                 savepoint.rollback()
                 print("Failed to cancel request")
 
 
-        #self.master.switch_frame(null,Cancel_Request_Page)
-        # Remove the relation in the Request Database
+        self.master.switch_frame(Cancel_Request_Page)
 
-    def payRequest(self):
+    
+    def payRequest(self, requestId):
+        with db.begin() as conn:
+            savepoint = conn.begin_nested()
+            print(requestId)
+            try:
+                # Update the request status to In progress
+                query = f"""
+                UPDATE Requests r
+                SET r.requestStatus = 'In progress'
+                WHERE r.requestID = {requestId}
+                ;
+                """
+                conn.execute(query)
+
+                # Commit changes to database
+                savepoint.commit()
+                print("The request has been paid")
+            except:
+                # If fail, rollback the changes
+                savepoint.rollback()
+                print("Failed to pay the request")
+
         self.master.switch_frame(Pay_Request_Page)
-        # Modify the existing relation to change the request status
-        return
+        
+    # Return to TY Page    
     def returnRequest(self):
-        #self.master.switch_frame(xxx)
+        self.master.switch_frame(Past_Purchase_Page)
         return
 
 
@@ -147,7 +165,7 @@ class Pay_Request_Page(Frame):
         title = Label(self, text="Request has been paid. We will be proceeding your request", font=('Aerial 15 bold'))
         title.grid(row=0, column=400, pady =60)
 
-        submit_btn = Button(self, text="Proceed to Past Payments", command= lambda: master.switch_frame(Request_Details)) ##Go back to the item page
+        submit_btn = Button(self, text="Proceed to Past Payments", command= lambda: self.master.switch_frame(Past_Purchase_Page)) ##Go back to the item page
         submit_btn.grid(row=11, column=400, columnspan=2)
 
         
