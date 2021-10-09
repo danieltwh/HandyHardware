@@ -151,6 +151,8 @@ class Signup_Page(Frame):
 
         # General Regex
         whitespace = re.compile(r"\s+")
+        all_numbers = re.compile(r"\D")
+        sg_number = re.compile(r"^\d{8}$")
 
 
         # Checking First Name
@@ -199,6 +201,15 @@ class Signup_Page(Frame):
         elif phone == "":
             # Required
             phone_error = "Required"
+        elif len(all_numbers.findall(phone)) >0 :
+            # Invalid Phone
+            phone_error = "Invalid phone number"
+        elif len(phone) < 8:
+            # Too short
+            phone_error = "Too short...(SG number only)"
+        elif len(sg_number.findall(phone)) != 1:
+            # SG phone number
+            phone_error = "Max 8 digits (SG number only)"
         
         # Checking Address
         # if len(whitespace.findall(address)) > 0:
