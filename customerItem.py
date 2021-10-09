@@ -105,9 +105,10 @@ class Advance_Table(tk.LabelFrame):
             
             count = 0
             for idic in items_data:
-                if dic['Category'] == idic['Category']:
-                    if dic['Model'] == idic['Model']:
-                        count += 1
+                if idic['PurchaseStatus'] == 'Sold':
+                    if dic['Category'] == idic['Category']:
+                        if dic['Model'] == idic['Model']:
+                            count += 1
 
             numberOfItemsAvailable_label = tk.Label(self, text=str(count), anchor="w", borderwidth=2, relief="groove", padx=10)
 
@@ -186,29 +187,29 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         clicked1 = tk.StringVar()
         clicked1.set("Simple Search")
         clicked3 = tk.StringVar()
-        clicked3.set("Filter 1: Price")
+        clicked3.set("Filter 1: All Price")
         clicked4 = tk.StringVar()
-        clicked4.set("Filter 2: Color")
+        clicked4.set("Filter 2: All Color")
         clicked5 = tk.StringVar()
-        clicked5.set("Filter 3: Factory")
+        clicked5.set("Filter 3: All Factory")
         clicked6 = tk.StringVar()
-        clicked6.set("Filter 4: Production year")
+        clicked6.set("Filter 4: All Production year")
 
         # dropdown filter
         tab2 = OptionMenu(self, clicked1, "Simple Search", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3",
         command=lambda clicked1 = clicked1: master.filter_status1(clicked1)).grid(row=0, column=1, sticky="ew", padx=5)
 
         #tk.Label(self, text="Price Filter", anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
-        tab4 = OptionMenu(self, clicked3, "Filter 1: Price", "$50", "$60", "$70", "$100", "$120", "$l25", "$200").grid(row=0, column=2, sticky="ew", padx=5)
+        tab4 = OptionMenu(self, clicked3, "Filter 1: All Price", "$50", "$60", "$70", "$100", "$120", "$l25", "$200").grid(row=0, column=2, sticky="ew", padx=5)
 
         #tk.Label(self, text="Color Filter", anchor="w").grid(row=0, column=3, sticky="ew", padx=5)
-        tab5 = OptionMenu(self, clicked4, "Filter 2: Color", "White", "Blue", "Yellow", "Green", "Black").grid(row=0, column=3, sticky="ew", padx=5)
+        tab5 = OptionMenu(self, clicked4, "Filter 2: All Color", "White", "Blue", "Yellow", "Green", "Black").grid(row=0, column=3, sticky="ew", padx=5)
 
         #tk.Label(self, text="Factory Filter", anchor="w").grid(row=0, column=4, sticky="ew", padx=5)
-        tab6 = OptionMenu(self, clicked5, "Filter 3: Factory", "Malaysia", "China", "Philippines").grid(row=0, column=4, sticky="ew", padx=5)
+        tab6 = OptionMenu(self, clicked5, "Filter 3: All Factory", "Malaysia", "China", "Philippines").grid(row=0, column=4, sticky="ew", padx=5)
     
         #tk.Label(self, text="Production Year Filter", anchor="w").grid(row=0, column=5, sticky="ew", padx=5)
-        tab7 = OptionMenu(self, clicked6, "Filter 4: Production year", "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=0, column=5, sticky="ew", padx=5)
+        tab7 = OptionMenu(self, clicked6, "Filter 4: All Production year", "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=0, column=5, sticky="ew", padx=5)
         
         tab8 = tk.Button(self, text="Advanced Search", command= lambda: master.filter_status2(clicked3, clicked4, clicked5, clicked6)).grid(row=0, column=6, sticky="ew", padx=5)
 
@@ -296,15 +297,15 @@ class Customer_Shopping_Catalogue_Page(Frame):
         model_list = ["Light1", "Light2", "Safe1", "Safe2", "Safe3"]
 
         for dic in items_data.copy():
-            if c4.get() != "Filter 2: Color":
+            if c4.get() != "Filter 2: All Color":
                 if dic["Color"] != c4.get():
                     if dic in items_data:
                         items_data.remove(dic)
-            if c5.get() != "Filter 3: Factory":
+            if c5.get() != "Filter 3: All Factory":
                 if dic['Factory'] != c5.get():
                     if dic in items_data:
                         items_data.remove(dic)
-            if c6.get() != "Filter 4: Production year":
+            if c6.get() != "Filter 4: All Production year":
                 if dic['ProductionYear'] != int(c6.get()):
                     if dic in items_data:
                         items_data.remove(dic)
