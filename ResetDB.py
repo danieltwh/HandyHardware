@@ -65,7 +65,7 @@ def RESET_DB():
     CREATE TABLE Requests(requestID INTEGER NOT NULL,
                         itemID INTEGER NOT NULL,
                         administratorID VARCHAR(100),
-                        requestStatus ENUM('Submitted', 'Submitted and Waiting for payment', 'In progress', 'Approved', 'Canceled', 'Completed') NOT NULL,
+                        requestStatus ENUM('Submitted', 'Submitted and Waiting for payment', 'In progress', 'Approved', 'Cancelled', 'Completed') NOT NULL,
                         requestDetails VARCHAR(200) NOT NULL,
                         PRIMARY KEY (requestID),
                         FOREIGN KEY (itemID) REFERENCES Items(itemID),
