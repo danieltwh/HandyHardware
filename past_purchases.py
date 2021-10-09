@@ -38,17 +38,6 @@ db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/
         connect_args = {"client_flag": CLIENT.MULTI_STATEMENTS}
     )
 
-# to select all past purchases 
-data = pd.read_sql_query("""
-select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID
-from items i 
-inner join products p on i.productID = p.productID
-left join requests r on i.itemID = r.itemID
-where i.itemID in (select itemID from payments where customerID = "JohnSmith123")
-limit 100
-;
-""", db)
-
 # Import custom Scrollable Frame
 from ScrollableFrame import ScrollableFrame
 
@@ -57,7 +46,18 @@ class Past_Purchases_Table(ScrollableFrame):
     def __init__(self, data, *args, **kwargs):
         super().__init__(width=800, height=800, *args, **kwargs)
 
-        self.data = data
+        # unknown column error to fix 
+        customerId = str(self.master.master.customerId)
+
+        self.data = pd.read_sql_query(f"""
+        select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID
+        from items i 
+        inner join products p on i.productID = p.productID
+        left join requests r on i.itemID = r.itemID
+        where i.itemID in (select itemID from payments where customerID = "JohnSmith123")
+        limit 100
+        ;
+        """, db)
 
         # labels 
         tk.Label(self.frame, text="Product", anchor="w").grid(row=1, column=0, sticky="ew", padx=10)
@@ -93,22 +93,24 @@ class Past_Purchases_Table(ScrollableFrame):
                 """, db)
 
                 try: 
-                    time_diff = date.today() - allRequests['settlementDate'][0]
+                    time_diff = date.today() - allRequests['creationDate'][0]
 
-                    if time_diff.days > 10:  # must update the database with cancelled request status 
+                    if time_diff.days > 10 :  
 
                         requestStatus = "Cancelled"
                         
-                        # with db.begin() as conn:
-                        #     savepoint = conn.begin_nested()
-                        #     conn.execute(f"""
-                        #     UPDATE Requests
-                        #     SET requestStatus = "Cancelled"
-                        #     WHERE requestID = {entry.requestID}
-                        #     ;
-                        #     """)
-                        #     savepoint.commit()
-                            
+                        with db.begin() as conn:
+                            try:
+                                savepoint = conn.begin_nested()
+                                conn.execute(f"""
+                                UPDATE Requests
+                                SET requestStatus = "Cancelled"
+                                WHERE requestID = {entry.requestID}
+                                ;
+                                """)
+                                savepoint.commit()
+                            except:
+                                savepoint.rollback()
 
                     else:
                         requestStatus = entry.requestStatus
@@ -134,6 +136,7 @@ class Past_Purchases_Table(ScrollableFrame):
             # different button according to what is the request status 
             if requestStatus in ['Completed', 'Cancelled', 'No request made']:
                 requestButton = tk.Button(self.frame, text="Make new request")  
+                # command=lambda requestId = requestId: self.master.show_approval_details(requestId)
             else:
                 requestButton = tk.Button(self.frame, text="Request details")  
             requestButton.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)
@@ -164,12 +167,23 @@ class Past_Purchase_Page(Frame):
 
         self.header = Past_Purchase_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
 
-        global data
+        customerId = str(self.master.customerId)
+        self.data = pd.read_sql_query(f"""
+        select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID
+        from items i 
+        inner join products p on i.productID = p.productID
+        left join requests r on i.itemID = r.itemID
+        where i.itemID in (select itemID from payments where customerID = "JohnSmith123")
+        limit 100
+        ;
+        """, db)
 
-        self.table = Past_Purchases_Table(data, self)
 
+        self.table = Past_Purchases_Table(self.data, self)
         self.header.pack(side="top", fill="x", expand=False)
         self.table.pack(side="top", fill="both", expand=True)
+
+
 
     def show_header():
         header = Past_Purchase_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
@@ -180,8 +194,17 @@ class Past_Purchase_Page(Frame):
         
         self.table.destroy()
 
-        global data
-        curr_data = data.copy()
+        customerId = str(self.master.master.customerId)
+        self.data = pd.read_sql_query(f"""
+        select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID
+        from items i 
+        inner join products p on i.productID = p.productID
+        left join requests r on i.itemID = r.itemID
+        where i.itemID in (select itemID from payments where customerID = "JohnSmith123")
+        limit 100
+        ;
+        """, db)
+        curr_data = self.data.copy()
 
         if clicked.get() == 'No request made':
             curr_data = curr_data[curr_data['requestStatus'].isnull()]
