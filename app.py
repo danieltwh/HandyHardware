@@ -80,6 +80,9 @@ class App(Tk):
         self._frame = None
         self._sideBar= None
         
+        self.customerId = ""
+        self.adminId = ""
+        
         # self.mount_sidebar()
         # self.switch_frame(Request_Details)
         
@@ -88,6 +91,7 @@ class App(Tk):
         
 
     def switch_frame(self, frame_class):
+        print(self.customerId if self.customerId else self.adminId)
         new_frame = frame_class(self)
         if self._frame is not None:
             self._frame.destroy()
@@ -118,10 +122,13 @@ class App(Tk):
         self._frame.pack(expand=True)
     
     def logout(self):
+        self.customerId = ""
+        self.adminId = ""
         self.unmount_sidebar()
         self.load_login_page()
 
-    def login(self):
+    def login(self, customerId):
+        self.customerId = customerId
         self.mount_sidebar()
         self.switch_frame(PAGES.get("customer_shopping_catalogue"))
 
@@ -132,7 +139,8 @@ class App(Tk):
         self._sideBar.config(bg="#495867")
         self._sideBar.pack(side="left", fill="y")
 
-    def admin_login(self):
+    def admin_login(self, adminId):
+        self.adminId = adminId
         self.mount_admin_sidebar()
         self.switch_frame(PAGES.get("admin_request"))
 
