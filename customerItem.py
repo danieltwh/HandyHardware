@@ -45,9 +45,9 @@ def main():
     app.mainloop()
 
 class Catalogue_Table(tk.LabelFrame):
-    def __init__(self, data, *args, **kwargs):
-        tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
-
+    def __init__(self, data, master, *args, **kwargs):
+        tk.LabelFrame.__init__(self, master, width=800, height=800, *args, **kwargs)
+        self.master = master
 
 
         self.grid_columnconfigure(1, weight=1)
@@ -56,6 +56,7 @@ class Catalogue_Table(tk.LabelFrame):
         tk.Label(self, text="Price", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
         tk.Label(self, text="Warranty", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
         tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
+        items = mydb.items
 
         row = 1
         for dic in data:
@@ -63,7 +64,7 @@ class Catalogue_Table(tk.LabelFrame):
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10)
             price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10)
             warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10)             
-            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10)
+            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"PurchaseStatus": "Unsold", "Category": dic["Category"], "Model": dic["Model"]})), anchor="w", borderwidth=2, relief="groove", padx=10)
 
 
             categories_label.grid(row=row, column=0, sticky="ew")
@@ -82,13 +83,13 @@ class Catalogue_Table(tk.LabelFrame):
                     break
 
             if items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"}) != 0:
-                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(int(store['ItemID']), "test", int(dic['Price'])))
+                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(int(store['ItemID']), "test", int(dic['Price']), master))
                 action_button.grid(row=row, column=5, sticky="ew")
 
 
 
             row += 1
-    def purchase(self, itemID, customerID, amount):
+    def purchase(self, itemID, customerID, amount, master):
         with db.begin() as conn:
             try:
                 savepoint = conn.begin_nested()
@@ -111,6 +112,8 @@ class Catalogue_Table(tk.LabelFrame):
                     {"ItemID" : itemID},
                     { "$set": {"PurchaseStatus" : "Sold"} }
                 )
+
+                master.refresh("All")
             except:
                 savepoint.rollback()
                 print("No")
