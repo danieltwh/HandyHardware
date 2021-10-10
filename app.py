@@ -104,6 +104,14 @@ class App(Tk):
             self._frame.pack(side="right", fill="both", expand=True, anchor = "nw", padx=(10, 0))
             # self._frame.grid(row=0, column=1, )
 
+    ## Switch frame that passes an id
+    def id_switch_frame(self, id, frame_class):
+        new_frame = frame_class(id,self)
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = new_frame
+        self._frame.pack(side="top", fill="both", expand=True)
+
     ### FOR CUSTOMERS ###
     def mount_sidebar(self):
         self._sideBar = SideBar(self)
