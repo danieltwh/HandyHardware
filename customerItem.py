@@ -114,7 +114,7 @@ class Catalogue_Table(tk.LabelFrame):
                 savepoint.rollback()
                 print("No")
 
-        self.master.refresh("All")
+        self.master.filter_status1(clicked1)
 
 class Advance_Table(tk.LabelFrame):
     def __init__(self, data, *args, **kwargs):
@@ -195,7 +195,7 @@ class Advance_Table(tk.LabelFrame):
                 savepoint.rollback()
                 print("No")
 
-        self.master.refresh("All")
+        self.master.filter_status2(clicked3, clicked4, clicked5, clicked6)
 
 
 class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
