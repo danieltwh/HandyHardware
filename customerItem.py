@@ -81,7 +81,7 @@ class Catalogue_Table(tk.LabelFrame):
                     break
 
             if items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"}) != 0:
-                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(int(store['ItemID']), 'test', int(dic['Price'])))
+                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(int(store['ItemID']), self.master.master.customerId, int(dic['Price'])))
                 action_button.grid(row=row, column=5, sticky="ew")
 
 
@@ -93,7 +93,7 @@ class Catalogue_Table(tk.LabelFrame):
                 query = """
                 SELECT COUNT(*) INTO @p_count FROM Payments;
                 INSERT INTO Payments(paymentID, itemID, purchaseDate, customerID, amount) VALUES 
-                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), 'BobRob789', amount)
+                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), customerID, amount)
 
 
                 conn.execute(query)
@@ -162,7 +162,7 @@ class Advance_Table(tk.LabelFrame):
                             if dic['Model'] == idic['Model']:
                                 iid = idic['ItemID']
 
-                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(iid, 'test', dic['Price']))
+                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(iid, self.master.master.customerId, dic['Price']))
                 action_button.grid(row=row, column=5, sticky="ew")
 
             row += 1
@@ -174,7 +174,7 @@ class Advance_Table(tk.LabelFrame):
                 query = """
                 SELECT COUNT(*) INTO @p_count FROM Payments;
                 INSERT INTO Payments(paymentID, itemID, purchaseDate, customerID, amount) VALUES 
-                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), 'BobRob789', amount)
+                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), customerID, amount)
 
 
                 conn.execute(query)
