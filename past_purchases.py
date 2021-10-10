@@ -47,14 +47,14 @@ class Past_Purchases_Table(ScrollableFrame):
         super().__init__(width=800, height=800, *args, **kwargs)
 
         # unknown column error to fix 
-        customerId = str(self.master.master.customerId)
+        customerId = 'JohnSmith123'
 
-        self.data = pd.read_sql_query(f"""
+        self.data = pd.read_sql_query("""
         select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID
         from items i 
         inner join products p on i.productID = p.productID
         left join requests r on i.itemID = r.itemID
-        where i.itemID in (select itemID from payments where customerID = "JohnSmith123")
+        where i.itemID in (select itemID from payments where customerID = 'JohnSmith123')
         limit 100
         ;
         """, db)
@@ -167,13 +167,14 @@ class Past_Purchase_Page(Frame):
 
         self.header = Past_Purchase_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
 
-        customerId = str(self.master.customerId)
-        self.data = pd.read_sql_query(f"""
+        customerId = 'JohnSmith123'
+
+        self.data = pd.read_sql_query("""
         select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID
         from items i 
         inner join products p on i.productID = p.productID
         left join requests r on i.itemID = r.itemID
-        where i.itemID in (select itemID from payments where customerID = "JohnSmith123")
+        where i.itemID in (select itemID from payments where customerID = 'JohnSmith123')
         limit 100
         ;
         """, db)
@@ -194,13 +195,13 @@ class Past_Purchase_Page(Frame):
         
         self.table.destroy()
 
-        customerId = str(self.master.master.customerId)
-        self.data = pd.read_sql_query(f"""
+        customerId = 'JohnSmith123'
+        self.data = pd.read_sql_query("""
         select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID
         from items i 
         inner join products p on i.productID = p.productID
         left join requests r on i.itemID = r.itemID
-        where i.itemID in (select itemID from payments where customerID = "JohnSmith123")
+        where i.itemID in (select itemID from payments where customerID = 'JohnSmith123')
         limit 100
         ;
         """, db)
