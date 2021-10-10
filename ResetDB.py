@@ -1542,44 +1542,6 @@ def RESET_DB():
         (424,2000,'2021-02-28','JohnSmith123',125),
         (425,2001,'2021-02-28','JohnSmith123',200);
 
-        
-    INSERT INTO Requests(requestID,	itemID, administratorID, requestStatus, requestDetails) VALUES
-        (1,1001,'EddMing321', 'Completed', 'Item does not light up'),
-        (2,1002,'EddMing321', 'Completed', 'Item broke in half'),
-        (3,1003, NULL, 'Submitted and Waiting for payment', 'Item broke in half'),
-        
-        (4,1004,'EddMing321', 'Cancelled', 'Item broke in half'),
-        (5,1004,NULL, 'Submitted', 'Item broke in half'),
-
-        
-        (6,1005,NULL, 'Submitted', 'Item broke in half'),
-        (7,1006,NULL, 'In progress', 'Item broke in half'),
-        (8,1007,'EddMing321', 'Approved', 'Item broke in half'),
-        (9,1008,'EddMing321', 'Approved', 'Item broke in half'),
-        (10,1009,NULL, 'In progress', 'Item broke in half'),
-        
-        (11,1010,'NistraTor654', 'Completed', 'Item does not light up'),
-        (12,1011,'NistraTor654', 'Completed', 'Item broke in half'),
-        (13,1012,NULL, 'Submitted and Waiting for payment', 'Item broke in half'),
-        (14,1013,'NistraTor654', 'Cancelled', 'Item broke in half'),
-        (15,1014,NULL, 'Submitted', 'Item broke in half'),
-        (16,1015,NULL, 'In progress', 'Item broke in half'),
-        (17,1016,'BrockBroccoli987', 'Approved', 'Item broke in half'),
-        (18,1017,'BrockBroccoli987', 'Approved', 'Item broke in half'),
-        (19,1018,NULL, 'In progress', 'Item broke in half');
-        
-    INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
-        (1, 0, '2021-03-01', '2021-03-01'),
-        (2, 0, '2021-03-03', '2021-03-03');
-
-    INSERT INTO Services(requestID, serviceStatus) VALUES
-        (1, 'Completed'),
-        (2, 'Completed'),
-        (8, 'In progress'),
-        (9, 'In progress'),
-        (17, 'In progress'),
-        (18, 'In progress')
-
 
     """)
     conn.close()
