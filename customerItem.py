@@ -74,18 +74,19 @@ class Catalogue_Table(tk.LabelFrame):
             numberOfItemsAvailable_label.grid_columnconfigure(0, weight=5)
 
             itemdata = list(items.find({}))
-            store = itemdata[0]
+            store = ""
             for i in itemdata:
                 if i['Category'] == dic['Category'] and i['Model'] == dic['Model'] and i['PurchaseStatus'] == "Unsold":
                     store = i
                     break
 
-            if items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"}) != 0:
-                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(int(store['ItemID']), self.master.master.customerId, int(dic['Price'])))
-                action_button.grid(row=row, column=5, sticky="ew")
-
+            if store != "":
+                if items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"}) != 0:
+                    action_button = tk.Button(self, text="Purchase", command=lambda store = store, dic = dic: self.purchase(int(store['ItemID']), self.master.master.customerId, int(dic['Price'])))
+                    action_button.grid(row=row, column=5, sticky="ew")
 
             row += 1
+
     def purchase(self, itemID, customerID, amount):
         with db.begin() as conn:
             try:
@@ -162,7 +163,7 @@ class Advance_Table(tk.LabelFrame):
                             if dic['Model'] == idic['Model']:
                                 iid = idic['ItemID']
 
-                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(iid, self.master.master.customerId, dic['Price']))
+                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic, iid = iid: self.purchase(iid, self.master.master.customerId, dic['Price']))
                 action_button.grid(row=row, column=5, sticky="ew")
 
             row += 1
