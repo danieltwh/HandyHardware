@@ -87,7 +87,6 @@ class Catalogue_Table(tk.LabelFrame):
                 action_button.grid(row=row, column=5, sticky="ew")
 
 
-
             row += 1
     def purchase(self, itemID, customerID, amount, master):
         with db.begin() as conn:
@@ -117,6 +116,7 @@ class Catalogue_Table(tk.LabelFrame):
             except:
                 savepoint.rollback()
                 print("No")
+
 
 
     # def add(self, row):
