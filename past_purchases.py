@@ -389,7 +389,7 @@ class Request_Details(Frame):
         LEFT JOIN Items i USING(itemID)
         LEFT JOIN ServiceFees sf ON r.requestID = sf.requestID
         LEFT JOIN Products p ON i.productID = p.productID
-        WHERE (r.itemID = {curr_itemId} AND r.requestStatus != 'Cancelled')
+        WHERE (r.itemID = {curr_itemId} AND r.requestStatus != 'Cancelled' AND r.requestStatus != 'Completed')
         ;
         """, db)
 
@@ -451,9 +451,9 @@ class Request_Details(Frame):
             return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
             return_btn.grid(row=9, column=1, pady = 20)
         
-        # elif curr_requestStatus in ['Cancelled', 'Completed']:
-        #     return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
-        #     return_btn.grid(row=9, column=1, pady = 20)
+        elif curr_requestStatus in ['Cancelled', 'Completed']:
+            return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
+            return_btn.grid(row=9, column=1, pady = 20)
 
 
     def cancelRequest(self,itemId):
