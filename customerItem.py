@@ -45,10 +45,8 @@ def main():
     app.mainloop()
 
 class Catalogue_Table(tk.LabelFrame):
-    def __init__(self, data, master, *args, **kwargs):
+    def __init__(self, data, *args, **kwargs):
         tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
-        self.master = master
-
 
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
@@ -83,19 +81,19 @@ class Catalogue_Table(tk.LabelFrame):
                     break
 
             if items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"}) != 0:
-                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(int(store['ItemID']), 'test', int(dic['Price']), master))
+                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(int(store['ItemID']), 'test', int(dic['Price'])))
                 action_button.grid(row=row, column=5, sticky="ew")
 
 
             row += 1
-    def purchase(self, itemID, customerID, amount, master):
+    def purchase(self, itemID, customerID, amount):
         with db.begin() as conn:
             try:
                 savepoint = conn.begin_nested()
                 query = """
                 SELECT COUNT(*) INTO @p_count FROM Payments;
                 INSERT INTO Payments(paymentID, itemID, purchaseDate, customerID, amount) VALUES 
-                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), 'JohnSmith123', amount)
+                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), 'BobRob789', amount)
 
 
                 conn.execute(query)
@@ -104,26 +102,20 @@ class Catalogue_Table(tk.LabelFrame):
                 val = (itemID)
                 conn.execute(query2, val)
 
-                savepoint.commit()
-                print("yes")
-
                 items.update_one(
                     {"ItemID" : itemID},
                     { "$set": {"PurchaseStatus" : "Sold"} }
                 )
 
-                master.refresh("All", master)
+                savepoint.commit()
+                print("yes")
+
             except:
                 savepoint.rollback()
                 print("No")
 
+        self.master.refresh("All")
 
-
-    # def add(self, row):
-    #     global data
-    #     global cart
-    #     newData = data.copy()
-    #     cart.append(newData[row - 1][:-1])
 class Advance_Table(tk.LabelFrame):
     def __init__(self, data, *args, **kwargs):
         tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
@@ -146,7 +138,7 @@ class Advance_Table(tk.LabelFrame):
             
             count = 0
             for idic in items_data:
-                if idic['PurchaseStatus'] == 'Sold':
+                if idic['PurchaseStatus'] == 'Unsold':
                     if dic['Category'] == idic['Category']:
                         if dic['Model'] == idic['Model']:
                             count += 1
@@ -163,48 +155,47 @@ class Advance_Table(tk.LabelFrame):
             numberOfItemsAvailable_label.grid_columnconfigure(0, weight=5)
         
             if count != 0:
-                action_button = tk.Button(self, text="Purchase", command=lambda row = row: self.add(row))
+                iid = items_data[0]["ItemID"]
+                for idic in items_data:
+                    if idic['PurchaseStatus'] == 'Unsold':
+                        if dic['Category'] == idic['Category']:
+                            if dic['Model'] == idic['Model']:
+                                iid = idic['ItemID']
+
+                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic: self.purchase(iid, 'test', dic['Price']))
                 action_button.grid(row=row, column=5, sticky="ew")
 
             row += 1
 
-# class Cart_Table(tk.LabelFrame):
-#     def __init__(self, data, *args, **kwargs):
-#         tk.LabelFrame.__init__(self, *args, **kwargs)
-
-#         self.data = data
-
-#         self.grid_columnconfigure(1, weight=1)
-#         tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
-#         tk.Label(self, text="Model", anchor="w").grid(row=0, column=1, sticky="ew", padx=10)
-#         tk.Label(self, text="Price", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
-#         tk.Label(self, text="Warranty", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
-
-        
-
-#         row = 1
-#         for (categories, model, price, warranty) in data:
-#             categories_label = tk.Label(self, text=str(categories), anchor="w", borderwidth=2, relief="groove", padx=10)
-#             model_label = tk.Label(self, text=str(model), anchor="w", borderwidth=2, relief="groove", padx=10)
-#             price_label = tk.Label(self, text=str(price), anchor="w", borderwidth=2, relief="groove", padx=10)
-#             warranty_label = tk.Label(self, text=str(warranty), anchor="w", borderwidth=2, relief="groove", padx=10)             
+    def purchase(self, itemID, customerID, amount):
+        with db.begin() as conn:
+            try:
+                savepoint = conn.begin_nested()
+                query = """
+                SELECT COUNT(*) INTO @p_count FROM Payments;
+                INSERT INTO Payments(paymentID, itemID, purchaseDate, customerID, amount) VALUES 
+                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), 'BobRob789', amount)
 
 
-#             categories_label.grid(row=row, column=0, sticky="ew")
-#             model_label.grid(row=row, column=1, sticky="ew")
-#             price_label.grid(row=row, column=2, sticky="ew", )
-#             warranty_label.grid(row=row, column=3, sticky="ew")
-#             warranty_label.grid_columnconfigure(0, weight=5)
+                conn.execute(query)
 
-#             print(row)
-#             action_button = tk.Button(self, text="Remove", command=lambda row = row: self.remove(row))
-#             action_button.grid(row=row, column=5, sticky="ew")
+                query2 = """UPDATE Items SET purchaseStatus = 'Sold' WHERE itemID = %s""" 
+                val = (itemID)
+                conn.execute(query2, val)
 
-#             row += 1
-        
-#     def remove(self, row):
-#         global cart
-#         cart.pop(row - 1)
+                items.update_one(
+                    {"ItemID" : itemID},
+                    { "$set": {"PurchaseStatus" : "Sold"} }
+                )
+
+                savepoint.commit()
+                print("yes")
+
+            except:
+                savepoint.rollback()
+                print("No")
+
+        self.master.refresh("All")
 
 
 class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
@@ -212,13 +203,8 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         tk.LabelFrame.__init__(self, master, *args, **kwargs)
         self.master = master
 
-
-        tab1 = tk.Button(self, text="Refresh Shopping Catalogue", command= lambda: master.refresh("All", master))
+        tab1 = tk.Button(self, text="Refresh Shopping Catalogue", command= lambda: master.refresh("All"))
         tab1.grid(row=0, column=0, padx=(10, 5))
-
-        #tab3 = tk.Button(self, text="Cart", command= lambda: master.goCart("Cart"))
-        #tab2.pack(side="left", fill="both")
-        #tab3.grid(row=0, column=1, padx=5)
         global clicked1
         global clicked2
         global clicked3
@@ -239,7 +225,7 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         # dropdown filter
         tab2 = OptionMenu(self, clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=0, column=1, sticky="ew", padx=5)
 
-        tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = clicked1: master.filter_status1(clicked1, master)).grid(row=0, column=2, sticky="ew", padx=5)
+        tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = clicked1: master.filter_status1(clicked1)).grid(row=0, column=2, sticky="ew", padx=5)
         
         #tk.Label(self, text="Price Filter", anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
         tab4 = OptionMenu(self, clicked3, "Filter 1: All Price", "$50", "$60", "$70", "$100", "$120", "$l25", "$200").grid(row=2, column=0, sticky="ew", padx=5)
@@ -266,11 +252,11 @@ class Customer_Shopping_Catalogue_Page(Frame):
 
         self.header = Customer_Shopping_Catalogue_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
         self.header.pack(side="top", fill="x", expand=False)
-        self.Catalogue_Table = Catalogue_Table(curr_data, master, self)
+        self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
 
     
-    def refresh(self, curr_view, master):
+    def refresh(self, curr_view):
 
         self.Catalogue_Table.destroy()
         self.header.destroy()
@@ -280,11 +266,10 @@ class Customer_Shopping_Catalogue_Page(Frame):
 
         self.header = Customer_Shopping_Catalogue_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
         self.header.pack(side="top", fill="x", expand=False)
-        self.Catalogue_Table = Catalogue_Table(curr_data, master, self)
+        self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
-    
 
-    def filter_status1(self, curr_view, master):
+    def filter_status1(self, curr_view):
         self.Catalogue_Table.destroy()
         curr_data = products.find({})
         
@@ -305,7 +290,7 @@ class Customer_Shopping_Catalogue_Page(Frame):
         elif clicked1.get() == 'Model: SmartHome1':
             curr_data = products.find({"Model": "SmartHome1"})
 
-        self.Catalogue_Table = Catalogue_Table(curr_data, master, self)
+        self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
     
     def filter_status2(self, c3, c4, c5, c6):
