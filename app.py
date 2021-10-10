@@ -81,7 +81,7 @@ class App(Tk):
         self._sideBar= None
         
         self.customerId = ""
-        self.adminId = ""
+        self.adminId = "NULL"
         
         # self.mount_sidebar()
         # self.switch_frame(Request_Details)

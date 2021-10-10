@@ -189,9 +189,9 @@ class Request_Submitted_Page(Frame):
 #     def __init__(self):
 #         Tk.__init__(self)
 #         self._frame = None
-#         self.switch_frame(1,Request_Page)
+#         self.id_switch_frame(1,Request_Page)
 
-#     def switch_frame(self, id, frame_class):
+#     def id_switch_frame(self, id, frame_class):
 #         new_frame = frame_class(id,self)
 #         if self._frame is not None:
 #             self._frame.destroy()
