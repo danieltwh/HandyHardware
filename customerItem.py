@@ -134,6 +134,10 @@ class Advance_Table(tk.LabelFrame):
         bg = ["#ffffff", "#d9e1f2"]
         row = 1
         for dic in products_data:
+            if clicked3.get() != "Filter 1: All Price":
+                if int(dic["Price"]) != int(clicked3.get()[1:]):
+                    continue
+
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
