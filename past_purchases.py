@@ -10,6 +10,7 @@ from dateutil.relativedelta import relativedelta
 from tkinter import *
 from PIL import ImageTk,Image
 from tkinter import messagebox
+import math
 
 # For SQL query
 from sqlalchemy import create_engine
@@ -33,35 +34,32 @@ class Past_Purchases_Table(ScrollableFrame):
 
         customerId = str(self.master.master.customerId)
 
-        distinct_rows = pd.read_sql_query("""select count(distinct itemID) as c from requests""", db)['c'][0]
-        non_distinct_rows = pd.read_sql_query("""select count(*) as c from requests""", db)['c'][0]
+        with_request = pd.read_sql_query(f"""
+        SELECT * FROM Items i
+        LEFT JOIN Payments c USING (itemID)
+        LEFT JOIN Requests r USING(itemID)
+        LEFT JOIN Products p USING(productID)
+        WHERE requestID = (
+        SELECT max(requestID)
+            FROM Items i2
+        LEFT JOIN Payments c2 USING (itemID)
+        LEFT JOIN Requests r2 USING(itemID)
+            WHERE i2.itemID = i.itemID
+            GROUP BY i2.itemID
+        ) and c.customerID = "{customerId}";
+        """, db)
 
-        print(distinct_rows)
-        print(non_distinct_rows)
-        if distinct_rows < non_distinct_rows:
-
-            print('repeated')
-            self.data = pd.read_sql_query(f"""
+        no_request = pd.read_sql_query(f"""
             select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
             from items i 
             inner join products p on i.productID = p.productID
-            left join (select r1.requestID, r1.itemID, r1.administratorID, r1.requestStatus, r1.requestDetails from requests r1 inner join requests r2 on r1.itemID = r2.itemID and r1.requestID > r2.requestID) r on i.itemID = r.itemID
+            left join requests r on i.itemID = r.itemID
             left join payments pay on i.itemID = pay.itemID
-            where i.itemID in (select itemID from payments where customerID = "{customerId}")
+            where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
             limit 100;
-            """, db)
-        
-        else:
-            print('not repeated')
-            self.data = pd.read_sql_query(f"""
-            select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
-            from items i 
-            inner join products p on i.productID = p.productID
-            left join (select r1.requestID, r1.itemID, r1.administratorID, r1.requestStatus, r1.requestDetails from requests r1 inner join requests r2 on r1.itemID = r2.itemID and r1.requestID >= r2.requestID) r on i.itemID = r.itemID
-            left join payments pay on i.itemID = pay.itemID
-            where i.itemID in (select itemID from payments where customerID = "{customerId}")
-            limit 100;
-            """, db)
+        """, db)
+
+        self.data = pd.concat([with_request, no_request], axis=0)
 
         # labels 
         tk.Label(self.frame, text="Product", anchor="w").grid(row=1, column=0, sticky="ew", padx=10)
@@ -88,7 +86,7 @@ class Past_Purchases_Table(ScrollableFrame):
             productionYear = entry.productionYear
             factory = entry.factory
 
-            if entry.requestStatus == None:
+            if entry.requestStatus == None or math.isnan(entry.requestID):
                 requestStatus = 'No request made'
             else:
                 allRequests = pd.read_sql_query(f"""
@@ -177,35 +175,32 @@ class Past_Purchase_Page(Frame):
 
         customerId = str(self.master.customerId)
 
-        distinct_rows = pd.read_sql_query("""select count(distinct itemID) as c from requests""", db)['c'][0]
-        non_distinct_rows = pd.read_sql_query("""select count(*) as c from requests""", db)['c'][0]
+        with_request = pd.read_sql_query(f"""
+        SELECT * FROM Items i
+        LEFT JOIN Payments c USING (itemID)
+        LEFT JOIN Requests r USING(itemID)
+        LEFT JOIN Products p USING(productID)
+        WHERE requestID = (
+        SELECT max(requestID)
+            FROM Items i2
+        LEFT JOIN Payments c2 USING (itemID)
+        LEFT JOIN Requests r2 USING(itemID)
+            WHERE i2.itemID = i.itemID
+            GROUP BY i2.itemID
+        ) and c.customerID = "{customerId}";
+        """, db)
 
-        print(distinct_rows)
-        print(non_distinct_rows)
-        if distinct_rows < non_distinct_rows:
-
-            print('repeated')
-            self.data = pd.read_sql_query(f"""
+        no_request = pd.read_sql_query(f"""
             select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
             from items i 
             inner join products p on i.productID = p.productID
-            left join (select r1.requestID, r1.itemID, r1.administratorID, r1.requestStatus, r1.requestDetails from requests r1 inner join requests r2 on r1.itemID = r2.itemID and r1.requestID > r2.requestID) r on i.itemID = r.itemID
+            left join requests r on i.itemID = r.itemID
             left join payments pay on i.itemID = pay.itemID
-            where i.itemID in (select itemID from payments where customerID = "{customerId}")
+            where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
             limit 100;
-            """, db)
-        
-        else:
-            print('not repeated')
-            self.data = pd.read_sql_query(f"""
-            select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
-            from items i 
-            inner join products p on i.productID = p.productID
-            left join (select r1.requestID, r1.itemID, r1.administratorID, r1.requestStatus, r1.requestDetails from requests r1 inner join requests r2 on r1.itemID = r2.itemID and r1.requestID >= r2.requestID) r on i.itemID = r.itemID
-            left join payments pay on i.itemID = pay.itemID
-            where i.itemID in (select itemID from payments where customerID = "{customerId}")
-            limit 100;
-            """, db)
+        """, db)
+
+        self.data = pd.concat([with_request, no_request], axis=0)
 
 
         self.table = Past_Purchases_Table(self.data, self)
@@ -225,35 +220,32 @@ class Past_Purchase_Page(Frame):
 
         customerId = str(self.master.customerId)
 
-        distinct_rows = pd.read_sql_query("""select count(distinct itemID) as c from requests""", db)['c'][0]
-        non_distinct_rows = pd.read_sql_query("""select count(*) as c from requests""", db)['c'][0]
+        with_request = pd.read_sql_query(f"""
+        SELECT * FROM Items i
+        LEFT JOIN Payments c USING (itemID)
+        LEFT JOIN Requests r USING(itemID)
+        LEFT JOIN Products p USING(productID)
+        WHERE requestID = (
+        SELECT max(requestID)
+            FROM Items i2
+        LEFT JOIN Payments c2 USING (itemID)
+        LEFT JOIN Requests r2 USING(itemID)
+            WHERE i2.itemID = i.itemID
+            GROUP BY i2.itemID
+        ) and c.customerID = "{customerId}";
+        """, db)
 
-        print(distinct_rows)
-        print(non_distinct_rows)
-        if distinct_rows < non_distinct_rows:
-
-            print('repeated')
-            self.data = pd.read_sql_query(f"""
+        no_request = pd.read_sql_query(f"""
             select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
             from items i 
             inner join products p on i.productID = p.productID
-            left join (select r1.requestID, r1.itemID, r1.administratorID, r1.requestStatus, r1.requestDetails from requests r1 inner join requests r2 on r1.itemID = r2.itemID and r1.requestID > r2.requestID) r on i.itemID = r.itemID
+            left join requests r on i.itemID = r.itemID
             left join payments pay on i.itemID = pay.itemID
-            where i.itemID in (select itemID from payments where customerID = "{customerId}")
+            where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
             limit 100;
-            """, db)
-        
-        else:
-            print('not repeated')
-            self.data = pd.read_sql_query(f"""
-            select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
-            from items i 
-            inner join products p on i.productID = p.productID
-            left join (select r1.requestID, r1.itemID, r1.administratorID, r1.requestStatus, r1.requestDetails from requests r1 inner join requests r2 on r1.itemID = r2.itemID and r1.requestID >= r2.requestID) r on i.itemID = r.itemID
-            left join payments pay on i.itemID = pay.itemID
-            where i.itemID in (select itemID from payments where customerID = "{customerId}")
-            limit 100;
-            """, db)
+        """, db)
+
+        self.data = pd.concat([with_request, no_request], axis=0)
 
         curr_data = self.data.copy()
 
