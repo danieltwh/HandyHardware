@@ -13,6 +13,7 @@ from admin_request import Admin_Request_Page
 from cus_request_details import Request_Details
 from customerItem import Customer_Shopping_Catalogue_Page
 from past_purchases import Past_Purchase_Page
+from request_table_page import Request_Table_Page
 from ResetDB import RESET_DB
 
 PAGES = {
@@ -20,6 +21,7 @@ PAGES = {
     "customer_shopping_catalogue": Customer_Shopping_Catalogue_Page,
     "customer_past_purchases": Past_Purchase_Page,
     "admin_request": Admin_Request_Page,
+    "request_table":Request_Table_Page,
 }
 
 ##########################
@@ -37,11 +39,15 @@ class SideBar(Frame):
             command=lambda: master.switch_frame(PAGES.get("customer_past_purchases")))
         past_purchases_btn.grid(row=2, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
 
+        request_table_btn = Button(self, text="Past Requests", wraplength=130,
+            command=lambda: master.switch_frame(PAGES.get("request_table")))
+        request_table_btn.grid(row=3, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+
         # ttk.Style().configure("red/black.TButton", foreground="black", background="red")
 
         logout_btn = Button(self, text="Logout", padx=10,  
             command=lambda: master.logout())
-        logout_btn.grid(row=3, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+        logout_btn.grid(row=4, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
 
 class AdminSideBar(Frame):
     def __init__(self, master):

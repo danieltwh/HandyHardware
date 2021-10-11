@@ -50,7 +50,9 @@ class Past_Purchases_Table(ScrollableFrame):
         """, db)
 
         no_request = pd.read_sql_query(f"""
-            select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
+            select i.itemID, p.model, i.colour, i.powerSupply,
+            i.productionYear, i.factory, r.requestStatus, p.warrantyMonths,
+            r.requestID, pay.paymentID, p.price
             from items i 
             inner join products p on i.productID = p.productID
             left join requests r on i.itemID = r.itemID
@@ -62,13 +64,14 @@ class Past_Purchases_Table(ScrollableFrame):
         self.data = pd.concat([with_request, no_request], axis=0)
 
         # labels 
-        tk.Label(self.frame, text="Product", anchor="w").grid(row=1, column=0, sticky="ew", padx=10)
+        tk.Label(self.frame, text="ItemID", anchor="w").grid(row=1, column=0, sticky="ew", padx=10)
         tk.Label(self.frame, text="Model", anchor="w").grid(row=1, column=1, sticky="ew", padx=10)
         tk.Label(self.frame, text="Colour", anchor="w").grid(row=1, column=2, sticky="ew", padx=10)
         tk.Label(self.frame, text="Power Supply", anchor="w").grid(row=1, column=3, sticky="ew", padx=10)
         tk.Label(self.frame, text="Production Year", anchor="w").grid(row=1, column=4, sticky="ew", padx=10)
         tk.Label(self.frame, text="Factory", anchor="w").grid(row=1, column=5, sticky="ew", padx=10)
-        tk.Label(self.frame, text="Request Status", anchor="w").grid(row=1, column=6, sticky="ew", padx=10)
+        tk.Label(self.frame, text="Amount Paid", anchor="w").grid(row=1, column=6, sticky="ew", padx=10)
+        tk.Label(self.frame, text="Request Status", anchor="w").grid(row=1, column=7, sticky="ew", padx=10)
 
         row = 2
 
@@ -79,12 +82,13 @@ class Past_Purchases_Table(ScrollableFrame):
         for entry in data.itertuples():
             
             # print(entry)
-            category = entry.itemID
+            itemId = entry.itemID
             model = entry.model
             colour = entry.colour
             powerSupply = entry.powerSupply
             productionYear = entry.productionYear
             factory = entry.factory
+            amountPaid = entry.price
 
             if entry.requestStatus == None or math.isnan(entry.requestID):
                 requestStatus = 'No request made'
@@ -120,32 +124,32 @@ class Past_Purchases_Table(ScrollableFrame):
                 except: 
                     requestStatus = entry.requestStatus 
 
-            product_label = tk.Label(self.frame, text=str(category), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            itemID_label = tk.Label(self.frame, text=str(itemId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self.frame, text=str(model), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             colour_label = tk.Label(self.frame, text=str(colour), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             powerSupply_label = tk.Label(self.frame, text=str(powerSupply), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             productionYear_label = tk.Label(self.frame, text=str(productionYear), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             factory_label = tk.Label(self.frame, text=str(factory), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])   
+            amountPaid_label = tk.Label(self.frame, text=str(amountPaid), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             requestStatus_label = tk.Label(self.frame, text=str(requestStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             
-            product_label.grid(row=row, column=0, sticky="ew", pady=2.5, ipady=5)
+            itemID_label.grid(row=row, column=0, sticky="ew", pady=2.5, ipady=5)
             model_label.grid(row=row, column=1, sticky="ew", pady=2.5, ipady=5)
             colour_label.grid(row=row, column=2, sticky="ew", pady=2.5, ipady=5)
             powerSupply_label.grid(row=row, column=3, sticky="ew", pady=2.5, ipady=5)
             productionYear_label.grid(row=row, column=4, sticky="ew", pady=2.5, ipady=5)
             factory_label.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
-            requestStatus_label.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)    
+            amountPaid_label.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
+            requestStatus_label.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)    
 
             # different button according to what is the request status 
             paymentID = entry.paymentID
-            itemID = entry.itemID
 
             if requestStatus in ['Completed', 'Cancelled', 'No request made']:
                 requestButton = tk.Button(self.frame, text="Make new request", command = lambda paymentID = paymentID: self.master.master.id_switch_frame(paymentID, Request_Page))  
-                # command=lambda requestId = requestId: self.master.show_approval_details(requestId)
             else:
-                requestButton = tk.Button(self.frame, text="Request details", command = lambda itemID = itemID: self.master.master.id_switch_frame(itemID, Request_Details))  
-            requestButton.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)
+                requestButton = tk.Button(self.frame, text="Request details", command = lambda itemId = itemId: self.master.master.id_switch_frame(itemId, Request_Details))  
+            requestButton.grid(row=row, column=8, sticky="ew", pady=2.5, ipady=5)
 
             row += 1
         
@@ -162,9 +166,11 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
         clicked.set("None")
 
         # dropdown filter
-        OptionMenu(self, clicked, "Submitted", "Approved", "Submitted and Waiting for payment", "In progress", "Cancelled", "Completed", "No request made", "No filter", 
+        OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
         command=lambda clicked = clicked: master.filter_status(clicked)).grid(row=0, column=6, sticky="ew", padx=10)
-
+        
+        title = tk.Label(self, text="Past Purchases Page", font=('Aerial 14 bold'))
+        title.grid(row=0, column=8, pady =20)
 # main frame consisting of table and header 
 class Past_Purchase_Page(Frame):
     def __init__(self, master):
@@ -191,7 +197,9 @@ class Past_Purchase_Page(Frame):
         """, db)
 
         no_request = pd.read_sql_query(f"""
-            select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
+            select i.itemID, p.model, i.colour, i.powerSupply,
+            i.productionYear, i.factory, r.requestStatus,
+            p.warrantyMonths, r.requestID, pay.paymentID, p.price
             from items i 
             inner join products p on i.productID = p.productID
             left join requests r on i.itemID = r.itemID
@@ -236,7 +244,9 @@ class Past_Purchase_Page(Frame):
         """, db)
 
         no_request = pd.read_sql_query(f"""
-            select i.itemID, p.model, i.colour, i.powerSupply, i.productionYear, i.factory, r.requestStatus, p.warrantyMonths, r.requestID, pay.paymentID
+            select i.itemID, p.model, i.colour, i.powerSupply,
+            i.productionYear, i.factory, r.requestStatus,
+            p.warrantyMonths, r.requestID, pay.paymentID, p.price
             from items i 
             inner join products p on i.productID = p.productID
             left join requests r on i.itemID = r.itemID
@@ -278,6 +288,7 @@ class Request_Page(Frame):
         self.master = master
 
         curr_adminId = self.master.adminId
+        print(curr_adminId)
 
         print(curr_paymentId)
 
