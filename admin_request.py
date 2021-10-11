@@ -18,23 +18,112 @@ db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/
 # Import custom Scrollable Frame
 from ScrollableFrame import ScrollableFrame
 
+##########################
+
+class SideBar(Frame):
+    def __init__(self, master):
+        Frame.__init__(self, master, width=400, height=800)
+        self.master = master
+
+        catalogue_btn = Button(self, text="Shop", padx=10, highlightbackground="#ffffff", 
+            command=lambda: master.switch_frame(PAGES.get("customer_shopping_catalogue")))
+        catalogue_btn.grid(row=1, column=0, padx=(5, 10), sticky="EW", pady=(10, 5))
+
+        past_purchases_btn = Button(self, text="Past Purchases / Make Request", wraplength=130,
+            command=lambda: master.switch_frame(PAGES.get("customer_past_purchases")))
+        past_purchases_btn.grid(row=2, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+
+        # ttk.Style().configure("red/black.TButton", foreground="black", background="red")
+
+        logout_btn = Button(self, text="Logout", padx=10,  
+            command=lambda: master.logout())
+        logout_btn.grid(row=3, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+
+class AdminSideBar(Frame):
+    def __init__(self, master):
+        Frame.__init__(self, master, width=400, height=800)
+        self.master = master
+
+        catalogue_btn = Button(self, text="Items", padx=10, highlightbackground="#ffffff", 
+            command=lambda: master.switch_frame(PAGES.get("customer_shopping_catalogue")))
+        catalogue_btn.grid(row=1, column=0, padx=(5, 10), sticky="EW", pady=(10, 5))
+
+        past_purchases_btn = Button(self, text="Manage Request", wraplength=130,
+            command=lambda: master.switch_frame(PAGES.get("admin_request")))
+        past_purchases_btn.grid(row=2, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+
+        # ttk.Style().configure("red/black.TButton", foreground="black", background="red")
+
+        logout_btn = Button(self, text="Logout", padx=10,  
+            command=lambda: master.logout())
+        logout_btn.grid(row=3, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+
 class App(Tk):
     def __init__(self):
         Tk.__init__(self)
         self._frame = None
-        self.switch_frame(Admin_Request_Page)
+        self._sideBar= None
+        
+        self.customerId = ""
+        self.adminId = "EddMing321"
+        
+        # self.mount_sidebar()
+        # self.switch_frame(Request_Details_page)
+        
+        # self.load_login_page();
+
+        
 
     def switch_frame(self, frame_class):
+        print(self.customerId if self.customerId else self.adminId)
         new_frame = frame_class(self)
         if self._frame is not None:
             self._frame.destroy()
         self._frame = new_frame
-        self._frame.pack(side="top", fill="both", expand=True)
 
-    # def print_hello(self):
-    #     print("Hello")
-    #     self.after(2000, self.print_hello)
+ 
+        self._frame.pack(side="right", fill="both", expand=True, anchor = "nw", padx=(10, 0))
+            # self._frame.grid(row=0, column=1, )
 
+    ### FOR CUSTOMERS ###
+    def mount_sidebar(self):
+        self._sideBar = SideBar(self)
+        self._sideBar.config(bg="#495867")
+        self._sideBar.pack(side="left", fill="y")
+
+    def unmount_sidebar(self):
+        self._sideBar.destroy()
+    
+    def load_login_page(self):
+        new_frame = PAGES.get("login")(self)
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = new_frame
+        # self._frame.pack(fill="both", expand=True, padx=0, pady=225)
+        self._frame.pack(expand=True)
+    
+    def logout(self):
+        self.customerId = ""
+        self.adminId = ""
+        self.unmount_sidebar()
+        self.load_login_page()
+
+    def login(self, customerId):
+        self.customerId = customerId
+        self.mount_sidebar()
+        self.switch_frame(PAGES.get("customer_shopping_catalogue"))
+
+
+    ### FOR ADMINS ###   
+    def mount_admin_sidebar(self):
+        self._sideBar = AdminSideBar(self)
+        self._sideBar.config(bg="#495867")
+        self._sideBar.pack(side="left", fill="y")
+
+    def admin_login(self, adminId):
+        self.adminId = adminId
+        self.mount_admin_sidebar()
+        self.switch_frame(PAGES.get("admin_request"))
 
 def main():
     # root = Tk()
@@ -46,9 +135,12 @@ def main():
     # root.mainloop()
 
     app = App()
-    app.geometry("800x800")
-    # app.after(2000, app.print_hello)
+    app.geometry("1200x800")
+    app.switch_frame(Admin_Request_Page)
     app.mainloop()
+    
+
+####################
 
 
 
@@ -233,7 +325,7 @@ ORDER BY
       WHEN 'Submitted and Waiting for payment' THEN 3
 	  WHEN 'Approved' THEN 4
       WHEN 'Completed' THEN 5
-      WHEN 'Canceled' THEN 6
+      WHEN 'Cancelled' THEN 6
 	END,
     r.requestID
 """
@@ -413,8 +505,10 @@ class Service_Table(ScrollableFrame):
             row=0, column=4, sticky="ew", padx=10)
         tk.Label(self.frame, text="Service Status", anchor="w").grid(
             row=0, column=5, sticky="ew", padx=10)
-        tk.Label(self.frame, text="Action", anchor="w").grid(
+        tk.Label(self.frame, text="Admin In-charge", anchor="w").grid(
             row=0, column=6, sticky="ew", padx=10)
+        tk.Label(self.frame, text="Action", anchor="w").grid(
+            row=0, column=7, sticky="ew", padx=10)
 
         row = 1
 
@@ -426,9 +520,19 @@ class Service_Table(ScrollableFrame):
             name = request.customerID
             model = request.model
             issue = request.requestDetails
+            if len(issue) > 25:
+                issue = issue[:22]
+                issue += "..." 
+
             requestStatus = request.requestStatus
             serviceStatus = request.serviceStatus
             request_admin = request.administratorID
+
+            list_of_data = [name, request_admin]
+            for item in list_of_data:
+                if len(item) > 18:
+                    item = item[:15]
+                    item += "..." 
 
             serviceId_label = tk.Label(self.frame, text=str(
                 serviceId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
@@ -442,6 +546,8 @@ class Service_Table(ScrollableFrame):
                 requestStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             serviceStatus_label = tk.Label(self.frame, text=str(
                 serviceStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            adminId_label = tk.Label(self.frame, text=str(
+            request_admin), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
             # active_cb = tk.Checkbutton(self.frame, onvalue=True, offvalue=False)
             # active = True
@@ -458,6 +564,7 @@ class Service_Table(ScrollableFrame):
             requestStatus_label.grid(row=row, column=4, sticky="ew", pady=2.5, ipady=5)
             serviceStatus_label.grid(row=row, column=5, sticky="ew", pady=2.5, ipady=5)
             serviceStatus_label.grid_columnconfigure(0, weight=5)
+            adminId_label.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
             # active_cb.grid(row=row, column=4, sticky="ew")
 
             # if serviceStatus == "In progress":
@@ -468,15 +575,15 @@ class Service_Table(ScrollableFrame):
             if request_admin == self.master.adminId and serviceStatus == "In progress":
                 action_button = tk.Button(
                     self.frame, text="Edit", command=lambda serviceId=serviceId: self.view(serviceId))
-                action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
+                action_button.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)
             elif serviceStatus == "Completed":
                 action_button = tk.Button(
                     self.frame, text="View", command=lambda serviceId=serviceId: self.view_completed(serviceId))
-                action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
+                action_button.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)
             else:
                 action_button = tk.Button(
                     self.frame, text="View", command=lambda serviceId=serviceId: self.view(serviceId))
-                action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
+                action_button.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)
 
             row += 1
         
@@ -534,48 +641,17 @@ class Service_Info_Page(Frame):
         model = Label(self, padx= 5, width = 30, text=curr_model, borderwidth=2, relief="groove", justify="left", anchor="w")
         model.grid(row=6, column=1, padx=20, pady=2.5, ipady=5)
 
+        request_details = Label(self, padx= 5, width = 30, text=curr_requestDetails, borderwidth=2, relief="groove", justify="left", anchor="w")
+        request_details.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+
         requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
-        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        requestStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
 
-        serviceStatus = Label(self, padx= 5, width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
-        serviceStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
+        serviceStatus = Label(self, padx= 5,width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
+        serviceStatus.grid(row=9, column=1, padx=20, pady=2.5, ipady=5)
 
-
-        # f_name = Entry(self, width = 30)
-        # f_name.grid(row=0, column=1, padx=20, pady=(10, 0))
-        # f_name.insert(0, curr_name)
-        # f_name.configure(state="disabled")
-
-        # email = Entry(self, width = 30)
-        # email.grid(row=3, column=1, padx=20)
-        # email.insert(0, curr_email)
-        # email.configure(state="disabled")
-
-        # phone = Entry(self, width = 30)
-        # phone.grid(row=4, column=1, padx=20)
-        # phone.insert(0, curr_phone)
-        # phone.configure(state="disabled")
-
-        # address = Entry(self, width = 30)
-        # address.grid(row=5, column=1, padx=20)
-        # address.insert(0, curr_address)
-        # address.configure(state="disabled")
-
-        # model = Entry(self, width = 30)
-        # model.grid(row=6, column=1, padx=20)
-        # model.insert(0, curr_model)
-        # model.configure(state="disabled")
-
-        # requestStatus = Entry(self, width=30, justify="center")
-        # requestStatus.grid(row=7, column=1, padx=20)
-        # requestStatus.insert(0, curr_requestStatus)
-        # requestStatus.configure(state="disabled") 
-
-        # serviceStatus = Entry(self, width=30, justify="center")
-        # serviceStatus.grid(row=8, column=1, padx=20)
-        # serviceStatus.insert(0, curr_serviceStatus)
-        # serviceStatus.configure(state="disabled") 
-
+        curr_adminId_serving = Label(self, padx= 5, width=30, justify="center", text=curr_adminId, borderwidth=2, relief="groove")
+        curr_adminId_serving.grid(row=10, column=1, padx=20, pady=2.5, ipady=5)
 
 
         # Creating Text Box Labels
@@ -594,19 +670,25 @@ class Service_Info_Page(Frame):
         model_label = Label(self, text="Model")
         model_label.grid(row=6, column=0, pady=2.5, ipady=5)
 
+        request_details_label = Label(self, text="Issue")
+        request_details_label.grid(row=7, column=0, pady=2.5, ipady=5)
+
         requestStatus_label = Label(self, text="Request Status")
-        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
+        requestStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
         serviceStatus_label = Label(self, text="Service Status")
-        serviceStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
+        serviceStatus_label.grid(row=9, column=0, pady=2.5, ipady=5)
+
+        curr_admin_label = Label(self, text="Admin In-charge")
+        curr_admin_label.grid(row=10, column=0, pady=2.5, ipady=5)
 
         back_btn = Button(self, text="Back", command=lambda: master.back_to_service())
-        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W")
+        back_btn.grid(row=11, column=0, padx=(10,0), sticky="W", pady=15)
 
 
         if curr_adminId == adminId:
             complete_btn = Button(self, text="Complete Service", command=lambda requestId = requestId: master.complete_service(requestId))
-            complete_btn.grid(row=9, column=1, padx=(0, 10), sticky="E")
+            complete_btn.grid(row=11, column=1, padx=(0, 15), sticky="E", pady=15)
 
 
 class Approval_Info_Page(Frame):
@@ -660,19 +742,13 @@ class Approval_Info_Page(Frame):
             "Submitted"
         ]
 
-        # curr_requestStatus = StringVar()
-        # curr_requestStatus.set(curr_requestStatus)
+        requestDetails = Label(self, padx= 5, width=30, justify="center", text=curr_requestDetails, borderwidth=2, relief="groove")
+        requestDetails.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
 
-        # requestStatus = OptionMenu(self, curr_requestStatus, *REQUEST_STATUS)
+
         requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
-        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
-        # requestStatus.insert(0, curr_requestStatus)
-        # requestStatus.configure(state="disabled") 
-        # requestStatus = Entry(self, width=30, justify="center")
-        # # requestStatus.config(width=28)
-        # requestStatus.grid(row=7, column=1, padx=20)
-        # requestStatus.insert(0, curr_requestStatus)
-        # requestStatus.configure(state="disabled") 
+        requestStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
+
         
 
         # Creating Text Box Labels
@@ -691,15 +767,18 @@ class Approval_Info_Page(Frame):
         model_label = Label(self, text="Model")
         model_label.grid(row=6, column=0, pady=2.5, ipady=5)
 
+        requestDetails_label = Label(self, text="Issue")
+        requestDetails_label.grid(row=7, column=0, pady=2.5, ipady=5)
+
         requestStatus_label = Label(self, text="Request Status")
-        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
+        requestStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
         back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
-        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W", pady=5)
+        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W", pady=15)
         
         
         complete_btn = Button(self, text="Approve", command=lambda requestId = requestId: master.approve_request(requestId))
-        complete_btn.grid(row=8, column=1, padx=(0, 10), sticky="E", pady=5)
+        complete_btn.grid(row=9, column=1, padx=(0, 15), sticky="E", pady=15)
 
     
 class Request_Info_Page(Frame):
@@ -751,8 +830,11 @@ class Request_Info_Page(Frame):
         # model.insert(0, curr_model)
         # model.configure(state="disabled")
 
+        requestDetails = Label(self, padx= 5,width = 30, text=curr_requestDetails, borderwidth=2, relief="groove", justify="left", anchor="w")
+        requestDetails.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+
         requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
-        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        requestStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
         # requestStatus.insert(0, curr_requestStatus)
         # requestStatus.configure(state="disabled") 
 
@@ -774,11 +856,14 @@ class Request_Info_Page(Frame):
         model_label = Label(self, text="Model")
         model_label.grid(row=6, column=0, pady=2.5, ipady=5)
 
+        requestDetails_label = Label(self, text="Issue")
+        requestDetails_label.grid(row=7, column=0, pady=2.5, ipady=5)
+
         requestStatus_label = Label(self, text="Request Status")
-        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
+        requestStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
         back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
-        back_btn.grid(row=8, column=0, padx=(10,0), sticky="W", pady=5)
+        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W", pady=15)
         
 
 
@@ -792,7 +877,7 @@ class Completed_Service_Info_Page(Frame):
 
         data = pd.read_sql_query(f"""
         SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, 
-        r.requestDetails, r.requestStatus, s.serviceStatus
+        r.requestDetails, r.requestStatus, s.serviceStatus, r.administratorID
         FROM Requests r 
         LEFT JOIN Services s USING(requestID)
         LEFT JOIN Payments pay USING (itemID)
@@ -804,7 +889,7 @@ class Completed_Service_Info_Page(Frame):
         """, db)
 
         (requestId, curr_name, curr_email, curr_phone, curr_address,
-        curr_model, curr_requestDetails, curr_requestStatus, curr_serviceStatus) = list(data.to_records(index=False))[0]
+        curr_model, curr_requestDetails, curr_requestStatus, curr_serviceStatus, curr_admin) = list(data.to_records(index=False))[0]
         
 
         # Creatinag Text Boxes
@@ -833,15 +918,21 @@ class Completed_Service_Info_Page(Frame):
         # model.insert(0, curr_model)
         # model.configure(state="disabled")
 
+        requestDetails = Label(self, padx= 5, width = 30, text=curr_requestDetails, borderwidth=2, relief="groove", justify="left", anchor="w")
+        requestDetails.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+
         requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
-        requestStatus.grid(row=7, column=1, padx=20, pady=2.5, ipady=5)
+        requestStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
         # requestStatus.insert(0, curr_requestStatus)
         # requestStatus.configure(state="disabled") 
 
         serviceStatus = Label(self, padx= 5, width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
-        serviceStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
+        serviceStatus.grid(row=9, column=1, padx=20, pady=2.5, ipady=5)
         # serviceStatus.insert(0, curr_serviceStatus)
         # serviceStatus.configure(state="disabled") 
+
+        request_admin = Label(self, padx= 5, width=30, justify="center", text=curr_admin, borderwidth=2, relief="groove")
+        request_admin.grid(row=10, column=1, padx=20, pady=2.5, ipady=5)
 
 
 
@@ -861,14 +952,20 @@ class Completed_Service_Info_Page(Frame):
         model_label = Label(self, text="Model")
         model_label.grid(row=6, column=0, pady=2.5, ipady=5)
 
+        requestDetails_label = Label(self, text="Issue")
+        requestDetails_label.grid(row=7, column=0, pady=2.5, ipady=5)
+
         requestStatus_label = Label(self, text="Request Status")
-        requestStatus_label.grid(row=7, column=0, pady=2.5, ipady=5)
+        requestStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
         serviceStatus_label = Label(self, text="Service Status")
-        serviceStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
+        serviceStatus_label.grid(row=9, column=0, pady=2.5, ipady=5)
+
+        request_admin_label = Label(self, text="Admin In-charge")
+        request_admin_label.grid(row=10, column=0, pady=2.5, ipady=5)
 
         back_btn = Button(self, text="Back", command=lambda: master.back_to_service())
-        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W", pady=5)
+        back_btn.grid(row=11, column=0, padx=(10,0), sticky="W", pady=15)
 
 
 
@@ -905,6 +1002,7 @@ class Admin_Request_Page(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
         self.master = master
+        self.adminId = master.adminId
 
         self.header = Admin_Request_Page_Header(
             self, borderwidth=0, highlightthickness=0, pady=10)
@@ -920,7 +1018,7 @@ class Admin_Request_Page(Frame):
             "Pending Service": lambda row: row[4] == "Approved"
         }
 
-        self.adminId = "EddMing321"
+        # self.adminId = "EddMing321"
 
 
     def show_header():
