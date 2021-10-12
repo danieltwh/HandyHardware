@@ -52,8 +52,8 @@ class Catalogue_Table(tk.LabelFrame):
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
         tk.Label(self, text="Model", anchor="w").grid(row=0, column=1, sticky="ew", padx=10)
-        tk.Label(self, text="Price", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
-        tk.Label(self, text="Warranty", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
+        tk.Label(self, text="Price ($)", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
+        tk.Label(self, text="Warranty (months)", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
         tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
         items = mydb.items
 
@@ -62,8 +62,8 @@ class Catalogue_Table(tk.LabelFrame):
         for dic in data:
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])            
+            price_label = tk.Label(self, text=str(dic["Price ($)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            warranty_label = tk.Label(self, text=str(dic["Warranty (months)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])            
             numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
 
@@ -128,8 +128,8 @@ class Advance_Table(tk.LabelFrame):
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
         tk.Label(self, text="Model", anchor="w").grid(row=0, column=1, sticky="ew", padx=10)
-        tk.Label(self, text="Price", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
-        tk.Label(self, text="Warranty", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
+        tk.Label(self, text="Price ($)", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
+        tk.Label(self, text="Warranty (months)", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
         tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
         items_data = data
         products_data = products.find({})
@@ -138,13 +138,13 @@ class Advance_Table(tk.LabelFrame):
         row = 1
         for dic in products_data:
             if clicked3.get() != "Filter 1: All Price":
-                if int(dic["Price"]) != int(clicked3.get()[1:]):
+                if int(dic["Price ($)"]) != int(clicked3.get()[1:]):
                     continue
 
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])  
+            price_label = tk.Label(self, text=str(dic["Price ($)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            warranty_label = tk.Label(self, text=str(dic["Warranty (months)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])  
             
             count = 0
             for idic in items_data:
@@ -172,7 +172,7 @@ class Advance_Table(tk.LabelFrame):
                             if dic['Model'] == idic['Model']:
                                 iid = idic['ItemID']
 
-                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic, iid = iid: self.purchase(iid, self.master.master.customerId, dic['Price']))
+                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic, iid = iid: self.purchase(iid, self.master.master.customerId, dic['Price ($)']))
                 action_button.grid(row=row, column=5, sticky="ew")
 
             row += 1
