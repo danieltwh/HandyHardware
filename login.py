@@ -98,10 +98,10 @@ class Signup_Page(Frame):
         password_label.grid(row=15, column=0, pady=(2.5,2.5))
 
         back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Login_Page))
-        back_btn.grid(row=17, column=0, padx=(10,0), sticky="W", pady=(10,2.5))
+        back_btn.grid(row=17, column=0, padx=(15,0), sticky="W", pady=(10,2.5))
         
         confirm_btn = Button(self, text="Confirm", command=lambda: self.customer_signup())
-        confirm_btn.grid(row=17, column=1, padx=(0, 10), sticky="E", pady=(10,2.5))
+        confirm_btn.grid(row=17, column=1, padx=(0, 15), sticky="E", pady=(10,2.5))
 
 
         # self.pack(side="top", fill="both", expand=True)
@@ -345,10 +345,10 @@ class Login_Page(Frame):
         password_label.grid(row=4, column=0, sticky="EW", pady=(2.5,2.5))
 
         signup_btn = Button(self, text="Sign Up", command= lambda: master.switch_frame(Signup_Page))
-        signup_btn.grid(row=6, column=0, columnspan=1, pady=(5,5))
+        signup_btn.grid(row=6, column=0, columnspan=1, sticky="w", pady=(10,5), padx=(15, 0))
 
         login_btn = Button(self, text="Login", command= lambda: self.attempt_login())
-        login_btn.grid(row=6, column=1, columnspan=2, pady=(5,5))
+        login_btn.grid(row=6, column=1, columnspan=2, sticky="e",pady=(10,5), padx=(0, 15))
 
     def attempt_login(self):
         customerId = self.username.get()
@@ -498,10 +498,10 @@ class Admin_Signup_Page(Frame):
         password_label.grid(row=15, column=0, pady=(2.5,2.5))
 
         back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Login_Page))
-        back_btn.grid(row=17, column=0, padx=(10,0), sticky="W", pady=(10,2.5))
+        back_btn.grid(row=17, column=0, padx=(15,0), sticky="W", pady=(10,2.5))
         
         confirm_btn = Button(self, text="Confirm", command=lambda: self.admin_signup())
-        confirm_btn.grid(row=17, column=1, padx=(0, 10), sticky="E", pady=(10,2.5))
+        confirm_btn.grid(row=17, column=1, padx=(0, 15), sticky="E", pady=(10,2.5))
 
 
         # self.pack(side="top", fill="both", expand=True)
@@ -719,10 +719,10 @@ class Admin_Login_Page(Frame):
         password_label.grid(row=4, column=0, sticky="EW", pady=(2.5,2.5))
 
         signup_btn = Button(self, text="Sign Up", command= lambda: master.switch_frame(Admin_Signup_Page))
-        signup_btn.grid(row=6, column=0, columnspan=1, pady=(5,5))
+        signup_btn.grid(row=6, column=0, columnspan=1, sticky="w",pady=(10,5), padx=(15, 0))
 
         login_btn = Button(self, text="Login", command= lambda: self.attempt_login())
-        login_btn.grid(row=6, column=1, columnspan=2, pady=(5,5))
+        login_btn.grid(row=6, column=1, columnspan=2, sticky="e", pady=(10,5), padx=(0, 15))
 
     def attempt_login(self):
         adminId = self.username.get()
