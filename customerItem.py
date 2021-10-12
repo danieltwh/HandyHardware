@@ -240,7 +240,7 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = clicked1: master.filter_status1(clicked1)).grid(row=0, column=2, sticky="ew", padx=5)
         
         #tk.Label(self, text="Price Filter", anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
-        tab4 = OptionMenu(self, clicked3, "Filter 1: All Price", "$50", "$60", "$70", "$100", "$120", "$l25", "$200").grid(row=2, column=0, sticky="ew", padx=5)
+        tab4 = OptionMenu(self, clicked3, "Filter 1: All Price", "$50", "$60", "$70", "$100", "$120", "$125", "$200").grid(row=2, column=0, sticky="ew", padx=5)
 
         #tk.Label(self, text="Color Filter", anchor="w").grid(row=0, column=3, sticky="ew", padx=5)
         tab5 = OptionMenu(self, clicked4, "Filter 2: All Color", "White", "Blue", "Yellow", "Green", "Black").grid(row=2, column=1, sticky="ew", padx=5)
@@ -309,7 +309,7 @@ class Customer_Shopping_Catalogue_Page(Frame):
         
         self.Catalogue_Table.destroy()
         items_data = list(items.find({}))
-        price_list = ["$50", "$60", "$100", "$120", "$l25"]
+        price_list = ["$50", "$60", "$100", "$120", "$125"]
         model_list = ["Light1", "Light2", "Safe1", "Safe2", "Safe3"]
 
         for dic in items_data.copy():
