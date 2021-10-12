@@ -16,7 +16,6 @@ db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/
     )
 
 
-
 ######## Customer Registration & Login ###########
 class Signup_Page(Frame):
     def __init__(self, master):

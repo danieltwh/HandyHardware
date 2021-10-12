@@ -65,9 +65,9 @@ class Catalogue_Table(tk.LabelFrame):
         for dic in data:
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            cost_label = tk.Label(self, text=str(dic["Cost ($)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            price_label = tk.Label(self, text=str(dic["Price ($)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            warranty_label = tk.Label(self, text=str(dic["Warranty (months)"]), anchor="w", borderwidth=2, relief="groove", padx=10,bg=bg[row%2]) 
+            cost_label = tk.Label(self, text=str(dic["Cost"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10,bg=bg[row%2]) 
             numberOfItemsSold_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Sold"})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])             
             numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
@@ -110,9 +110,9 @@ class Advance_Table(tk.LabelFrame):
 
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            cost_label = tk.Label(self, text=str(dic["Cost ($)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            price_label = tk.Label(self, text=str(dic["Price ($)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            warranty_label = tk.Label(self, text=str(dic["Warranty (months)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])  
+            cost_label = tk.Label(self, text=str(dic["Cost"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])  
             
             count = 0
             for idic in items_data:
