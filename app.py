@@ -94,6 +94,8 @@ class App(Tk):
         
         # self.mount_sidebar()
         # self.switch_frame(Request_Details)
+
+        self.configure(background="#e0fbfc")
         
         self.load_login_page();
 
