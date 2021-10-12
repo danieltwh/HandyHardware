@@ -14,6 +14,7 @@ from cus_request_details import Request_Details
 from customerItem import Customer_Shopping_Catalogue_Page
 from past_purchases import Past_Purchase_Page
 from request_table_page import Request_Table_Page
+from adminItem import Admin_Shopping_Catalogue_Page
 from ResetDB import RESET_DB
 
 PAGES = {
@@ -21,6 +22,7 @@ PAGES = {
     "customer_shopping_catalogue": Customer_Shopping_Catalogue_Page,
     "customer_past_purchases": Past_Purchase_Page,
     "admin_request": Admin_Request_Page,
+    "admin_items": Admin_Shopping_Catalogue_Page,
     "request_table":Request_Table_Page,
 }
 
@@ -55,7 +57,7 @@ class AdminSideBar(Frame):
         self.master = master
 
         catalogue_btn = Button(self, text="Items", padx=10, highlightbackground="#ffffff", 
-            command=lambda: master.switch_frame(PAGES.get("customer_shopping_catalogue")))
+            command=lambda: master.switch_frame(PAGES.get("admin_items")))
         catalogue_btn.grid(row=1, column=0, padx=(5, 10), sticky="EW", pady=(10, 5))
 
         past_purchases_btn = Button(self, text="Manage Request", wraplength=130,
@@ -75,7 +77,8 @@ class AdminSideBar(Frame):
     
     def resetDB(self):
         RESET_DB()
-        self.master.switch_frame(PAGES.get("customer_shopping_catalogue"))
+        # self.master.switch_frame(PAGES.get("customer_shopping_catalogue"))
+        self.master.logout()
         
         
 
