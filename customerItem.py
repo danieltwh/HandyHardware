@@ -62,9 +62,9 @@ class Catalogue_Table(tk.LabelFrame):
         for dic in data:
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])            
-            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            price_label = tk.Label(self, text=str(dic["Price ($)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            warranty_label = tk.Label(self, text=str(dic["Warranty (months)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])            
+            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "PurchaseStatus": "Unsold", "Model": dic["Model"]})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
 
             categories_label.grid(row=row, column=0, sticky="ew")
@@ -78,13 +78,13 @@ class Catalogue_Table(tk.LabelFrame):
             itemdata = list(items.find({}))
             store = ""
             for i in itemdata:
-                if i['Category'] == dic['Category'] and i['Model'] == dic['Model'] and i['PurchaseStatus'] == "Unsold":
+                if i['Category'] == dic['Category'] and i['PurchaseStatus'] == "Unsold" and i['Model'] == dic['Model']:
                     store = i
                     break
 
             if store != "":
-                if items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"}) != 0:
-                    action_button = tk.Button(self, text="Purchase", command=lambda store = store, dic = dic: self.purchase(int(store['ItemID']), self.master.master.customerId, int(dic['Price'])))
+                if items.count_documents({"Category": dic["Category"], "PurchaseStatus": "Unsold", "Model": dic["Model"]}) != 0:
+                    action_button = tk.Button(self, text="Purchase", command=lambda store = store, dic = dic: self.purchase(store['ItemID'], self.master.master.customerId, int(dic['Price ($)'])))
                     action_button.grid(row=row, column=5, sticky="ew")
 
             row += 1
@@ -106,6 +106,7 @@ class Catalogue_Table(tk.LabelFrame):
                     query2 = """UPDATE Items SET purchaseStatus = 'Sold' WHERE itemID = %s""" 
                     val = (itemID)
                     conn.execute(query2, val)
+                    
 
                     items.update_one(
                         {"ItemID" : itemID},
@@ -138,13 +139,13 @@ class Advance_Table(tk.LabelFrame):
         row = 1
         for dic in products_data:
             if clicked3.get() != "Filter 1: All Price":
-                if int(dic["Price"]) != int(clicked3.get()[1:]):
+                if int(dic["Price ($)"]) != int(clicked3.get()[1:]):
                     continue
 
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
-            warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])  
+            price_label = tk.Label(self, text=str(dic["Price ($)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            warranty_label = tk.Label(self, text=str(dic["Warranty (months)"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])  
             
             count = 0
             for idic in items_data:
@@ -172,7 +173,7 @@ class Advance_Table(tk.LabelFrame):
                             if dic['Model'] == idic['Model']:
                                 iid = idic['ItemID']
 
-                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic, iid = iid: self.purchase(iid, self.master.master.customerId, dic['Price']))
+                action_button = tk.Button(self, text="Purchase", command=lambda dic = dic, iid = iid: self.purchase(iid, self.master.master.customerId, dic['Price ($)']))
                 action_button.grid(row=row, column=5, sticky="ew")
 
             row += 1
