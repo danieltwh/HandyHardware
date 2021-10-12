@@ -270,13 +270,7 @@ class Past_Purchase_Page(Frame):
 
         self.table = Past_Purchases_Table(curr_data, self)
         self.table.pack(side="top", fill="both", expand=True)
-    
-    def switch_frame(self, frame_class):
-        new_frame = frame_class(self)
-        if self._frame is not None:
-            self._frame.destroy()
-        self._frame = new_frame
-        self._frame.pack(side="top", fill="both", expand=True)
+
         
 
 # --------------------------------------------------------------------- #
@@ -365,7 +359,7 @@ class Request_Page(Frame):
         curr_model,curr_warrantyMonths,curr_powerSupply,
         curr_colour,curr_price,curr_purchaseDate) = list(data2.to_records(index=False))[0]
         curr_adminId = self.master.adminId
-        print(curr_adminId)
+        print("curr_adminId: " + str(curr_adminId))
 
         # Checking for the warranty status
         warranty_status = False
