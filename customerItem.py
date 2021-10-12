@@ -5,6 +5,7 @@ from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
 import pymongo
+from tkinter.messagebox import askyesno, askquestion
 
 # For SQL query
 from sqlalchemy import create_engine
@@ -63,7 +64,7 @@ class Catalogue_Table(tk.LabelFrame):
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])            
-            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"PurchaseStatus": "Unsold", "Category": dic["Category"], "Model": dic["Model"]})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
 
             categories_label.grid(row=row, column=0, sticky="ew")
@@ -89,32 +90,34 @@ class Catalogue_Table(tk.LabelFrame):
             row += 1
 
     def purchase(self, itemID, customerID, amount):
-        with db.begin() as conn:
-            try:
-                savepoint = conn.begin_nested()
-                query = """
-                SELECT COUNT(*) INTO @p_count FROM Payments;
-                INSERT INTO Payments(paymentID, itemID, purchaseDate, customerID, amount) VALUES 
-                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), customerID, amount)
+        answer = askyesno(title = 'Confirmation', message = 'Are you sure you want to purchase the item?')
+        if answer:
+            with db.begin() as conn:
+                try:
+                    savepoint = conn.begin_nested()
+                    query = """
+                    SELECT COUNT(*) INTO @p_count FROM Payments;
+                    INSERT INTO Payments(paymentID, itemID, purchaseDate, customerID, amount) VALUES 
+                    (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), customerID, amount)
 
 
-                conn.execute(query)
+                    conn.execute(query)
 
-                query2 = """UPDATE Items SET purchaseStatus = 'Sold' WHERE itemID = %s""" 
-                val = (itemID)
-                conn.execute(query2, val)
+                    query2 = """UPDATE Items SET purchaseStatus = 'Sold' WHERE itemID = %s""" 
+                    val = (itemID)
+                    conn.execute(query2, val)
 
-                items.update_one(
-                    {"ItemID" : itemID},
-                    { "$set": {"PurchaseStatus" : "Sold"} }
-                )
+                    items.update_one(
+                        {"ItemID" : itemID},
+                        { "$set": {"PurchaseStatus" : "Sold"} }
+                    )
 
-                savepoint.commit()
-                print("yes")
+                    savepoint.commit()
+                    print("yes")
 
-            except:
-                savepoint.rollback()
-                print("No")
+                except:
+                    savepoint.rollback()
+                    print("No")
 
         self.master.filter_status1(clicked1)
 
@@ -175,32 +178,34 @@ class Advance_Table(tk.LabelFrame):
             row += 1
 
     def purchase(self, itemID, customerID, amount):
-        with db.begin() as conn:
-            try:
-                savepoint = conn.begin_nested()
-                query = """
-                SELECT COUNT(*) INTO @p_count FROM Payments;
-                INSERT INTO Payments(paymentID, itemID, purchaseDate, customerID, amount) VALUES 
-                (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), customerID, amount)
+        answer = askyesno(title = 'Confirmation', message = 'Are you sure you want to purchase the item?')
+        if answer:
+            with db.begin() as conn:
+                try:
+                    savepoint = conn.begin_nested()
+                    query = """
+                    SELECT COUNT(*) INTO @p_count FROM Payments;
+                    INSERT INTO Payments(paymentID, itemID, purchaseDate, customerID, amount) VALUES 
+                    (@p_count + 1,%s,'%s','%s',%s)""" % (itemID, date.today().strftime("%Y-%m-%d"), customerID, amount)
 
 
-                conn.execute(query)
+                    conn.execute(query)
 
-                query2 = """UPDATE Items SET purchaseStatus = 'Sold' WHERE itemID = %s""" 
-                val = (itemID)
-                conn.execute(query2, val)
+                    query2 = """UPDATE Items SET purchaseStatus = 'Sold' WHERE itemID = %s""" 
+                    val = (itemID)
+                    conn.execute(query2, val)
 
-                items.update_one(
-                    {"ItemID" : itemID},
-                    { "$set": {"PurchaseStatus" : "Sold"} }
-                )
+                    items.update_one(
+                        {"ItemID" : itemID},
+                        { "$set": {"PurchaseStatus" : "Sold"} }
+                    )
 
-                savepoint.commit()
-                print("yes")
+                    savepoint.commit()
+                    print("yes")
 
-            except:
-                savepoint.rollback()
-                print("No")
+                except:
+                    savepoint.rollback()
+                    print("No")
 
         self.master.filter_status2(clicked3, clicked4, clicked5, clicked6)
 
@@ -356,8 +361,6 @@ class Customer_Shopping_Catalogue_Page(Frame):
             self._frame.destroy()
         self._frame = new_frame
         self._frame.pack(side="top", fill="both", expand=True)
-
-
 
 
 if __name__ == "__main__":
