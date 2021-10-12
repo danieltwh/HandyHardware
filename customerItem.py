@@ -63,7 +63,7 @@ class Catalogue_Table(tk.LabelFrame):
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             price_label = tk.Label(self, text=str(dic["Price"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             warranty_label = tk.Label(self, text=str(dic["Warranty"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])            
-            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"PurchaseStatus": "Unsold", "Category": dic["Category"], "Model": dic["Model"]})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            numberOfItemsAvailable_label = tk.Label(self, text=str(items.count_documents({"Category": dic["Category"], "Model": dic["Model"], "PurchaseStatus": "Unsold"})), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
 
             categories_label.grid(row=row, column=0, sticky="ew")
