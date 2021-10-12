@@ -104,6 +104,10 @@ class Advance_Table(tk.LabelFrame):
         row = 1
         for dic in products_data:
 
+            if clicked2.get() != "Filter 1: All Cost":
+                if int(dic["Cost ($)"]) != int(clicked2.get()[1:]):
+                    continue
+
             if clicked3.get() != "Filter 2: All Price":
                 if int(dic["Price ($)"]) != int(clicked3.get()[1:]):
                     continue
@@ -281,7 +285,9 @@ class Admin_Shopping_Catalogue_Page(Frame):
                     if dic in items_data:
                         items_data.remove(dic)
 
-
+            a = 1+2
+            
+            # Cost Adv Filter
             # if c2.get() == "$30":
             #     if dic['Category'] != 'Lights':
             #         if dic in items_data:
@@ -300,6 +306,8 @@ class Admin_Shopping_Catalogue_Page(Frame):
             #             if dic in items_data:
             #                 items_data.remove(dic) 
 
+
+            # Price Adv Filter
             if c3.get() == "$70":
                 if dic['Category'] != 'Lights':
                     if dic in items_data:
