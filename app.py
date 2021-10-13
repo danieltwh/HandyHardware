@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import ttk
+import tkinter.font as tkFont
+from tkinter.ttk import Label, Style
 from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
@@ -96,7 +98,20 @@ class App(Tk):
         # self.switch_frame(Request_Details)
 
         self.configure(background="#e0fbfc")
-        
+        self.font12 = tkFont.Font(self, size=12)
+        self.font14 = tkFont.Font(self, size=14)
+        self.font20 = tkFont.Font(size=20)
+        # self.option_add('*Font', '12')
+
+        self.title("Handy Hardware")
+
+        # self.style = Style(self)
+
+        # self.style.configure("TLabel", font=('Helvetica', 20))
+        # self.style.configure("TButton", font=('Helvetica', 20))
+        # self.style.configure("TFrame", font=('Helvetica', 20))
+        # self.style.configure("TLabelFrame", font=('Helvetica', 20))
+
         self.load_login_page();
 
         
@@ -175,7 +190,11 @@ def main():
     # root.mainloop()
 
     app = App()
+    
+    # app.option_add("*Label.Font", '30')
     app.geometry("1200x800")
+    # style = Style(app)
+    # style.configure("TLabel", font=('Helvetica', 20))
     app.mainloop()
 
 if __name__ == "__main__":
