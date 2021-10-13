@@ -1018,6 +1018,8 @@ class Admin_Request_Page(Frame):
             "Pending Service": lambda row: row[4] == "Approved"
         }
 
+        
+
         # self.adminId = "EddMing321"
 
 
@@ -1110,9 +1112,19 @@ class Admin_Request_Page(Frame):
             savepoint = conn.begin_nested()
             try:
                 # Create a service for the request        
+                # conn.execute(f"""
+                # INSERT INTO Services(requestID, serviceStatus)VALUES
+                # ({requestId}, "In Progress")
+                # ;
+                # """)
+
+                # Update service status for the request
                 conn.execute(f"""
-                INSERT INTO Services(requestID, serviceStatus)VALUES
-                ({requestId}, "In Progress")
+                UPDATE Services
+                SET 
+                    serviceStatus = "In Progress"
+                WHERE
+                    requestID = "{requestId}"
                 ;
                 """)
 
