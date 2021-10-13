@@ -434,7 +434,7 @@ class Request_Page(Frame):
                 query3 = f"""
                 SELECT COUNT(*) INTO @r_count FROM Requests;
                 INSERT INTO Services(requestID, serviceStatus)VALUES
-                (@r_count, "In Progress")
+                (@r_count, "Waiting for approval")
                 ;
                 """
                 conn.execute(query3)
