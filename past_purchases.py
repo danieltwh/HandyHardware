@@ -518,7 +518,7 @@ class Request_Details(Frame):
             cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_itemId))
             cancel_btn.grid(row=9, column=0, pady = 20)
 
-            pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_itemId))
+            pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_itemId,curr_amount))
             pay_btn.grid(row=9, column=2, pady = 20)
 
             ## If $0, they cannot return to past_purchases page
@@ -566,19 +566,22 @@ class Request_Details(Frame):
         self.master.switch_frame(Cancel_Request_Page)
 
     
-    def payRequest(self, itemId):
+    def payRequest(self, itemId, curr_amount):
         with db.begin() as conn:
             savepoint = conn.begin_nested()
             print(itemId)
             try:
-                # Update the request status to In progress
-                query = f"""
-                UPDATE Requests r
-                SET r.requestStatus = 'In progress'
-                WHERE (r.itemID = {itemId} AND r.requestStatus != 'Cancelled')
-                ;
-                """
-                conn.execute(query)
+                if curr_amount == 0:
+                    print("curr_amt = 0")
+                else:
+                    # Update the request status to In progress
+                    query = f"""
+                    UPDATE Requests r
+                    SET r.requestStatus = 'In progress'
+                    WHERE (r.itemID = {itemId} AND r.requestStatus != 'Cancelled')
+                    ;
+                    """
+                    conn.execute(query)
 
                 # Commit changes to database
                 savepoint.commit()
