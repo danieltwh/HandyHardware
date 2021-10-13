@@ -518,13 +518,14 @@ class Request_Details(Frame):
             cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_itemId))
             cancel_btn.grid(row=9, column=0, pady = 20)
 
-            pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_itemId,curr_amount))
-            pay_btn.grid(row=9, column=2, pady = 20)
+            return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
+            return_btn.grid(row=9, column=1, pady = 20)
 
             ## If $0, they cannot return to past_purchases page
             if int(curr_amount) > 0:
-                return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
-                return_btn.grid(row=9, column=1, pady = 20)
+                pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_itemId,curr_amount))
+                pay_btn.grid(row=9, column=2, pady = 20)
+                
          
         elif curr_requestStatus in ['In progress', 'Approved']:
             cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_itemId))
