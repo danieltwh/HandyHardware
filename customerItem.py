@@ -408,7 +408,7 @@ class Customer_Shopping_Catalogue_Page(Frame):
                     if dic in items_data:
                         items_data.remove(dic)
             elif self.clicked1.get() == 'Model: SmartHome1':
-                if dic['Model'] != "Safe1":
+                if dic['Model'] != "SmartHome1":
                     if dic in items_data:
                         items_data.remove(dic)
 
