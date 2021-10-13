@@ -396,10 +396,14 @@ class Request_Page(Frame):
             savepoint = conn.begin_nested()
             try:
                 
+                output = conn.execute("SELECT COUNT(*) FROM Requests")
+                requestID = output.fetchall()[0][0]
+                print("RequestID:" + str(requestID))
+
                 query = f"""
                 SELECT COUNT(*) INTO @r_count FROM Requests;
                 INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES
-                (@r_count + 1,{curr_itemId},{curr_adminId},'{reqstatus}','{issue}');"""
+                (@r_count + 1,{curr_itemId},NULL,'{reqstatus}','{issue}');"""
 
                 conn.execute(query)
                 print("Added a Request row")
@@ -412,9 +416,7 @@ class Request_Page(Frame):
                 # """)
                 # print("Added a Service row")
 
-                output = conn.execute("SELECT COUNT(*) FROM Requests")
-                requestID = output.fetchall()[0][0]
-                print("RequestID:" + str(requestID))
+                
 
                 # To find the settlement Date (10 days away)
                 now = date.today()
