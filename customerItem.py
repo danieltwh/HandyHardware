@@ -142,6 +142,38 @@ class Advance_Table(tk.LabelFrame):
             if self.master.clicked3.get() != "Filter 1: All Price":
                 if int(dic["Price ($)"]) != int(self.master.clicked3.get()[1:]):
                     continue
+            
+            if self.master.clicked1.get() == "Category: Lights":
+                if dic["Category"] != "Lights":
+                    continue
+
+            if self.master.clicked1.get() == "Category: Locks":
+                if dic["Category"] != "Locks":
+                    continue  
+
+            if self.master.clicked1.get() == "Model: Light1":
+                if dic["Model"] != "Light1":
+                    continue  
+
+            if self.master.clicked1.get() == "Model: Light2":
+                if dic["Model"] != "Light2":
+                    continue  
+            
+            if self.master.clicked1.get() == "Model: Safe1":
+                if dic["Model"] != "Safe1":
+                    continue  
+
+            if self.master.clicked1.get() == "Model: Safe2":
+                if dic["Model"] != "Safe2":
+                    continue  
+            
+            if self.master.clicked1.get() == "Model: Safe3":
+                if dic["Model"] != "Safe3":
+                    continue  
+
+            if self.master.clicked1.get() == "Model: SmartHome1":
+                if dic["Model"] != "SmartHome1":
+                    continue  
 
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
