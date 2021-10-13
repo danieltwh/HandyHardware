@@ -1,9 +1,12 @@
 from tkinter import *
+import tkinter.font as tkFont
 from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
 import re
 
+# For Image Rendering
+from PIL import Image, ImageTk
 
 # For SQL query
 from sqlalchemy import create_engine
@@ -22,26 +25,26 @@ class Signup_Page(Frame):
         Frame.__init__(self, master, width=800, height=800)
         self.master = master
 
-        self.f_name_error_label = Label(self, text= "")
-        self.l_name_error_label = Label(self, text= "")
-        self.username_error_label = Label(self, text= "")
-        self.gender_error_label = Label(self, text= "")
-        self.email_error_label = Label(self, text= "")
-        self.phone_error_label = Label(self, text= "")
-        self.address_error_label = Label(self, text="")
-        self.password_error_label = Label(self, text= "")
+        self.f_name_error_label = Label(self, text= "", font=self.master.font12)
+        self.l_name_error_label = Label(self, text= "", font=self.master.font12)
+        self.username_error_label = Label(self, text= "", font=self.master.font12)
+        self.gender_error_label = Label(self, text= "", font=self.master.font12)
+        self.email_error_label = Label(self, text= "", font=self.master.font12)
+        self.phone_error_label = Label(self, text= "", font=self.master.font12)
+        self.address_error_label = Label(self, text="", font=self.master.font12)
+        self.password_error_label = Label(self, text= "", font=self.master.font12)
         
-        welcome_label = Label(self, text = "Welcome!")
+        welcome_label = Label(self, text = "Welcome!", font=self.master.font20)
         welcome_label.grid(row=0, column=0, columnspan=2)
 
         # Creatinag Text Boxes
-        self.f_name = Entry(self, width = 30)
+        self.f_name = Entry(self, width = 30, font=self.master.font12)
         self.f_name.grid(row=1, column=1, padx=20, pady=(10, 0))
 
-        self.l_name = Entry(self, width = 30)
+        self.l_name = Entry(self, width = 30, font=self.master.font12)
         self.l_name .grid(row=3, column=1, padx=20)
 
-        self.username = Entry(self, width=30)
+        self.username = Entry(self, width=30, font=self.master.font12)
         self.username .grid(row=5, column=1, padx=20)
 
         GENDER = [
@@ -57,51 +60,54 @@ class Signup_Page(Frame):
         gender_frame.grid(row=7, column=1, padx=20)
 
         for text, sex in GENDER:
-            Radiobutton(gender_frame, text=text, variable=self.gender, value=sex).pack(side=LEFT, anchor=W)
+            Radiobutton(gender_frame, text=text, variable=self.gender, 
+                value=sex, font=self.master.font12).pack(side=LEFT, anchor=W)
 
-        self.email = Entry(self, width = 30)
+        self.email = Entry(self, width = 30, font=self.master.font12)
         self.email.grid(row=9, column=1, padx=20)
 
-        self.phone = Entry(self, width = 30)
+        self.phone = Entry(self, width = 30, font=self.master.font12)
         self.phone.grid(row=11, column=1, padx=20)
 
-        self.address = Entry(self, width = 30)
+        self.address = Entry(self, width = 30, font=self.master.font12)
         self.address.grid(row=13, column=1, padx=20)
 
-        self.password = Entry(self, width = 30, show="*")
+        self.password = Entry(self, width = 30, show="*", font=self.master.font12)
         self.password.grid(row=15, column=1, padx=20)
 
 
         # Creating Text Box Labels
-        f_name_label = Label(self, text="First Name")
+        f_name_label = Label(self, text="First Name", font=self.master.font12)
         f_name_label.grid(row=1, column=0, pady=(10, 2.5))
 
-        l_name_label = Label(self, text="Last Name")
+        l_name_label = Label(self, text="Last Name", font=self.master.font12)
         l_name_label.grid(row=3, column=0, pady=(2.5,2.5))
 
-        username_label = Label(self, text="Username")
+        username_label = Label(self, text="Username", font=self.master.font12)
         username_label.grid(row=5, column=0, pady=(2.5,2.5))
 
-        gender_label = Label(self, text="Gender")
+        gender_label = Label(self, text="Gender", font=self.master.font12)
         gender_label.grid(row=7, column=0, pady=(2.5,2.5))
 
-        email_label = Label(self, text="Email Address")
+        email_label = Label(self, text="Email Address", font=self.master.font12)
         email_label.grid(row=9, column=0, pady=(2.5,2.5))
 
-        phone_label = Label(self, text="Phone Number")
+        phone_label = Label(self, text="Phone Number", font=self.master.font12)
         phone_label.grid(row=11, column=0, pady=(2.5,2.5))
 
-        address_label = Label(self, text="Address")
+        address_label = Label(self, text="Address", font=self.master.font12)
         address_label.grid(row=13, column=0, pady=(2.5,2.5))
 
-        password_label = Label(self, text="Password")
+        password_label = Label(self, text="Password", font=self.master.font12)
         password_label.grid(row=15, column=0, pady=(2.5,2.5))
 
-        back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Login_Page))
-        back_btn.grid(row=17, column=0, padx=(15,0), sticky="W", pady=(10,2.5))
+        back_btn = Button(self, text="Back", font=self.master.font14, padx=10,
+            command=lambda: self.master.switch_frame(Login_Page))
+        back_btn.grid(row=17, column=0, padx=(15,0), sticky="W", pady=(15,2.5))
         
-        confirm_btn = Button(self, text="Confirm", command=lambda: self.customer_signup())
-        confirm_btn.grid(row=17, column=1, padx=(0, 15), sticky="E", pady=(10,2.5))
+        confirm_btn = Button(self, text="Confirm", font=self.master.font14, padx=10,
+            command=lambda: self.customer_signup())
+        confirm_btn.grid(row=17, column=1, padx=(0, 15), sticky="E", pady=(15,2.5))
 
 
         # self.pack(side="top", fill="both", expand=True)
@@ -305,24 +311,46 @@ class Signup_Page(Frame):
         else:
             return False
 
+class Login_Header(Frame):
+    def __init__(self, master):
+        Frame.__init__(self, master, width=800)
+        self.master = master.master
 
-class Login_Page(Frame):
+         # Rendering Image
+        img = ImageTk.PhotoImage(Image.open("./Assets/HandyHardwarev1.png").resize((400, 166)))
+        # img = img
+        img_label = Label(self,image = img, borderwidth=0, highlightthickness=0)
+        img_label.image = img
+        img_label.grid(row=0, column = 0, columnspan=2, padx=0, pady=0)
+
+        self.configure(background = self.master["background"])
+
+
+    
+
+
+
+
+class Login_Page_Credentials(Frame):
     def __init__(self, master):
         Frame.__init__(self, master, width=800, height=800)
-        self.master = master
+        self.master = master.master
 
 
-        title = Label(self, text="Customer Login Page")
-        title.grid(row=0, column=0, columnspan=1)
+        # Login Credentials
+        title = Label(self, text="Customer Login Page", font=self.master.font20, anchor="center")
+        title.grid(row=1, column=0, columnspan=1, pady=(15,0), padx=(15))
 
         toggle = LabelFrame(self, borderwidth = 0)
-        toggle.grid(row=0, column=1, padx=20)
+        toggle.grid(row=1, column=1, padx=20, pady=(15,0))
 
-        customer_btn = Button(toggle, text="Customer", command= lambda: master.switch_frame(Login_Page))
-        customer_btn.grid(row=0, column=0, columnspan=1)
+        customer_btn = Button(toggle, text="Customer", font=self.master.font14,
+            command= lambda: self.master.switch_frame(Login_Page))
+        customer_btn.grid(row=1, column=0, columnspan=1, padx = (0, 10))
 
-        admin_btn = Button(toggle, text="Admin", command= lambda: master.switch_frame(Admin_Login_Page))
-        admin_btn.grid(row=0, column=1, columnspan=1)
+        admin_btn = Button(toggle, text="Admin", font=self.master.font14,
+            command= lambda: self.master.switch_frame(Admin_Login_Page))
+        admin_btn.grid(row=1, column=1, columnspan=1, padx = (0, 10))
        
         self.username = Entry(self, width = 30)
         self.username.grid(row=2, column=1, padx=20, pady=(10,2.5))
@@ -337,18 +365,22 @@ class Login_Page(Frame):
         self.password_error_label = Label(self, text= "")
         self.error_label = Label(self, text= "")
         
-        username_label = Label(self, text="Username")
+        username_label = Label(self, text="Username",font=self.master.font14)
         username_label.grid(row=2, column=0, sticky="EW", pady=(10,2.5))
 
 
-        password_label = Label(self, text="Password")
+        password_label = Label(self, text="Password", font=self.master.font14)
         password_label.grid(row=4, column=0, sticky="EW", pady=(2.5,2.5))
 
-        signup_btn = Button(self, text="Sign Up", command= lambda: master.switch_frame(Signup_Page))
-        signup_btn.grid(row=6, column=0, columnspan=1, sticky="w", pady=(10,5), padx=(15, 0))
+        signup_btn = Button(self, text="Sign Up", command= lambda: self.master.switch_frame(Signup_Page),
+            font=self.master.font14, padx=10)
+        signup_btn.grid(row=6, column=0, columnspan=1, sticky="w", pady=(10,10), padx=(15, 0))
 
-        login_btn = Button(self, text="Login", command= lambda: self.attempt_login())
-        login_btn.grid(row=6, column=1, columnspan=2, sticky="e",pady=(10,5), padx=(0, 15))
+        login_btn = Button(self, text="Login", command= lambda: self.attempt_login(), 
+            font=self.master.font14, padx=10)
+        login_btn.grid(row=6, column=1, columnspan=2, sticky="e",pady=(10,10), padx=(0, 15))
+        
+
 
     def attempt_login(self):
         customerId = self.username.get()
@@ -424,6 +456,25 @@ class Login_Page(Frame):
                     self.password_error_label["text"] = "Incorrect password"
                     self.password_error_label.grid(row=5, column=1, columnspan=1, sticky="EW", padx=20)
 
+class Login_Page(Frame):
+    def __init__(self, master):
+        Frame.__init__(self, master, width=800, height=800)
+        self.master = master
+
+        # # Rendering Image
+        # img = ImageTk.PhotoImage(Image.open("./Assets/HandyHardwarev1.png").resize((400, 166)))
+        # # img = img
+        # img_label = Label(self,image = img)
+        # img_label.image = img
+        # img_label.grid(row=0, column = 0, columnspan=2)
+
+        self.header = Login_Header(self)
+        self.header.grid(row=0, pady=(0, 20))
+
+        self.credentials = Login_Page_Credentials(self)
+        self.credentials.grid(row=1)
+
+        self.configure(background="#e0fbfc")
 
 
 
@@ -442,7 +493,7 @@ class Admin_Signup_Page(Frame):
 
         self.password_error_label = Label(self, text= "")
         
-        welcome_label = Label(self, text = "Welcome!")
+        welcome_label = Label(self, text = "Welcome!", font=self.master.font20)
         welcome_label.grid(row=0, column=0, columnspan=2)
 
         # Creatinag Text Boxes
@@ -497,11 +548,13 @@ class Admin_Signup_Page(Frame):
         password_label = Label(self, text="Password")
         password_label.grid(row=15, column=0, pady=(2.5,2.5))
 
-        back_btn = Button(self, text="Back", command=lambda: master.switch_frame(Login_Page))
-        back_btn.grid(row=17, column=0, padx=(15,0), sticky="W", pady=(10,2.5))
+        back_btn = Button(self, text="Back", font=self.master.font14, padx=10,
+            command=lambda: self.master.switch_frame(Login_Page))
+        back_btn.grid(row=17, column=0, padx=(15,0), sticky="W", pady=(15,2.5))
         
-        confirm_btn = Button(self, text="Confirm", command=lambda: self.admin_signup())
-        confirm_btn.grid(row=17, column=1, padx=(0, 15), sticky="E", pady=(10,2.5))
+        confirm_btn = Button(self, text="Confirm", font=self.master.font14, padx=10,
+            command=lambda: self.admin_signup())
+        confirm_btn.grid(row=17, column=1, padx=(0, 15), sticky="E", pady=(15,2.5))
 
 
         # self.pack(side="top", fill="both", expand=True)
@@ -682,22 +735,24 @@ class Admin_Signup_Page(Frame):
 
 
 
-class Admin_Login_Page(Frame):
+class Admin_Login_Credentials(Frame):
     def __init__(self, master):
         Frame.__init__(self, master, width=800, height=800)
-        self.master = master
+        self.master = master.master
 
-        title = Label(self, text="Admin Login Page")
-        title.grid(row=0, column=0, columnspan=1)
+        title = Label(self, text="Admin Login Page", font=self.master.font20)
+        title.grid(row=0, column=0, columnspan=1, pady=(15,0), padx=(15))
 
         toggle = LabelFrame(self, borderwidth = 0)
-        toggle.grid(row=0, column=1, padx=20)
+        toggle.grid(row=0, column=1, padx=20, pady=(15,0))
 
-        customer_btn = Button(toggle, text="Customer", command= lambda: master.switch_frame(Login_Page))
-        customer_btn.grid(row=0, column=0, columnspan=1)
+        customer_btn = Button(toggle, text="Customer", font=self.master.font14,
+            command= lambda: self.master.switch_frame(Login_Page))
+        customer_btn.grid(row=0, column=0, columnspan=1, padx = (0, 10))
 
-        admin_btn = Button(toggle, text="Admin", command= lambda: master.switch_frame(Admin_Login_Page))
-        admin_btn.grid(row=0, column=1, columnspan=1)
+        admin_btn = Button(toggle, text="Admin", font=self.master.font14,
+            command= lambda: self.master.switch_frame(Admin_Login_Page))
+        admin_btn.grid(row=0, column=1, columnspan=1, padx = (0, 10))
        
         self.username = Entry(self, width = 30)
         self.username.grid(row=2, column=1, padx=20, pady=(10,2.5))
@@ -711,18 +766,22 @@ class Admin_Login_Page(Frame):
         self.password_error_label = Label(self, text= "")
         self.error_label = Label(self, text= "")
         
-        username_label = Label(self, text="Username")
+        username_label = Label(self, text="Username", font=self.master.font14)
         username_label.grid(row=2, column=0, sticky="EW", pady=(10,2.5))
 
 
-        password_label = Label(self, text="Password")
+        password_label = Label(self, text="Password", font=self.master.font14)
         password_label.grid(row=4, column=0, sticky="EW", pady=(2.5,2.5))
 
-        signup_btn = Button(self, text="Sign Up", command= lambda: master.switch_frame(Admin_Signup_Page))
-        signup_btn.grid(row=6, column=0, columnspan=1, sticky="w",pady=(10,5), padx=(15, 0))
+        signup_btn = Button(self, text="Sign Up", font=self.master.font14, 
+            padx=10,
+            command= lambda: self.master.switch_frame(Admin_Signup_Page))
+        signup_btn.grid(row=6, column=0, columnspan=1, sticky="w",pady=(10,10), padx=(15, 0))
 
-        login_btn = Button(self, text="Login", command= lambda: self.attempt_login())
-        login_btn.grid(row=6, column=1, columnspan=2, sticky="e", pady=(10,5), padx=(0, 15))
+        login_btn = Button(self, text="Login", font=self.master.font14,
+            padx=10,
+            command= lambda: self.attempt_login())
+        login_btn.grid(row=6, column=1, columnspan=2, sticky="e", pady=(10,10), padx=(0, 15))
 
     def attempt_login(self):
         adminId = self.username.get()
@@ -797,3 +856,24 @@ class Admin_Login_Page(Frame):
 
                     self.password_error_label["text"] = "Incorrect password"
                     self.password_error_label.grid(row=5, column=1, columnspan=1, sticky="EW", padx=20)
+
+class Admin_Login_Page(Frame):
+    def __init__(self, master):
+        Frame.__init__(self, master, width=800, height=800)
+        self.master = master
+
+        # # Rendering Image
+        # img = ImageTk.PhotoImage(Image.open("./Assets/HandyHardwarev1.png").resize((400, 166)))
+        # # img = img
+        # img_label = Label(self,image = img)
+        # img_label.image = img
+        # img_label.grid(row=0, column = 0, columnspan=2)
+
+        self.header = Login_Header(self)
+        self.header.grid(row=0, pady=(0, 20))
+
+        self.credentials = Admin_Login_Credentials(self)
+        self.credentials.grid(row=1)
+
+        self.configure(background="#e0fbfc")
+
