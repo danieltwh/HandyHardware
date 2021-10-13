@@ -307,7 +307,7 @@ class Request_Page(Frame):
         data2 = pd.read_sql_query(f"""
         SELECT pay.paymentID, pay.itemID, c.customerID, 
         p.model, p.warrantyMonths, i.powerSupply, i.colour,
-        p.price, pay.purchaseDate
+        p.cost, pay.purchaseDate
         FROM Payments pay 
         LEFT JOIN Items i USING(itemID)
         LEFT JOIN Products p ON i.productID = p.productID
@@ -319,7 +319,7 @@ class Request_Page(Frame):
         print(data2)
         (paymentId, curr_itemId, curr_customerId, curr_model,
         curr_warrantyMonths,curr_powerSupply,curr_colour,
-        curr_price, curr_purchaseDate) = list(data2.to_records(index=False))[0]
+        curr_cost, curr_purchaseDate) = list(data2.to_records(index=False))[0]
         print(curr_adminId)
 
         title = Label(self, text="Request Page", font=('Aerial 15 bold'))
@@ -375,7 +375,7 @@ class Request_Page(Frame):
         # Get the data into variables
         (paymentId, curr_itemId, curr_customerId, 
         curr_model,curr_warrantyMonths,curr_powerSupply,
-        curr_colour,curr_price,curr_purchaseDate) = list(data2.to_records(index=False))[0]
+        curr_colour,curr_cost,curr_purchaseDate) = list(data2.to_records(index=False))[0]
         curr_adminId = self.master.adminId
         print("curr_adminId: " + str(curr_adminId))
 
@@ -425,7 +425,7 @@ class Request_Page(Frame):
                     query2 = f"""
                     SELECT COUNT(*) INTO @r_count FROM Requests;
                     INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
-                    (@r_count, 40 + {curr_price} * 0.2, '%s', '%s')
+                    (@r_count, 40 + {curr_cost} * 0.2, '%s', '%s')
                     ;""" % (dateStr,end_dateStr)
                     conn.execute(query2)
 
@@ -434,7 +434,7 @@ class Request_Page(Frame):
                 query3 = f"""
                 SELECT COUNT(*) INTO @r_count FROM Requests;
                 INSERT INTO Services(requestID, serviceStatus)VALUES
-                (@r_count, "In Progress")
+                (@r_count, "Waiting for approval")
                 ;
                 """
                 conn.execute(query3)
@@ -518,7 +518,7 @@ class Request_Details(Frame):
             cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_itemId))
             cancel_btn.grid(row=9, column=0, pady = 20)
 
-            pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_itemId))
+            pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_itemId,curr_amount))
             pay_btn.grid(row=9, column=2, pady = 20)
 
             ## If $0, they cannot return to past_purchases page
@@ -566,19 +566,22 @@ class Request_Details(Frame):
         self.master.switch_frame(Cancel_Request_Page)
 
     
-    def payRequest(self, itemId):
+    def payRequest(self, itemId, curr_amount):
         with db.begin() as conn:
             savepoint = conn.begin_nested()
             print(itemId)
             try:
-                # Update the request status to In progress
-                query = f"""
-                UPDATE Requests r
-                SET r.requestStatus = 'In progress'
-                WHERE (r.itemID = {itemId} AND r.requestStatus != 'Cancelled')
-                ;
-                """
-                conn.execute(query)
+                if curr_amount == 0:
+                    print("curr_amt = 0")
+                else:
+                    # Update the request status to In progress
+                    query = f"""
+                    UPDATE Requests r
+                    SET r.requestStatus = 'In progress'
+                    WHERE (r.itemID = {itemId} AND r.requestStatus != 'Cancelled')
+                    ;
+                    """
+                    conn.execute(query)
 
                 # Commit changes to database
                 savepoint.commit()

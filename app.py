@@ -36,21 +36,25 @@ class SideBar(Frame):
         self.master = master
 
         catalogue_btn = Button(self, text="Shop", padx=10, highlightbackground="#ffffff", 
-            command=lambda: master.switch_frame(PAGES.get("customer_shopping_catalogue")))
+            font = self.master.font14, 
+            command=lambda: self.master.switch_frame(PAGES.get("customer_shopping_catalogue")))
         catalogue_btn.grid(row=1, column=0, padx=(5, 10), sticky="EW", pady=(10, 5))
 
         past_purchases_btn = Button(self, text="Past Purchases / Make Request", wraplength=130,
-            command=lambda: master.switch_frame(PAGES.get("customer_past_purchases")))
+            font = self.master.font14,
+            command=lambda: self.master.switch_frame(PAGES.get("customer_past_purchases")))
         past_purchases_btn.grid(row=2, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
 
         request_table_btn = Button(self, text="Past Requests", wraplength=130,
-            command=lambda: master.switch_frame(PAGES.get("request_table")))
+            font = self.master.font14,
+            command=lambda: self.master.switch_frame(PAGES.get("request_table")))
         request_table_btn.grid(row=3, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
 
         # ttk.Style().configure("red/black.TButton", foreground="black", background="red")
 
         logout_btn = Button(self, text="Logout", padx=10,  
-            command=lambda: master.logout())
+            font = self.master.font14,
+            command=lambda: self.master.logout())
         logout_btn.grid(row=4, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
 
 class AdminSideBar(Frame):
@@ -59,22 +63,28 @@ class AdminSideBar(Frame):
         self.master = master
 
         catalogue_btn = Button(self, text="Items", padx=10, highlightbackground="#ffffff", 
-            command=lambda: master.switch_frame(PAGES.get("admin_items")))
+            font = self.master.font14,
+            command=lambda: self.master.switch_frame(PAGES.get("admin_items")))
         catalogue_btn.grid(row=1, column=0, padx=(5, 10), sticky="EW", pady=(10, 5))
 
         past_purchases_btn = Button(self, text="Manage Request", wraplength=130,
-            command=lambda: master.switch_frame(PAGES.get("admin_request")))
+            font = self.master.font14, padx=10,
+            command=lambda: self.master.switch_frame(PAGES.get("admin_request")))
         past_purchases_btn.grid(row=2, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
 
         # ttk.Style().configure("red/black.TButton", foreground="black", background="red")
 
         logout_btn = Button(self, text="Logout", padx=10,  
-            command=lambda: master.logout())
+            font = self.master.font14,
+            command=lambda: self.master.logout())
         logout_btn.grid(row=3, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
 
         DB_reset_btn = Button(self, text = "Reset DB", padx=10,
+            font = self.master.font14, 
+            bg = "#fe5f55", bd=2.5,
+            highlightthickness=4, highlightbackground="#fe5f55", highlightcolor="#fe5f55",
             command=lambda: self.resetDB())
-        DB_reset_btn.grid(row=4, column=0, padx=(5, 10), sticky="EW", pady=(5, 5))
+        DB_reset_btn.grid(row=4, column=0, padx=(5, 10), sticky="EW",pady=(660, 5))
 
     
     def resetDB(self):
@@ -100,7 +110,10 @@ class App(Tk):
         self.configure(background="#e0fbfc")
         self.font12 = tkFont.Font(self, size=12)
         self.font14 = tkFont.Font(self, size=14)
+        self.font16 = tkFont.Font(self, size=16)
+        self.font18 = tkFont.Font(self, size=18)
         self.font20 = tkFont.Font(size=20)
+        self.font24 = tkFont.Font(size=24)
         # self.option_add('*Font', '12')
 
         self.title("Handy Hardware")
