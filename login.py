@@ -34,7 +34,7 @@ class Signup_Page(Frame):
         self.address_error_label = Label(self, text="", font=self.master.font12)
         self.password_error_label = Label(self, text= "", font=self.master.font12)
         
-        welcome_label = Label(self, text = "Welcome!", font=self.master.font20)
+        welcome_label = Label(self, text = "Welcome!", font=self.master.font24)
         welcome_label.grid(row=0, column=0, columnspan=2)
 
         # Creatinag Text Boxes
@@ -493,7 +493,7 @@ class Admin_Signup_Page(Frame):
 
         self.password_error_label = Label(self, text= "")
         
-        welcome_label = Label(self, text = "Welcome!", font=self.master.font20)
+        welcome_label = Label(self, text = "Welcome!", font=self.master.font24)
         welcome_label.grid(row=0, column=0, columnspan=2)
 
         # Creatinag Text Boxes
@@ -550,11 +550,11 @@ class Admin_Signup_Page(Frame):
 
         back_btn = Button(self, text="Back", font=self.master.font14, padx=10,
             command=lambda: self.master.switch_frame(Login_Page))
-        back_btn.grid(row=17, column=0, padx=(15,0), sticky="W", pady=(15,2.5))
+        back_btn.grid(row=17, column=0, padx=(15,0), sticky="W", pady=(15,5))
         
         confirm_btn = Button(self, text="Confirm", font=self.master.font14, padx=10,
             command=lambda: self.admin_signup())
-        confirm_btn.grid(row=17, column=1, padx=(0, 15), sticky="E", pady=(15,2.5))
+        confirm_btn.grid(row=17, column=1, padx=(0, 15), sticky="E", pady=(15,5))
 
 
         # self.pack(side="top", fill="both", expand=True)

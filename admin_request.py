@@ -996,6 +996,7 @@ class Admin_Request_Page_Header(tk.LabelFrame):
         tab5 = tk.Button(self, text="All Service Jobs",
                          command=lambda: master.show_service("All"))
         tab5.grid(row=0, column=4, padx=5)
+        
 
 
 class Admin_Request_Page(Frame):
