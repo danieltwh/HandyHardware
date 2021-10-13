@@ -90,12 +90,14 @@ def RESET_DB():
     INSERT INTO Customers(customerID, customerName,	gender, email, phoneNumber, address, customerPassword) VALUES
         ('JohnSmith123', 'John Smith', 'MALE', 'johnsmith123@gmail.com', '91234567', 'Block 123, West Street, #11-123', 'IamJohnSmith123'),
         ('MarySue456','Mary Sue', 'FEMALE', 'marysue456@gmail.com', '81234567', 'Block 456, East Street, #11-456', 'IamMarySue456'),
-        ('BobRob789','Bob Rob', 'OTHERS', 'bobrob789@gmail.com', '81234568', 'Block 789, North Street, #11-789', 'IamBobRob789');
+        ('BobRob789','Bob Rob', 'OTHERS', 'bobrob789@gmail.com', '81234568', 'Block 789, North Street, #11-789', 'IamBobRob789'),
+        ('test', 'Test Tester', 'MALE', 'test@gmail.com', '98765432', 'Block 123, West Street, #11-125', 'testtest');
         
     INSERT INTO Administrators(administratorID, administratorName, gender, phoneNumber, administratorPassword) VALUES
         ('EddMing321', 'Edd Ming', 'MALE', '97654321', 'IamEddMing321'),
         ('NistraTor654','Nista Tor', 'FEMALE', '87654321', 'IamMIstraTor456'),
-        ('BrockBroccoli987', 'Brock Broccoli', 'OTHERS', '97654329', 'IamBrockBroccoli987');
+        ('BrockBroccoli987', 'Brock Broccoli', 'OTHERS', '97654329', 'IamBrockBroccoli987'),
+        ('admin', 'admin admin', 'MALE', '98765432', 'adminadmin');
 
     INSERT INTO Products(category, cost, model, price, productID, warrantyMonths) VALUES
         ('Lights',20,'Light1',50,1,10),
