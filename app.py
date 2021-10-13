@@ -116,8 +116,8 @@ class App(Tk):
             # self._frame.grid(row=0, column=1, )
 
     ## Switch frame that passes an id
-    def id_switch_frame(self, data, id, frame_class):
-        new_frame = frame_class(data,id,self)
+    def id_switch_frame(self, id, frame_class):
+        new_frame = frame_class(id,self)
         if self._frame is not None:
             self._frame.destroy()
         self._frame = new_frame
