@@ -18,6 +18,18 @@ from pymysql.constants import CLIENT
 import pandas as pd
 from config import USERNAME, MYSQL_PASSWORD
 
+ORDER_BY_REQUEST_STATUS = """
+ORDER BY 
+    CASE r.requestStatus
+      WHEN 'Submitted' THEN 1
+      WHEN 'In progress' THEN 2
+      WHEN 'Submitted and Waiting for payment' THEN 3
+	  WHEN 'Approved' THEN 4
+      WHEN 'Completed' THEN 5
+      WHEN 'Cancelled' THEN 6
+	END,
+    r.requestID
+"""
 
 db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/ECOMMERCE", 
         connect_args = {"client_flag": CLIENT.MULTI_STATEMENTS}
@@ -46,7 +58,8 @@ class Past_Purchases_Table(ScrollableFrame):
         LEFT JOIN Requests r2 USING(itemID)
             WHERE i2.itemID = i.itemID
             GROUP BY i2.itemID
-        ) and c.customerID = "{customerId}";
+        ) and c.customerID = "{customerId}"
+        {ORDER_BY_REQUEST_STATUS};
         """, db)
 
         no_request = pd.read_sql_query(f"""
@@ -58,6 +71,7 @@ class Past_Purchases_Table(ScrollableFrame):
             left join requests r on i.itemID = r.itemID
             left join payments pay on i.itemID = pay.itemID
             where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
+            {ORDER_BY_REQUEST_STATUS}
             limit 100;
         """, db)
 
@@ -193,7 +207,8 @@ class Past_Purchase_Page(Frame):
         LEFT JOIN Requests r2 USING(itemID)
             WHERE i2.itemID = i.itemID
             GROUP BY i2.itemID
-        ) and c.customerID = "{customerId}";
+        ) and c.customerID = "{customerId}"
+        {ORDER_BY_REQUEST_STATUS};
         """, db)
 
         no_request = pd.read_sql_query(f"""
@@ -205,6 +220,7 @@ class Past_Purchase_Page(Frame):
             left join requests r on i.itemID = r.itemID
             left join payments pay on i.itemID = pay.itemID
             where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
+            {ORDER_BY_REQUEST_STATUS}
             limit 100;
         """, db)
 
@@ -240,7 +256,8 @@ class Past_Purchase_Page(Frame):
         LEFT JOIN Requests r2 USING(itemID)
             WHERE i2.itemID = i.itemID
             GROUP BY i2.itemID
-        ) and c.customerID = "{customerId}";
+        ) and c.customerID = "{customerId}"
+        {ORDER_BY_REQUEST_STATUS};
         """, db)
 
         no_request = pd.read_sql_query(f"""
@@ -252,6 +269,7 @@ class Past_Purchase_Page(Frame):
             left join requests r on i.itemID = r.itemID
             left join payments pay on i.itemID = pay.itemID
             where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
+            {ORDER_BY_REQUEST_STATUS}
             limit 100;
         """, db)
 
