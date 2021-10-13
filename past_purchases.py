@@ -102,7 +102,7 @@ class Past_Purchases_Table(ScrollableFrame):
                 try: 
                     time_diff = date.today() - allRequests['creationDate'][0]
 
-                    if time_diff.days > 10 :  
+                    if time_diff.days > 10 and entry.requestStatus == 'Submitted and Waiting for payment':  
 
                         requestStatus = "Cancelled"
                         
@@ -411,7 +411,17 @@ class Request_Page(Frame):
                     ;""" % (dateStr,end_dateStr)
                     conn.execute(query2)
 
-                print("Added a service row")
+                print("Added a ServiceFee row")
+
+                query3 = f"""
+                SELECT COUNT(*) INTO @r_count FROM Requests;
+                INSERT INTO Services(requestID, serviceStatus)VALUES
+                (@r_count, "In Progress")
+                ;
+                """
+                conn.execute(query3)
+                print("Added a Service row")
+
                 
                 # Commit changes to database
                 savepoint.commit()
@@ -477,7 +487,7 @@ class Request_Details(Frame):
 
         amount_label = Label(self, text="Payment Amount: ", font=('Aerial 9 bold'))
         amount_label.grid(row=5, column=0)
-        amount = Label(self, text="$" + str(curr_amount))
+        amount = Label(self, text="$" + "{:.2f}".format(curr_amount))
         amount.grid(row=5, column=1, padx=20)
 
         issue_label = Label(self, text="Issue: ", font=('Aerial 9 bold'))
