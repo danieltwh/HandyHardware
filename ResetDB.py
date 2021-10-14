@@ -90,12 +90,14 @@ def RESET_DB():
     INSERT INTO Customers(customerID, customerName,	gender, email, phoneNumber, address, customerPassword) VALUES
         ('JohnSmith123', 'John Smith', 'MALE', 'johnsmith123@gmail.com', '91234567', 'Block 123, West Street, #11-123', 'IamJohnSmith123'),
         ('MarySue456','Mary Sue', 'FEMALE', 'marysue456@gmail.com', '81234567', 'Block 456, East Street, #11-456', 'IamMarySue456'),
-        ('BobRob789','Bob Rob', 'OTHERS', 'bobrob789@gmail.com', '81234568', 'Block 789, North Street, #11-789', 'IamBobRob789');
+        ('BobRob789','Bob Rob', 'OTHERS', 'bobrob789@gmail.com', '81234568', 'Block 789, North Street, #11-789', 'IamBobRob789'),
+        ('test', 'Test Tester', 'MALE', 'test@gmail.com', '98765432', 'Block 123, West Street, #11-125', 'testtest');
         
     INSERT INTO Administrators(administratorID, administratorName, gender, phoneNumber, administratorPassword) VALUES
         ('EddMing321', 'Edd Ming', 'MALE', '97654321', 'IamEddMing321'),
         ('NistraTor654','Nista Tor', 'FEMALE', '87654321', 'IamMIstraTor456'),
-        ('BrockBroccoli987', 'Brock Broccoli', 'OTHERS', '97654329', 'IamBrockBroccoli987');
+        ('BrockBroccoli987', 'Brock Broccoli', 'OTHERS', '97654329', 'IamBrockBroccoli987'),
+        ('admin', 'admin admin', 'MALE', '98765432', 'adminadmin');
 
     INSERT INTO Products(category, cost, model, price, productID, warrantyMonths) VALUES
         ('Lights',20,'Light1',50,1,10),
@@ -1115,8 +1117,8 @@ def RESET_DB():
 
 
     INSERT INTO Payments VALUES
-        (1,1001,'2021-02-28','JohnSmith123',50),
-        (2,1002,'2021-02-28','JohnSmith123',50),
+        (1,1001,'2021-02-28','test',50),
+        (2,1002,'2021-02-28','test',50),
         (3,1003,'2021-02-28','JohnSmith123',50),
         (4,1004,'2021-02-28','JohnSmith123',50),
         (5,1005,'2021-02-28','JohnSmith123',50),
@@ -1208,11 +1210,11 @@ def RESET_DB():
         (91,1092,'2021-02-28','JohnSmith123',50),
         (92,1102,'2021-02-28','JohnSmith123',60),
         (93,1103,'2021-02-28','JohnSmith123',60),
-        (94,1104,'2021-02-28','JohnSmith123',60),
-        (95,1105,'2021-02-28','JohnSmith123',60),
-        (96,1106,'2021-02-28','JohnSmith123',60),
-        (97,1107,'2021-02-28','JohnSmith123',60),
-        (98,1108,'2021-02-28','JohnSmith123',60),
+        (94,1104,'2021-02-28','test',60),
+        (95,1105,'2021-02-28','test',60),
+        (96,1106,'2021-02-28','test',60),
+        (97,1107,'2021-02-28','test',60),
+        (98,1108,'2021-02-28','test',60),
         (99,1109,'2021-02-28','JohnSmith123',60),
         (100,1110,'2021-02-28','JohnSmith123',60),
         (101,1111,'2021-02-28','JohnSmith123',60),
@@ -1342,8 +1344,8 @@ def RESET_DB():
         (225,1366,'2021-02-28','JohnSmith123',60),
         (226,1367,'2021-02-28','JohnSmith123',60),
         (227,1368,'2021-02-28','JohnSmith123',60),
-        (228,1434,'2021-02-28','JohnSmith123',70),
-        (229,1435,'2021-02-28','JohnSmith123',70),
+        (228,1434,'2021-02-28','test',70),
+        (229,1435,'2021-02-28','test',70),
         (230,1436,'2021-02-28','JohnSmith123',70),
         (231,1437,'2021-02-28','JohnSmith123',70),
         (232,1438,'2021-02-28','JohnSmith123',70),
@@ -1447,25 +1449,25 @@ def RESET_DB():
         (329,1715,'2021-02-28','JohnSmith123',120),
         (330,1716,'2021-02-28','JohnSmith123',125),
         (331,1727,'2021-02-28','JohnSmith123',120),
-        (332,1728,'2021-02-28','JohnSmith123',125),
+        (332,1728,'2021-02-28','test',125),
         (333,1729,'2021-02-28','JohnSmith123',200),
         (334,1730,'2021-02-28','JohnSmith123',100),
-        (335,1731,'2021-02-28','JohnSmith123',120),
+        (335,1731,'2021-02-28','test',120),
         (336,1742,'2021-02-28','JohnSmith123',125),
-        (337,1743,'2021-02-28','JohnSmith123',120),
+        (337,1743,'2021-02-28','test',120),
         (338,1744,'2021-02-28','JohnSmith123',125),
         (339,1745,'2021-02-28','JohnSmith123',200),
-        (340,1746,'2021-02-28','JohnSmith123',100),
+        (340,1746,'2021-02-28','test',100),
         (341,1757,'2021-02-28','JohnSmith123',200),
-        (342,1758,'2021-02-28','JohnSmith123',100),
+        (342,1758,'2021-02-28','test',100),
         (343,1759,'2021-02-28','JohnSmith123',120),
         (344,1760,'2021-02-28','JohnSmith123',125),
-        (345,1761,'2021-02-28','JohnSmith123',200),
+        (345,1761,'2021-02-28','test',200),
         (346,1772,'2021-02-28','JohnSmith123',125),
-        (347,1773,'2021-02-28','JohnSmith123',200),
+        (347,1773,'2021-02-28','test',200),
         (348,1774,'2021-02-28','JohnSmith123',100),
         (349,1775,'2021-02-28','JohnSmith123',120),
-        (350,1776,'2021-02-28','JohnSmith123',125),
+        (350,1776,'2021-02-28','test',125),
         (351,1787,'2021-02-28','JohnSmith123',120),
         (352,1788,'2021-02-28','JohnSmith123',125),
         (353,1789,'2021-02-28','JohnSmith123',200),
@@ -1541,6 +1543,49 @@ def RESET_DB():
         (423,1999,'2021-02-28','JohnSmith123',120),
         (424,2000,'2021-02-28','JohnSmith123',125),
         (425,2001,'2021-02-28','JohnSmith123',200);
+    
+
+    INSERT INTO Requests VALUES
+        (1, 1104, 'admin', 'In progress', 'torch light not bright'),
+        (2, 1105, 'admin', 'Approved', 'torch light too bright'),
+        (3, 1106, 'admin', 'Cancelled', 'cannot find purple light'),
+        (4, 1107, 'admin', 'Completed', 'torch light did not come with light'),
+        (5, 1108, 'admin', 'Cancelled', 'torch light spoil but I do not have money'),
+        (6, 1001, 'admin', 'Submitted', 'light turns on my itself'),
+        (7, 1434, 'admin', 'Submitted', 'light does not turn on'),
+        (8, 1758, 'admin', 'Approved', 'lock does not have a key'),
+        (9, 1743, 'admin', 'Approved', 'lock is rusty'),
+        (10, 1728, 'admin', 'Cancelled', 'the money in my safe is gone, even though i locked it'),
+        (11, 1773, 'admin', 'Completed', 'the lock does not auto lock');
+
+        
+
+    INSERT INTO ServiceFees VALUES
+        (1, 0.00, '2021-10-01', '2021-10-02'),
+        (2, 0.00, '2021-10-01', '2021-10-02'),
+        (3, 0.00, '2021-10-01', '2021-10-02'),
+        (4, 0.00, '2021-10-02', '2021-10-03'),
+        (5, 44.40, '2021-10-02', NULL),
+        (6, 0.00, '2021-10-02', '2021-10-03'),
+        (7, 0.00, '2021-10-02', '2021-10-03'),
+        (8, 0.00, '2021-10-02', '2021-10-03'),
+        (9, 0.00, '2021-10-02', '2021-10-03'),
+        (10, 0.00, '2021-10-03', '2021-10-04'),
+        (11, 0.00, '2021-10-04', '2021-10-05');
+
+
+    INSERT INTO Services VALUES
+        (1, 'Waiting for approval'),
+        (2, 'In progress'),
+        (3, 'In progress'),
+        (4, 'Completed'),
+        (5, 'Waiting for approval'),
+        (6, 'Waiting for approval'),
+        (7, 'Waiting for approval'),
+        (8, 'In progress'),
+        (9, 'In progress'),
+        (10, 'In progress'),
+        (11, 'Completed');
 
 
     """)

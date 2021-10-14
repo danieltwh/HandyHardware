@@ -26,6 +26,7 @@ products = mydb.products
 items = mydb.items
 data = products.find({})
 
+
 class App(Tk):
     def __init__(self):
         Tk.__init__(self)
@@ -120,7 +121,7 @@ class Catalogue_Table(tk.LabelFrame):
                     savepoint.rollback()
                     print("No")
 
-        self.master.filter_status1(clicked1)
+        self.master.filter_status1(self.master.clicked1)
 
 class Advance_Table(tk.LabelFrame):
     def __init__(self, data, *args, **kwargs):
@@ -138,9 +139,41 @@ class Advance_Table(tk.LabelFrame):
         bg = ["#ffffff", "#d9e1f2"]
         row = 1
         for dic in products_data:
-            if clicked3.get() != "Filter 1: All Price":
-                if int(dic["Price ($)"]) != int(clicked3.get()[1:]):
+            if self.master.clicked3.get() != "Filter 1: All Price":
+                if int(dic["Price ($)"]) != int(self.master.clicked3.get()[1:]):
                     continue
+            
+            if self.master.clicked1.get() == "Category: Lights":
+                if dic["Category"] != "Lights":
+                    continue
+
+            if self.master.clicked1.get() == "Category: Locks":
+                if dic["Category"] != "Locks":
+                    continue  
+
+            if self.master.clicked1.get() == "Model: Light1":
+                if dic["Model"] != "Light1":
+                    continue  
+
+            if self.master.clicked1.get() == "Model: Light2":
+                if dic["Model"] != "Light2":
+                    continue  
+            
+            if self.master.clicked1.get() == "Model: Safe1":
+                if dic["Model"] != "Safe1":
+                    continue  
+
+            if self.master.clicked1.get() == "Model: Safe2":
+                if dic["Model"] != "Safe2":
+                    continue  
+            
+            if self.master.clicked1.get() == "Model: Safe3":
+                if dic["Model"] != "Safe3":
+                    continue  
+
+            if self.master.clicked1.get() == "Model: SmartHome1":
+                if dic["Model"] != "SmartHome1":
+                    continue  
 
             categories_label = tk.Label(self, text=str(dic["Category"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             model_label = tk.Label(self, text=str(dic["Model"]), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
@@ -208,7 +241,7 @@ class Advance_Table(tk.LabelFrame):
                     savepoint.rollback()
                     print("No")
 
-        self.master.filter_status2(clicked3, clicked4, clicked5, clicked6)
+        self.master.filter_status2(self.master.clicked3, self.master.clicked4, self.master.clicked5, self.master.clicked6)
 
 
 class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
@@ -218,41 +251,31 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
 
         tab1 = tk.Button(self, text="Refresh Shopping Catalogue", command= lambda: master.refresh("All"))
         tab1.grid(row=0, column=0, padx=(10, 5))
-        global clicked1
-        global clicked2
-        global clicked3
-        global clicked4
-        global clicked5
-        global clicked6
-        clicked1 = tk.StringVar()
-        clicked1.set("All Categories & Models")
-        clicked3 = tk.StringVar()
-        clicked3.set("Filter 1: All Price")
-        clicked4 = tk.StringVar()
-        clicked4.set("Filter 2: All Color")
-        clicked5 = tk.StringVar()
-        clicked5.set("Filter 3: All Factory")
-        clicked6 = tk.StringVar()
-        clicked6.set("Filter 4: All Production year")
+
+        self.master.clicked1.set("All Categories & Models")
+        self.master.clicked3.set("Filter 1: All Price")
+        self.master.clicked4.set("Filter 2: All Color")
+        self.master.clicked5.set("Filter 3: All Factory")
+        self.master.clicked6.set("Filter 4: All Production year")
 
         # dropdown filter
-        tab2 = OptionMenu(self, clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=0, column=1, sticky="ew", padx=5)
+        tab2 = OptionMenu(self, self.master.clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=0, column=1, sticky="ew", padx=5)
 
-        tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = clicked1: master.filter_status1(clicked1)).grid(row=0, column=2, sticky="ew", padx=5)
+        tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = self.master.clicked1: master.filter_status1(self.master.clicked1)).grid(row=0, column=2, sticky="ew", padx=5)
         
         #tk.Label(self, text="Price Filter", anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
-        tab4 = OptionMenu(self, clicked3, "Filter 1: All Price", "$50", "$60", "$70", "$100", "$120", "$125", "$200").grid(row=2, column=0, sticky="ew", padx=5)
+        tab4 = OptionMenu(self, self.master.clicked3, "Filter 1: All Price", "$50", "$60", "$70", "$100", "$120", "$125", "$200").grid(row=2, column=0, sticky="ew", padx=5)
 
         #tk.Label(self, text="Color Filter", anchor="w").grid(row=0, column=3, sticky="ew", padx=5)
-        tab5 = OptionMenu(self, clicked4, "Filter 2: All Color", "White", "Blue", "Yellow", "Green", "Black").grid(row=2, column=1, sticky="ew", padx=5)
+        tab5 = OptionMenu(self, self.master.clicked4, "Filter 2: All Color", "White", "Blue", "Yellow", "Green", "Black").grid(row=2, column=1, sticky="ew", padx=5)
 
         #tk.Label(self, text="Factory Filter", anchor="w").grid(row=0, column=4, sticky="ew", padx=5)
-        tab6 = OptionMenu(self, clicked5, "Filter 3: All Factory", "Malaysia", "China", "Philippines").grid(row=2, column=2, sticky="ew", padx=5)
+        tab6 = OptionMenu(self, self.master.clicked5, "Filter 3: All Factory", "Malaysia", "China", "Philippines").grid(row=2, column=2, sticky="ew", padx=5)
     
         #tk.Label(self, text="Production Year Filter", anchor="w").grid(row=0, column=5, sticky="ew", padx=5)
-        tab7 = OptionMenu(self, clicked6, "Filter 4: All Production year", "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=2, column=3, sticky="ew", padx=5)
+        tab7 = OptionMenu(self, self.master.clicked6, "Filter 4: All Production year", "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=2, column=3, sticky="ew", padx=5)
         
-        tab8 = tk.Button(self, text="Advanced Search", command= lambda: master.filter_status2(clicked3, clicked4, clicked5, clicked6)).grid(row=2, column=4, sticky="ew", padx=5)
+        tab8 = tk.Button(self, text="Advanced Search", command= lambda: master.filter_status2(self.master.clicked3, self.master.clicked4, self.master.clicked5, self.master.clicked6)).grid(row=2, column=4, sticky="ew", padx=5)
 
 
         # tab3 = OptionMenu(self, clicked2, "All Models", "Light1", "Light2", "SmartHome1", "Safe1", "Safe2", "Safe3",
@@ -262,6 +285,12 @@ class Customer_Shopping_Catalogue_Page(Frame):
         Frame.__init__(self, master)
         self.master = master
         curr_data = products.find({})
+        self.clicked1 = tk.StringVar()
+        self.clicked2 = tk.StringVar()
+        self.clicked3 = tk.StringVar()
+        self.clicked4 = tk.StringVar()
+        self.clicked5 = tk.StringVar()
+        self.clicked6 = tk.StringVar()        
 
         self.header = Customer_Shopping_Catalogue_Page_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
         self.header.pack(side="top", fill="x", expand=False)
@@ -283,24 +312,29 @@ class Customer_Shopping_Catalogue_Page(Frame):
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
 
     def filter_status1(self, curr_view):
+        self.clicked3.set("Filter 1: All Price")
+        self.clicked4.set("Filter 2: All Color")
+        self.clicked5.set("Filter 3: All Factory")
+        self.clicked6.set("Filter 4: All Production year")
+
         self.Catalogue_Table.destroy()
         curr_data = products.find({})
         
-        if clicked1.get() == 'Category: Lights':
+        if self.clicked1.get() == 'Category: Lights':
             curr_data = products.find({"Category": "Lights"})    
-        elif clicked1.get() == 'Category: Locks':
+        elif self.clicked1.get() == 'Category: Locks':
             curr_data = products.find({"Category": "Locks"})
-        elif clicked1.get() == 'Model: Light1':
+        elif self.clicked1.get() == 'Model: Light1':
             curr_data = products.find({"Model": "Light1"})    
-        elif clicked1.get() == 'Model: Light2':
+        elif self.clicked1.get() == 'Model: Light2':
             curr_data = products.find({"Model": "Light2"})    
-        elif clicked1.get() == 'Model: Safe1':
+        elif self.clicked1.get() == 'Model: Safe1':
             curr_data = products.find({"Model": "Safe1"})
-        elif clicked1.get() == 'Model: Safe2':
+        elif self.clicked1.get() == 'Model: Safe2':
             curr_data = products.find({"Model": "Safe2"})
-        elif clicked1.get() == 'Model: Safe3':
+        elif self.clicked1.get() == 'Model: Safe3':
             curr_data = products.find({"Model": "Safe3"})
-        elif clicked1.get() == 'Model: SmartHome1':
+        elif self.clicked1.get() == 'Model: SmartHome1':
             curr_data = products.find({"Model": "SmartHome1"})
 
         self.Catalogue_Table = Catalogue_Table(curr_data, self)
@@ -344,6 +378,39 @@ class Customer_Shopping_Catalogue_Page(Frame):
                     if dic['Model'] != 'SmartHome1':
                         if dic in items_data:
                             items_data.remove(dic)   
+
+            if self.clicked1.get() == 'Category: Lights':
+                if dic['Category'] != 'Lights':
+                    if dic in items_data:
+                        items_data.remove(dic)
+            elif self.clicked1.get() == 'Category: Locks':
+                if dic['Category'] != "Locks":
+                    if dic in items_data:
+                        items_data.remove(dic)
+            elif self.clicked1.get() == 'Model: Light1':
+                if dic['Model'] != "Light1":
+                    if dic in items_data:
+                        items_data.remove(dic)
+            elif self.clicked1.get() == 'Model: Light2':
+                if dic['Model'] != "Light2":
+                    if dic in items_data:
+                        items_data.remove(dic)
+            elif self.clicked1.get() == 'Model: Safe1':
+                if dic['Model'] != "Safe1":
+                    if dic in items_data:
+                        items_data.remove(dic)
+            elif self.clicked1.get() == 'Model: Safe2':
+                if dic['Model'] != "Safe2":
+                    if dic in items_data:
+                        items_data.remove(dic)
+            elif self.clicked1.get() == 'Model: Safe3':
+                if dic['Model'] != "Safe3":
+                    if dic in items_data:
+                        items_data.remove(dic)
+            elif self.clicked1.get() == 'Model: SmartHome1':
+                if dic['Model'] != "SmartHome1":
+                    if dic in items_data:
+                        items_data.remove(dic)
 
             for i in range(len(price_list)):
                 if c3.get() == price_list[i]:
