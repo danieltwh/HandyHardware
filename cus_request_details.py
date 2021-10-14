@@ -44,35 +44,35 @@ class Request_Details(Frame):
         curr_amount) = list(data2.to_records(index=False))[0]
         
 
-        title = Label(self, text="Request Details", font=('Aerial 15 bold'))
+        title = Label(self, text="Request Details", font=('Helvetica 14 bold'))
         title.grid(row=0, column=1, pady =20)
 
         itemID = Label(self, text=curr_itemId)
         itemID.grid(row=1, column=1)
-        itemID_label = Label(self, text="Item ID: ", font=('Aerial 9 bold'))
+        itemID_label = Label(self, text="Item ID: ", font=('Helvetica 12 bold'))
         itemID_label.grid(row=1, column=0)
 
-        model_label = Label(self, text="Model: ", font=('Aerial 9 bold'))
+        model_label = Label(self, text="Model: ", font=('Helvetica 12 bold'))
         model_label.grid(row=2, column=0)
         model = Label(self, text=curr_model)
         model.grid(row=2, column=1, padx=20)
 
-        reqDate_label = Label(self, text="Request Date: ", font=('Aerial 9 bold'))
+        reqDate_label = Label(self, text="Request Date: ", font=('Helvetica 12 bold'))
         reqDate_label.grid(row=3, column=0)
         reqDate = Label(self, text=curr_creationDate)
         reqDate.grid(row=3, column=1, padx=20)
 
-        paymentDate_label = Label(self, text="Payment due by: ", font=('Aerial 9 bold'))
+        paymentDate_label = Label(self, text="Payment due by: ", font=('Helvetica 12 bold'))
         paymentDate_label.grid(row=4, column=0)
         paymentDate = Label(self, text=curr_settlementDate)
         paymentDate.grid(row=4, column=1, padx=20)
 
-        amount_label = Label(self, text="Payment Amount: ", font=('Aerial 9 bold'))
+        amount_label = Label(self, text="Payment Amount: ", font=('Helvetica 12 bold'))
         amount_label.grid(row=5, column=0)
         amount = Label(self, text="$" + str(curr_amount))
         amount.grid(row=5, column=1, padx=20)
 
-        issue_label = Label(self, text="Issue: ", font=('Aerial 9 bold'))
+        issue_label = Label(self, text="Issue: ", font=('Helvetica 12 bold'))
         issue_label.grid(row=6, column=0)
         issue = Label(self, text=curr_requestDetails)
         issue.grid(row=6, column=1, padx=20)
@@ -151,7 +151,7 @@ class Cancel_Request_Page(Frame):
         Frame.__init__(self, master)
         self.master = master
 
-        title = Label(self, text="Request has been cancelled.", font=('Aerial 15 bold'))
+        title = Label(self, text="Request has been cancelled.", font=('Helvetica 14 bold'))
         title.grid(row=0, column=400, pady =60)
 
         submit_btn = Button(self, text="Proceed to Past Payments", command= lambda: master.switch_frame(Request_Details)) ##Go back to the item page
@@ -162,7 +162,7 @@ class Pay_Request_Page(Frame):
         Frame.__init__(self, master)
         self.master = master
 
-        title = Label(self, text="Request has been paid. We will be proceeding your request", font=('Aerial 15 bold'))
+        title = Label(self, text="Request has been paid. We will be proceeding your request", font=('Helvetica 14 bold'))
         title.grid(row=0, column=400, pady =60)
 
         submit_btn = Button(self, text="Proceed to Past Payments", command= lambda: self.master.switch_frame(Past_Purchase_Page)) ##Go back to the item page
