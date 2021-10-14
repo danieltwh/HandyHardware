@@ -1581,7 +1581,7 @@ def RESET_DB():
         (2, 'In progress'),
         (3, 'Completed'),
         (4, 'Completed'),
-        (5, 'Waiting for approval'),
+        (5, 'Completed'),
         (6, 'Waiting for approval'),
         (7, 'Waiting for approval'),
         (8, 'In progress'),
