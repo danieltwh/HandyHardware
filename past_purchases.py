@@ -389,7 +389,7 @@ class Request_Page(Frame):
         submit_btn = Button(self, text="Submit Request", command= lambda: self.submitRequest(data2,issue.get("1.0",'end-1c')))
         submit_btn.grid(row=10, column=2, pady=15)
 
-        return_btn = Button(self, text="Return to Past Payment Page", command= lambda: self.returnRequest())
+        return_btn = Button(self, text="Return to Past Purchases Page", command= lambda: self.returnRequest())
         return_btn.grid(row=10, column=0, pady=15)
 
     #Check todays date with the warranty end date
@@ -578,10 +578,13 @@ class Request_Details(Frame):
         if curr_requestStatus in ['Submitted', 'Submitted and Waiting for payment']:
 
             cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_requestId))
-            cancel_btn.grid(row=9, column=0, pady = 15)
+            cancel_btn.grid(row=9, column=1
+            
+            
+            , pady = 15)
 
             return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
-            return_btn.grid(row=9, column=1, pady = 15)
+            return_btn.grid(row=9, column=0, pady = 15)
 
             ## If $0, they cannot return to past_purchases page
             if int(curr_amount) > 0:
@@ -591,14 +594,14 @@ class Request_Details(Frame):
          
         elif curr_requestStatus in ['In progress', 'Approved']:
             cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_requestId))
-            cancel_btn.grid(row=9, column=0, pady = 15)
+            cancel_btn.grid(row=9, column=1, pady = 15)
             
             return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
-            return_btn.grid(row=9, column=1, pady = 15)
+            return_btn.grid(row=9, column=0, pady = 15)
         
         elif curr_requestStatus in ['Cancelled', 'Completed']:
             return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
-            return_btn.grid(row=9, column=1, pady = 15)
+            return_btn.grid(row=9, column=0, pady = 15)
 
 
     def cancelRequest(self,requestId):
