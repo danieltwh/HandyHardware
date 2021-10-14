@@ -116,9 +116,6 @@ class Past_Purchases_Table(ScrollableFrame):
                 try: 
                     time_diff = date.today() - allRequests['creationDate'][0]
 
-                    print(allRequests["creationDate"][0])
-                    print(time_diff)
-
                     if time_diff.days > 10 and entry.requestStatus == 'Submitted and Waiting for payment':  
 
                         requestStatus = "Cancelled"
@@ -147,7 +144,7 @@ class Past_Purchases_Table(ScrollableFrame):
             powerSupply_label = tk.Label(self.frame, text=str(powerSupply), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             productionYear_label = tk.Label(self.frame, text=str(productionYear), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             factory_label = tk.Label(self.frame, text=str(factory), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])   
-            amountPaid_label = tk.Label(self.frame, text=str(amountPaid), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            amountPaid_label = tk.Label(self.frame, text="$" + "{:.2f}".format(amountPaid), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             requestStatus_label = tk.Label(self.frame, text=str(requestStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             
             itemID_label.grid(row=row, column=0, sticky="ew", pady=2.5, ipady=5)
@@ -183,8 +180,10 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
         clicked.set("None")
 
         # dropdown filter
-        OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
-        command=lambda clicked = clicked: master.filter_status(clicked)).grid(row=0, column=6, sticky="ew", padx=10)
+        optionMenu = OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
+        command=lambda clicked = clicked: master.filter_status(clicked))
+        optionMenu.config(width=30)
+        optionMenu.grid(row=0, column=6, sticky="ew", padx=10)
         
         title = tk.Label(self, text="Past Purchases Page", font=('Aerial 14 bold'))
         title.grid(row=0, column=8, pady =20)
