@@ -1553,7 +1553,7 @@ def RESET_DB():
         (5, 1108, NULL, 'Cancelled', 'torch light spoil but I do not have money'),
         (6, 1001, NULL, 'Submitted', 'light turns on my itself'),
         (7, 1434, NULL, 'Submitted', 'light does not turn on'),
-        (8, 1758, 'admin', 'Approved', 'lock does not have a key'),
+        (8, 1758, 'admin', 'Approved', 'lock does not have a key. What kinda system is this??? Pls get back asap'),
         (9, 1743, 'EddMing321', 'Approved', 'lock is rusty'),
         (10, 1728, 'admin', 'Cancelled', 'the money in my safe is gone, even though i locked it'),
         (11, 1773, 'admin', 'Completed', 'the lock does not auto lock'),
