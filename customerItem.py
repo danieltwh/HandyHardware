@@ -249,8 +249,11 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         tk.LabelFrame.__init__(self, master, *args, **kwargs)
         self.master = master
 
+        title = tk.Label(self, text="Catalogue Shopping Page", font=('Aerial 14 bold'))
+        title.grid(row=0, column=0, padx = 5)
+
         tab1 = tk.Button(self, text="Refresh Shopping Catalogue", command= lambda: master.refresh("All"))
-        tab1.grid(row=0, column=0, padx=(10, 5))
+        tab1.grid(row=1, column=0, sticky = "ew", padx = 5)
 
         self.master.clicked1.set("All Categories & Models")
         self.master.clicked3.set("Filter 1: All Price")
@@ -259,9 +262,9 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         self.master.clicked6.set("Filter 4: All Production Year")
 
         # dropdown filter
-        tab2 = OptionMenu(self, self.master.clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=0, column=1, sticky="ew", padx=5)
+        tab2 = OptionMenu(self, self.master.clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=1, column=1, sticky="ew", padx=5)
 
-        tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = self.master.clicked1: master.filter_status1(self.master.clicked1)).grid(row=0, column=2, sticky="ew", padx=5)
+        tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = self.master.clicked1: master.filter_status1(self.master.clicked1)).grid(row=1, column=2, sticky="ew", padx=5)
         
         #tk.Label(self, text="Price Filter", anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
         tab4 = OptionMenu(self, self.master.clicked3, "Filter 1: All Price", "$50", "$60", "$70", "$100", "$120", "$125", "$200").grid(row=2, column=0, sticky="ew", padx=5)
