@@ -1,4 +1,5 @@
 from sys import platform
+from datetime import *
 from tkinter import *
 import tkinter as tk
 from typing import Match
@@ -351,6 +352,8 @@ class Request_Table(ScrollableFrame):
             "Pending Approval": "WHERE r.requestStatus in ('In progress', 'Submitted')"
         }
 
+        self.auto_cancel_request()
+
         self.data = pd.read_sql_query(f"""
                 SELECT r.requestID, c.customerID, p.model, r.requestDetails, r.requestStatus
                 FROM Requests r 
@@ -364,27 +367,6 @@ class Request_Table(ScrollableFrame):
                 """, db)
 
 
-        # self.vscrollbar = AutoScrollbar(self)
-        # self.vscrollbar.grid(row=0, column=1, sticky=N+S)
-
-        # self.canvas = Canvas(self, yscrollcommand=self.vscrollbar.set)
-        # self.canvas.grid(row=0, column=0, sticky=N+S+E+W)
-        # self.vscrollbar.config(command=self.canvas.yview)
-
-        # # make the canvas expandable
-        # self.grid_rowconfigure(0, weight=1)
-        # self.grid_columnconfigure(0, weight=1)
-
-        # self.frame = Frame(self.canvas)
-        # self.frame.rowconfigure(1, weight=1)
-        # self.frame.columnconfigure(1, weight=1)
-
-        # self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-
-        # self.canvas.create_window(0, 0, anchor=NW, window=self.frame)
-        # self.canvas.config(scrollregion=self.canvas.bbox("all"))
-
-        # self.grid_columnconfigure(1, weight=1)
         tk.Label(self.frame, text="Request ID", anchor="w").grid(
             row=0, column=0, sticky="ew", padx=10)
         tk.Label(self.frame, text="Name", anchor="w").grid(
@@ -426,12 +408,6 @@ class Request_Table(ScrollableFrame):
             requestStatus_label = tk.Label(self.frame, text=str(
                 requestStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
 
-            # active_cb = tk.Checkbutton(self.frame, onvalue=True, offvalue=False)
-            # active = True
-            # if active:
-            #     active_cb.select()
-            # else:
-            #     active_cb.deselect()
 
             requestId_label.grid(row=row, column=0, sticky="ew", pady=2.5, ipady=5)
             name_label.grid(row=row, column=1, sticky="ew", pady=2.5, ipady=5)
@@ -459,6 +435,51 @@ class Request_Table(ScrollableFrame):
             row += 1
         
         self.launch()
+    
+    def auto_cancel_request(self):
+        df_check = pd.read_sql_query(f"""
+                SELECT r.requestID, r.requestStatus, f.creationDate, TIMESTAMPDIFF(DAY, f.creationDate, CURRENT_DATE())
+                FROM Requests r 
+                LEFT JOIN ServiceFees f ON f.requestID = r.requestID
+                WHERE r.requestStatus in ('Submitted and Waiting for payment') AND 
+                TIMESTAMPDIFF(DAY, f.creationDate, CURRENT_DATE()) > 10;
+                """, db)
+
+        for request in df_check.itertuples():
+            requestId = int(request.requestID)
+            requestStatus = request.requestStatus
+            creationDate = request.creationDate
+
+            # Auto-cancel Request not paid after 10 days
+            time_diff = date.today() - creationDate
+
+            if time_diff.days > 10 and requestStatus == 'Submitted and Waiting for payment':  
+                
+                requestStatus = "Cancelled"
+
+                print("Auto-cancel", requestId)
+                
+                with db.begin() as conn2:
+                    try:
+                        savepoint = conn2.begin_nested()
+                        conn2.execute(f"""
+                        UPDATE Requests
+                        SET requestStatus = "Cancelled"
+                        WHERE requestID = {requestId}
+                        ;
+                        """)
+
+                        conn2.execute(f"""
+                        UPDATE Services
+                        SET serviceStatus = "Completed"
+                        where requestID = {requestId}
+                        ;
+                        """)
+
+                        savepoint.commit()
+                    except:
+                        savepoint.rollback()
+                        print("Failed to auto-cancel request")
         
     #     self.canvas.create_window(0, 0, anchor=NW, window=self.frame)
     #     self.frame.update_idletasks()
@@ -475,6 +496,8 @@ class Request_Table(ScrollableFrame):
 class Service_Table(ScrollableFrame):
     def __init__(self, curr_view, adminId, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.auto_cancel_request()
 
         # self.data = data
 
@@ -599,6 +622,51 @@ class Service_Table(ScrollableFrame):
     def view_completed(self, serviceId):
         # print("Show completed service page for ", serviceId)
         self.master.show_completed_service_details(serviceId)
+    
+    def auto_cancel_request(self):
+        df_check = pd.read_sql_query(f"""
+                SELECT r.requestID, r.requestStatus, f.creationDate, TIMESTAMPDIFF(DAY, f.creationDate, CURRENT_DATE())
+                FROM Requests r 
+                LEFT JOIN ServiceFees f ON f.requestID = r.requestID
+                WHERE r.requestStatus in ('Submitted and Waiting for payment') AND 
+                TIMESTAMPDIFF(DAY, f.creationDate, CURRENT_DATE()) > 10;
+                """, db)
+
+        for request in df_check.itertuples():
+            requestId = int(request.requestID)
+            requestStatus = request.requestStatus
+            creationDate = request.creationDate
+
+            # Auto-cancel Request not paid after 10 days
+            time_diff = date.today() - creationDate
+
+            if time_diff.days > 10 and requestStatus == 'Submitted and Waiting for payment':  
+                
+                requestStatus = "Cancelled"
+
+                print("Auto-cancel", requestId)
+                
+                with db.begin() as conn2:
+                    try:
+                        savepoint = conn2.begin_nested()
+                        conn2.execute(f"""
+                        UPDATE Requests
+                        SET requestStatus = "Cancelled"
+                        WHERE requestID = {requestId}
+                        ;
+                        """)
+
+                        conn2.execute(f"""
+                        UPDATE Services
+                        SET serviceStatus = "Completed"
+                        where requestID = {requestId}
+                        ;
+                        """)
+
+                        savepoint.commit()
+                    except:
+                        savepoint.rollback()
+                        print("Failed to auto-cancel request")
 
 
 
