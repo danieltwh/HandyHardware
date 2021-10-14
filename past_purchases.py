@@ -129,6 +129,14 @@ class Past_Purchases_Table(ScrollableFrame):
                                 WHERE requestID = {entry.requestID}
                                 ;
                                 """)
+
+                                conn.execute(f"""
+                                UPDATE services
+                                SET serviceStatus = "Completed"
+                                where requestID = {entry.requestID}
+                                ;
+                                """)
+                                
                                 savepoint.commit()
                             except:
                                 savepoint.rollback()
@@ -404,7 +412,7 @@ class Request_Page(Frame):
                 query = """
                 SELECT COUNT(*) INTO @r_count FROM Requests;
                 INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES
-                (@r_count + 1,%s,NULL,'%s','%s');""" % (curr_itemId, reqstatus, issue)
+                (@r_count + 1,%s,NULL,'%s','%s');""" % (curr_itemId, reqstatus, str(issue))
 
                 conn.execute(query)
                 print("Added a request row")
