@@ -53,8 +53,8 @@ class Catalogue_Table(tk.LabelFrame):
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
         tk.Label(self, text="Model", anchor="w").grid(row=0, column=1, sticky="ew", padx=10)
-        tk.Label(self, text="Price", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
-        tk.Label(self, text="Warranty", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
+        tk.Label(self, text="Price ($)", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
+        tk.Label(self, text="Warranty (months)", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
         tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
         items = mydb.items
 
@@ -130,8 +130,8 @@ class Advance_Table(tk.LabelFrame):
         self.grid_columnconfigure(1, weight=1)
         tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
         tk.Label(self, text="Model", anchor="w").grid(row=0, column=1, sticky="ew", padx=10)
-        tk.Label(self, text="Price", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
-        tk.Label(self, text="Warranty", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
+        tk.Label(self, text="Price ($)", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
+        tk.Label(self, text="Warranty (months)", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
         tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
         items_data = data
         products_data = products.find({})
@@ -249,19 +249,22 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         tk.LabelFrame.__init__(self, master, *args, **kwargs)
         self.master = master
 
+        title = tk.Label(self, text="Shopping Catalogue Page", font=('Aerial 14 bold'))
+        title.grid(row=0, column=0, padx = 5)
+
         tab1 = tk.Button(self, text="Refresh Shopping Catalogue", command= lambda: master.refresh("All"))
-        tab1.grid(row=0, column=0, padx=(10, 5))
+        tab1.grid(row=1, column=0, sticky = "ew", padx = 5)
 
         self.master.clicked1.set("All Categories & Models")
         self.master.clicked3.set("Filter 1: All Price")
         self.master.clicked4.set("Filter 2: All Color")
         self.master.clicked5.set("Filter 3: All Factory")
-        self.master.clicked6.set("Filter 4: All Production year")
+        self.master.clicked6.set("Filter 4: All Production Year")
 
         # dropdown filter
-        tab2 = OptionMenu(self, self.master.clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=0, column=1, sticky="ew", padx=5)
+        tab2 = OptionMenu(self, self.master.clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=1, column=1, sticky="ew", padx=5)
 
-        tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = self.master.clicked1: master.filter_status1(self.master.clicked1)).grid(row=0, column=2, sticky="ew", padx=5)
+        tab8 = tk.Button(self, text="Simple Search", command=lambda clicked1 = self.master.clicked1: master.filter_status1(self.master.clicked1)).grid(row=1, column=2, sticky="ew", padx=5)
         
         #tk.Label(self, text="Price Filter", anchor="w").grid(row=0, column=2, sticky="ew", padx=5)
         tab4 = OptionMenu(self, self.master.clicked3, "Filter 1: All Price", "$50", "$60", "$70", "$100", "$120", "$125", "$200").grid(row=2, column=0, sticky="ew", padx=5)
@@ -273,7 +276,7 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         tab6 = OptionMenu(self, self.master.clicked5, "Filter 3: All Factory", "Malaysia", "China", "Philippines").grid(row=2, column=2, sticky="ew", padx=5)
     
         #tk.Label(self, text="Production Year Filter", anchor="w").grid(row=0, column=5, sticky="ew", padx=5)
-        tab7 = OptionMenu(self, self.master.clicked6, "Filter 4: All Production year", "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=2, column=3, sticky="ew", padx=5)
+        tab7 = OptionMenu(self, self.master.clicked6, "Filter 4: All Production Year", "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=2, column=3, sticky="ew", padx=5)
         
         tab8 = tk.Button(self, text="Advanced Search", command= lambda: master.filter_status2(self.master.clicked3, self.master.clicked4, self.master.clicked5, self.master.clicked6)).grid(row=2, column=4, sticky="ew", padx=5)
 
@@ -315,7 +318,7 @@ class Customer_Shopping_Catalogue_Page(Frame):
         self.clicked3.set("Filter 1: All Price")
         self.clicked4.set("Filter 2: All Color")
         self.clicked5.set("Filter 3: All Factory")
-        self.clicked6.set("Filter 4: All Production year")
+        self.clicked6.set("Filter 4: All Production Year")
 
         self.Catalogue_Table.destroy()
         curr_data = products.find({})
@@ -356,7 +359,7 @@ class Customer_Shopping_Catalogue_Page(Frame):
                 if dic['Factory'] != c5.get():
                     if dic in items_data:
                         items_data.remove(dic)
-            if c6.get() != "Filter 4: All Production year":
+            if c6.get() != "Filter 4: All Production Year":
                 if dic['ProductionYear'] != c6.get():
                     if dic in items_data:
                         items_data.remove(dic)

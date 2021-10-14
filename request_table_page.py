@@ -88,7 +88,7 @@ class Request_Table(ScrollableFrame):
                 try: 
                     time_diff = date.today() - allRequests['creationDate'][0]
 
-                    if time_diff.days > 10 :  
+                    if time_diff.days > 10 and entry.requestStatus == 'Submitted and Waiting for payment':  
 
                         requestStatus = "Cancelled"
                         
@@ -150,8 +150,10 @@ class Request_Page_Header(tk.LabelFrame):
         clicked.set("None")
 
         # dropdown filter
-        OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No filter", 
-        command=lambda clicked = clicked: master.filter_status(clicked)).grid(row=0, column=6, sticky="ew", padx=10)
+        optionMenu = OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
+        command=lambda clicked = clicked: master.filter_status(clicked))
+        optionMenu.config(width=30)
+        optionMenu.grid(row=0, column=6, sticky="ew", padx=10)
 
         #tk.Label(self.frame, text="Past Request Page", anchor="w").grid(row=0, column=2, sticky="ew", padx=20)
         title = tk.Label(self, text="Past Request Page", font=('Aerial 14 bold'))

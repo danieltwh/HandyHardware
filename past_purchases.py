@@ -116,9 +116,6 @@ class Past_Purchases_Table(ScrollableFrame):
                 try: 
                     time_diff = date.today() - allRequests['creationDate'][0]
 
-                    print(allRequests["creationDate"][0])
-                    print(time_diff)
-
                     if time_diff.days > 10 and entry.requestStatus == 'Submitted and Waiting for payment':  
 
                         requestStatus = "Cancelled"
@@ -132,6 +129,14 @@ class Past_Purchases_Table(ScrollableFrame):
                                 WHERE requestID = {entry.requestID}
                                 ;
                                 """)
+
+                                conn.execute(f"""
+                                UPDATE services
+                                SET serviceStatus = "Completed"
+                                where requestID = {entry.requestID}
+                                ;
+                                """)
+
                                 savepoint.commit()
                             except:
                                 savepoint.rollback()
@@ -147,7 +152,7 @@ class Past_Purchases_Table(ScrollableFrame):
             powerSupply_label = tk.Label(self.frame, text=str(powerSupply), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             productionYear_label = tk.Label(self.frame, text=str(productionYear), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             factory_label = tk.Label(self.frame, text=str(factory), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])   
-            amountPaid_label = tk.Label(self.frame, text=str(amountPaid), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
+            amountPaid_label = tk.Label(self.frame, text="$" + "{:.2f}".format(amountPaid), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             requestStatus_label = tk.Label(self.frame, text=str(requestStatus), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             
             itemID_label.grid(row=row, column=0, sticky="ew", pady=2.5, ipady=5)
@@ -183,8 +188,10 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
         clicked.set("None")
 
         # dropdown filter
-        OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
-        command=lambda clicked = clicked: master.filter_status(clicked)).grid(row=0, column=6, sticky="ew", padx=10)
+        optionMenu = OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
+        command=lambda clicked = clicked: master.filter_status(clicked))
+        optionMenu.config(width=30)
+        optionMenu.grid(row=0, column=6, sticky="ew", padx=10)
         
         title = tk.Label(self, text="Past Purchases Page", font=('Aerial 14 bold'))
         title.grid(row=0, column=8, pady =20)
@@ -354,8 +361,13 @@ class Request_Page(Frame):
         warranty_label = Label(self, text="Warranty: ", font=('Aerial 9 bold'))
         warranty_label.grid(row=7, column=0)
         end_warranty_date = curr_purchaseDate + relativedelta(months=+int(curr_warrantyMonths))
-        warranty = Label(self, text=self.getValidity(end_warranty_date)) 
-        warranty.grid(row=7, column=1, padx=20)
+        warrantyStatus = self.getValidity(end_warranty_date)
+        if warrantyStatus == "Invalid":
+            warranty = Label(self, text=warrantyStatus, fg='#f00') 
+            warranty.grid(row=7, column=1, padx=20)
+        elif warrantyStatus == "Valid":
+            warranty = Label(self, text=warrantyStatus, fg='green') 
+            warranty.grid(row=7, column=1, padx=20)
 
         issue = Text(self, width = 40,height=3)
         issue.grid(row=8, column=1, padx=20)
@@ -405,7 +417,7 @@ class Request_Page(Frame):
                 query = """
                 SELECT COUNT(*) INTO @r_count FROM Requests;
                 INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES
-                (@r_count + 1,%s,NULL,'%s','%s');""" % (curr_itemId, reqstatus, issue)
+                (@r_count + 1,%s,NULL,'%s',"%s");""" % (curr_itemId, reqstatus, str(issue))
 
                 conn.execute(query)
                 print("Added a request row")
@@ -422,14 +434,14 @@ class Request_Page(Frame):
                     SELECT COUNT(*) INTO @r_count FROM Requests;
                     INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
                     (@r_count, {0}, '%s', '%s')
-                    ;""" % (dateStr,end_dateStr)
+                    ;""" % (dateStr, dateStr)
                     conn.execute(query2)
                 else:
                     query2 = f"""
                     SELECT COUNT(*) INTO @r_count FROM Requests;
                     INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
-                    (@r_count, 40 + {curr_cost} * 0.2, '%s', '%s')
-                    ;""" % (dateStr,end_dateStr)
+                    (@r_count, 40 + {curr_cost} * 0.2, '%s', NULL)
+                    ;""" % (dateStr)
                     conn.execute(query2)
 
                 print("Added a ServiceFee row")
@@ -509,15 +521,25 @@ class Request_Details(Frame):
         reqDate = Label(self, text=curr_creationDate)
         reqDate.grid(row=3, column=1, padx=20)
 
+        # Calculating the end date after 10 days
+        end_date = curr_creationDate + timedelta(days = 10)
+        end_dateStr = end_date.strftime("%Y-%m-%d")
+
         paymentDate_label = Label(self, text="Payment due by: ", font=('Aerial 9 bold'))
         paymentDate_label.grid(row=4, column=0)
-        paymentDate = Label(self, text=curr_settlementDate)
+        paymentDate = Label(self, text=end_dateStr)
         paymentDate.grid(row=4, column=1, padx=20)
 
-        amount_label = Label(self, text="Payment Amount: ", font=('Aerial 9 bold'))
-        amount_label.grid(row=5, column=0)
-        amount = Label(self, text="$" + "{:.2f}".format(curr_amount))
-        amount.grid(row=5, column=1, padx=20)
+        if int(curr_amount) == 0:
+            amount_label = Label(self, text="Payment Amount: ", font=('Aerial 9 bold'))
+            amount_label.grid(row=5, column=0)
+            amount = Label(self, text="$" + "{:.2f}".format(curr_amount) + " (No Payment Required)")
+            amount.grid(row=5, column=1, padx=20)
+        else:
+            amount_label = Label(self, text="Payment Amount: ", font=('Aerial 9 bold'))
+            amount_label.grid(row=5, column=0)
+            amount = Label(self, text="$" + "{:.2f}".format(curr_amount))
+            amount.grid(row=5, column=1, padx=20)
 
         issue_label = Label(self, text="Issue: ", font=('Aerial 9 bold'))
         issue_label.grid(row=6, column=0)
@@ -563,10 +585,16 @@ class Request_Details(Frame):
                 ;
                 """
                 conn.execute(query)
+
+                conn.execute(f"""
+                UPDATE Services
+                SET serviceStatus = 'Completed'
+                where requestID = {requestId}
+                ;
+                """)
                 
                 # Commit changes to database
                 savepoint.commit()
-
                 print("The request is cancelled")
             except:
 
@@ -581,19 +609,30 @@ class Request_Details(Frame):
     def payRequest(self, requestId, curr_amount):
         with db.begin() as conn:
             savepoint = conn.begin_nested()
-            print(requestId)
+            
+            today = date.today()
+
             try:
-                if curr_amount == 0:
-                    print("curr_amt = 0")
-                else:
-                    # Update the request status to In progress
-                    query = f"""
-                    UPDATE Requests r
-                    SET r.requestStatus = 'In progress'
-                    WHERE (r.requestID = {requestId} AND r.requestStatus != 'Cancelled')
-                    ;
-                    """
-                    conn.execute(query)
+                
+                # Update the request status to In progress
+                query = f"""
+                UPDATE Requests r
+                SET r.requestStatus = 'In progress'
+                WHERE (r.requestID = {requestId} AND r.requestStatus != 'Cancelled')
+                ;
+                """
+                conn.execute(query)
+                print("Update Request to In progress")
+
+                # Update the ServiceFee's settlement date
+                query2 = f"""
+                UPDATE ServiceFees sf
+                SET sf.settlementDate = '{today}'
+                WHERE (sf.requestID = {requestId})
+                ;
+                """
+                conn.execute(query2)
+                print("Update the ServiceFee's settlement Date to today")
 
                 # Commit changes to database
                 savepoint.commit()
