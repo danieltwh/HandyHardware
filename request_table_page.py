@@ -282,36 +282,46 @@ class Request_Details2(Frame):
         title = Label(self, text="Request Details", font=('Helvetica 20 bold'))
         title.grid(row=0, column=1, pady =20)
 
+        requestID = Label(self, text=str(curr_requestId))
+        requestID.grid(row=1, column=1)
+        requestID_label = Label(self, text="Request ID: ", font=('Helvetica 12 bold'))
+        requestID_label.grid(row=1, column=0)
+
         itemID = Label(self, text=curr_itemId)
-        itemID.grid(row=1, column=1)
+        itemID.grid(row=2, column=1)
         itemID_label = Label(self, text="Item ID: ", font=('Helvetica 12 bold'))
-        itemID_label.grid(row=1, column=0)
+        itemID_label.grid(row=2, column=0)
 
         model_label = Label(self, text="Model: ", font=('Helvetica 12 bold'))
-        model_label.grid(row=2, column=0)
+        model_label.grid(row=3, column=0)
         model = Label(self, text=curr_model)
-        model.grid(row=2, column=1, padx=20)
+        model.grid(row=3, column=1, padx=20)
 
         reqDate_label = Label(self, text="Request Date: ", font=('Helvetica 12 bold'))
-        reqDate_label.grid(row=3, column=0)
+        reqDate_label.grid(row=4, column=0)
         reqDate = Label(self, text=curr_creationDate)
-        reqDate.grid(row=3, column=1, padx=20)
+        reqDate.grid(row=4, column=1, padx=20)
 
         if int(curr_amount) == 0:
             amount_label = Label(self, text="Payment Amount: ", font=('Helvetica 12 bold'))
-            amount_label.grid(row=4, column=0)
+            amount_label.grid(row=5, column=0)
             amount = Label(self, text="$" + "{:.2f}".format(curr_amount) + " (No Payment Required)")
-            amount.grid(row=4, column=1, padx=20)
+            amount.grid(row=5, column=1, padx=20)
         else:
             amount_label = Label(self, text="Payment Amount: ", font=('Helvetica 12 bold'))
-            amount_label.grid(row=4, column=0)
+            amount_label.grid(row=5, column=0)
             amount = Label(self, text="$" + "{:.2f}".format(curr_amount))
-            amount.grid(row=4, column=1, padx=20)
+            amount.grid(row=5, column=1, padx=20)
+
+        reqStatus_label = Label(self, text="Request Status: ", font=('Helvetica 12 bold'))
+        reqStatus_label.grid(row=6, column=0)
+        reqStatus = Label(self, text=curr_requestStatus)
+        reqStatus.grid(row=6, column=1, padx=20)
 
         issue_label = Label(self, text="Issue: ", font=('Helvetica 12 bold'))
-        issue_label.grid(row=5, column=0)
+        issue_label.grid(row=7, column=0)
         issue = Label(self, text=curr_requestDetails, wraplength=250, justify = 'left')
-        issue.grid(row=5, column=1, padx=20)
+        issue.grid(row=7, column=1, padx=20)
 
 
         return_btn = Button(self, text="Return to Past Requests", command= lambda: self.master.switch_frame(Request_Table_Page)) # go to past payments

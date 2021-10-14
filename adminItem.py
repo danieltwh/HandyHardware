@@ -52,13 +52,13 @@ class Catalogue_Table(tk.LabelFrame):
         tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
 
         self.grid_columnconfigure(1, weight=1)
-        tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
+        tk.Label(self, text="Category", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
         tk.Label(self, text="Model", anchor="w").grid(row=0, column=1, sticky="ew", padx=10)
         tk.Label(self, text="Cost ($)", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
         tk.Label(self, text="Price ($)", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
         tk.Label(self, text="Warranty (months)", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
-        tk.Label(self, text="Number of Item Sold", anchor="w").grid(row=0, column=5, sticky="ew", padx=10)
-        tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=6, sticky="ew", padx=10)
+        tk.Label(self, text="Number of Items Sold", anchor="w").grid(row=0, column=5, sticky="ew", padx=10)
+        tk.Label(self, text="Number of Items Available", anchor="w").grid(row=0, column=6, sticky="ew", padx=10)
         items = mydb.items
 
         bg = ["#ffffff", "#d9e1f2"]
@@ -90,13 +90,13 @@ class Advance_Table(tk.LabelFrame):
         tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
 
         self.grid_columnconfigure(1, weight=1)
-        tk.Label(self, text="Categories", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
+        tk.Label(self, text="Category", anchor="w").grid(row=0, column=0, sticky="ew", padx=10)
         tk.Label(self, text="Model", anchor="w").grid(row=0, column=1, sticky="ew", padx=10)
         tk.Label(self, text="Cost ($)", anchor="w").grid(row=0, column=2, sticky="ew", padx=10)
         tk.Label(self, text="Price ($)", anchor="w").grid(row=0, column=3, sticky="ew", padx=10)
         tk.Label(self, text="Warranty (months)", anchor="w").grid(row=0, column=4, sticky="ew", padx=10)
-        tk.Label(self, text="Number of Item Sold", anchor="w").grid(row=0, column=5, sticky="ew", padx=10)
-        tk.Label(self, text="Number of Item Available", anchor="w").grid(row=0, column=6, sticky="ew", padx=10)
+        tk.Label(self, text="Number of Items Sold", anchor="w").grid(row=0, column=5, sticky="ew", padx=10)
+        tk.Label(self, text="Number of Items Available", anchor="w").grid(row=0, column=6, sticky="ew", padx=10)
         
         items_data = data
         products_data = products.find({})
