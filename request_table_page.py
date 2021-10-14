@@ -147,6 +147,8 @@ class Request_Table(ScrollableFrame):
             paymentID = entry.paymentID
             itemID = entry.itemID
 
+            requestButton = tk.Button(self.frame, text="View Details", command = lambda requestId = requestId: self.master.master.id_switch_frame(requestId, Request_Details2))
+            requestButton.grid(row=row, column=9, sticky="ew", pady=2.5, ipady=5)
             
             row += 1
         
@@ -252,4 +254,68 @@ class Request_Table_Page(Frame):
             self._frame.destroy()
         self._frame = new_frame
         self._frame.pack(side="top", fill="both", expand=True)
+
+class Request_Details2(Frame):
+    def __init__(self, curr_requestId, master):
+        Frame.__init__(self, master)
+        self.master = master
+
+
+        data2 = pd.read_sql_query(f"""
+        SELECT r.itemID, r.requestID, p.model,
+        r.requestDetails, pay.purchaseDate, 
+        sf.creationDate,sf.settlementDate,
+        sf.amount, r.requestStatus
+        FROM Requests r 
+        LEFT JOIN Payments pay USING (itemID)
+        LEFT JOIN Items i USING(itemID)
+        LEFT JOIN ServiceFees sf ON r.requestID = sf.requestID
+        LEFT JOIN Products p ON i.productID = p.productID
+        WHERE (r.requestId = {curr_requestId})
+        ;
+        """, db)
+
+        (curr_itemId, curr_requestId, curr_model, curr_requestDetails,
+        curr_purchaseDate, curr_creationDate, curr_settlementDate,
+        curr_amount, curr_requestStatus) = list(data2.to_records(index=False))[0]
+
+        title = Label(self, text="Request Details", font=('Helvetica 20 bold'))
+        title.grid(row=0, column=1, pady =20)
+
+        itemID = Label(self, text=curr_itemId)
+        itemID.grid(row=1, column=1)
+        itemID_label = Label(self, text="Item ID: ", font=('Helvetica 12 bold'))
+        itemID_label.grid(row=1, column=0)
+
+        model_label = Label(self, text="Model: ", font=('Helvetica 12 bold'))
+        model_label.grid(row=2, column=0)
+        model = Label(self, text=curr_model)
+        model.grid(row=2, column=1, padx=20)
+
+        reqDate_label = Label(self, text="Request Date: ", font=('Helvetica 12 bold'))
+        reqDate_label.grid(row=3, column=0)
+        reqDate = Label(self, text=curr_creationDate)
+        reqDate.grid(row=3, column=1, padx=20)
+
+        if int(curr_amount) == 0:
+            amount_label = Label(self, text="Payment Amount: ", font=('Helvetica 12 bold'))
+            amount_label.grid(row=4, column=0)
+            amount = Label(self, text="$" + "{:.2f}".format(curr_amount) + " (No Payment Required)")
+            amount.grid(row=4, column=1, padx=20)
+        else:
+            amount_label = Label(self, text="Payment Amount: ", font=('Helvetica 12 bold'))
+            amount_label.grid(row=4, column=0)
+            amount = Label(self, text="$" + "{:.2f}".format(curr_amount))
+            amount.grid(row=4, column=1, padx=20)
+
+        issue_label = Label(self, text="Issue: ", font=('Helvetica 12 bold'))
+        issue_label.grid(row=5, column=0)
+        issue = Label(self, text=curr_requestDetails, wraplength=250, justify = 'left')
+        issue.grid(row=5, column=1, padx=20)
+
+
+        return_btn = Button(self, text="Return to Past Requests", command= lambda: self.master.switch_frame(Request_Table_Page)) # go to past payments
+        return_btn.grid(row=9, column=0, pady = 15)
+
+            
         
