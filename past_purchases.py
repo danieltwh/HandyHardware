@@ -572,7 +572,7 @@ class Request_Details(Frame):
 
         issue_label = Label(self, text="Issue: ", font=('Helvetica 12 bold'))
         issue_label.grid(row=6, column=0)
-        issue = Label(self, text=curr_requestDetails)
+        issue = Label(self, text=curr_requestDetails, wraplength=250, justify = 'left')
         issue.grid(row=6, column=1, padx=20)
 
         if curr_requestStatus in ['Submitted', 'Submitted and Waiting for payment']:
