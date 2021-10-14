@@ -88,7 +88,7 @@ class Request_Table(ScrollableFrame):
                 try: 
                     time_diff = date.today() - allRequests['creationDate'][0]
 
-                    if time_diff.days > 10 :  
+                    if time_diff.days > 10 and entry.requestStatus == 'Submitted and Waiting for payment':  
 
                         requestStatus = "Cancelled"
                         
