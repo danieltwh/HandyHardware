@@ -117,6 +117,10 @@ class Request_Table(ScrollableFrame):
                         requestStatus = entry.requestStatus
                 except: 
                     requestStatus = entry.requestStatus 
+            
+            if requestDetails and len(requestDetails) > 25:
+                requestDetails = requestDetails[:22]
+                requestDetails += "..."
 
             requestId_label = tk.Label(self.frame, text=str(requestId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             itemId_label = tk.Label(self.frame, text=str(itemId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
