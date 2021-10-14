@@ -229,9 +229,9 @@ class Admin_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         tab6 = OptionMenu(self, self.master.clicked5, "Filter 4: All Factory", "Malaysia", "China", "Philippines").grid(row=2, column=3, sticky="ew", padx=5)
         tab7 = OptionMenu(self, self.master.clicked6, "Filter 5: All Production Year", "2014", "2015", "2016", "2017", "2018", "2019", "2020").grid(row=2, column=4, sticky="ew", padx=5)
         tab8 = tk.Button(self, text="Advanced Search", command= lambda: master.filter_status2(self.master.clicked2, self.master.clicked3, self.master.clicked4, self.master.clicked5, self.master.clicked6)).grid(row=2, column=5, sticky="ew", padx=5)
-        tab9 = tk.Entry(self)
-        tab9.grid(row=3, column=0, sticky="ew", padx=5)
-        tab10 = tk.Button(self, text="Search Item ID", command=lambda: master.filter_status3(tab9.get())).grid(row=3, column=1, sticky="ew", padx=5)
+        # tab9 = tk.Entry(self)
+        # tab9.grid(row=3, column=0, sticky="ew", padx=5)
+        # tab10 = tk.Button(self, text="Search Item ID", command=lambda: master.filter_status3(tab9.get())).grid(row=3, column=1, sticky="ew", padx=5)
 
 class Admin_Shopping_Catalogue_Page(Frame):
     def __init__(self, master):
@@ -259,8 +259,8 @@ class Admin_Shopping_Catalogue_Page(Frame):
 
         # self.header = Item_Table_Header.pack(self, borderwidth=0, highlightthickness=0, pady=10)
 
-        self.Item_Table_Header =  Item_Table_Header(master, self)
-        self.Item_Table_Header.pack(side="top", fill="both", expand=True)
+        self.Item_Table_Header =  Item_Table_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
+        self.Item_Table_Header.pack(side="top", fill="x", expand=False)
 
         self.Item_Table = Item_Table(item_curr_data, self)
         self.Item_Table.pack(side="bottom", fill="both", expand=True)
@@ -278,6 +278,8 @@ class Admin_Shopping_Catalogue_Page(Frame):
     
     def refresh(self, curr_view):
 
+        self.Item_Table.destroy()
+        self.Item_Table_Header.destroy()
         self.Catalogue_Table.destroy()
         self.header.destroy()
 
@@ -288,6 +290,15 @@ class Admin_Shopping_Catalogue_Page(Frame):
         self.header.pack(side="top", fill="x", expand=False)
         self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
+
+        self.Item_Table_Header =  Item_Table_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
+        self.Item_Table_Header.pack(side="top", fill="x", expand=False)
+
+        curr_data = products.find({})
+        item_curr_data = items.find({}).limit(1)
+
+        self.Item_Table = Item_Table(item_curr_data, self)
+        self.Item_Table.pack(side="bottom", fill="both", expand=True)
     
 
     def filter_status1(self, curr_view):
@@ -298,6 +309,7 @@ class Admin_Shopping_Catalogue_Page(Frame):
         self.clicked6.set("Filter 5: All Production Year")    
 
         self.Catalogue_Table.destroy()
+        self.Item_Table_Header.destroy()
         curr_data = products.find({})
         
         if self.clicked1.get() == 'Category: Lights':
@@ -319,10 +331,14 @@ class Admin_Shopping_Catalogue_Page(Frame):
 
         self.Catalogue_Table = Catalogue_Table(curr_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
+
+        self.Item_Table_Header =  Item_Table_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
+        self.Item_Table_Header.pack(side="top", fill="x", expand=False)
     
     def filter_status2(self, c2, c3, c4, c5, c6):
         
         self.Catalogue_Table.destroy()
+        self.Item_Table_Header.destroy()
         items_data = list(items.find({}))
         # cost_list = ["$20", "$22", "$30", "$50", "$100"]
         price_list = ["$50", "$60", "$100", "$120", "$125"]
@@ -440,6 +456,9 @@ class Admin_Shopping_Catalogue_Page(Frame):
         self.Catalogue_Table = Advance_Table(items_data, self)
         self.Catalogue_Table.pack(side="top", fill="both", expand=True)
 
+        self.Item_Table_Header =  Item_Table_Header(self, borderwidth=0, highlightthickness = 0, pady=10)
+        self.Item_Table_Header.pack(side="top", fill="x", expand=False)
+
     def filter_status3(self, result):
         # print(str(result))
         self.Item_Table.destroy()
@@ -457,7 +476,8 @@ class Admin_Shopping_Catalogue_Page(Frame):
 
 class Item_Table_Header(tk.LabelFrame):
     def __init__(self, master, *args, **kwargs):
-        tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
+        tk.LabelFrame.__init__(self, master, width=800, height=800, *args, **kwargs)
+        self.master = master
         searchBar = tk.Entry(self)
         searchBar.grid(row=0, column=0, sticky="ew", padx=5)
         searchButton = tk.Button(self, text="Search Item ID", command=lambda: master.filter_status3(searchBar.get())).grid(row=0, column=1, sticky="ew", padx=5)
