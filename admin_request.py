@@ -311,8 +311,11 @@ ORDER BY
 	END, 
     CASE r.requestStatus
       WHEN 'Approved' THEN 1
-      WHEN 'Completed' THEN 2
-      WHEN 'Cancelled' THEN 3
+      WHEN 'Submitted' THEN 2
+      WHEN 'In progress' THEN 3
+      WHEN 'Completed' THEN 4
+      WHEN 'Submitted and Waiting for payment' THEN 5
+      WHEN 'Cancelled' THEN 6
 	END,
     r.requestID
 """
@@ -345,7 +348,7 @@ class Request_Table(ScrollableFrame):
 
         view_mapping = {
             "All": "WHERE r.requestID IS NOT NULL",
-            "Pending Approval": "WHERE r.requestStatus in ('In Progress', 'Submitted')"
+            "Pending Approval": "WHERE r.requestStatus in ('In progress', 'Submitted')"
         }
 
         self.data = pd.read_sql_query(f"""
@@ -477,7 +480,7 @@ class Service_Table(ScrollableFrame):
 
         view_mapping = {
             "All": "AND r.requestID IS NOT NULL",
-            "Pending Service": "AND s.serviceStatus in ('In Progress')",
+            "Pending Service": "AND r.requestStatus in ('Approved') AND s.serviceStatus in ('In progress')",
             "My Service Jobs": f"AND r.administratorID = \"{str(adminId)}\""
         }
 
@@ -520,7 +523,7 @@ class Service_Table(ScrollableFrame):
             name = request.customerID
             model = request.model
             issue = request.requestDetails
-            if len(issue) > 25:
+            if issue and len(issue) > 25:
                 issue = issue[:22]
                 issue += "..." 
 
@@ -530,9 +533,9 @@ class Service_Table(ScrollableFrame):
 
             list_of_data = [name, request_admin]
             for item in list_of_data:
-                if len(item) > 18:
+                if item and len(item) > 18:
                     item = item[:15]
-                    item += "..." 
+                    item += "..."
 
             serviceId_label = tk.Label(self.frame, text=str(
                 serviceId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
@@ -572,7 +575,7 @@ class Service_Table(ScrollableFrame):
             #         self.frame, text="View", command=lambda serviceId=serviceId: self.view(serviceId))
             #     action_button.grid(row=row, column=6, sticky="ew", pady=2.5, ipady=5)
 
-            if request_admin == self.master.adminId and serviceStatus == "In progress":
+            if request_admin == self.master.adminId and requestStatus == "Approved" and serviceStatus == "In progress":
                 action_button = tk.Button(
                     self.frame, text="Edit", command=lambda serviceId=serviceId: self.view(serviceId))
                 action_button.grid(row=row, column=7, sticky="ew", pady=2.5, ipady=5)
@@ -686,7 +689,7 @@ class Service_Info_Page(Frame):
         back_btn.grid(row=11, column=0, padx=(10,0), sticky="W", pady=15)
 
 
-        if curr_adminId == adminId:
+        if curr_adminId == adminId and curr_requestStatus == "Approved" and curr_serviceStatus == "In progress":
             complete_btn = Button(self, text="Complete Service", command=lambda requestId = requestId: master.complete_service(requestId))
             complete_btn.grid(row=11, column=1, padx=(0, 15), sticky="E", pady=15)
 
@@ -702,7 +705,7 @@ class Approval_Info_Page(Frame):
         # print(data)
 
         data = pd.read_sql_query(f"""
-        SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, r.requestDetails, r.requestStatus
+        SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, r.requestDetails, r.requestStatus, s.serviceStatus, r.administratorID
         FROM Requests r 
         LEFT JOIN Services s USING(requestID)
         LEFT JOIN Payments pay USING (itemID)
@@ -715,7 +718,7 @@ class Approval_Info_Page(Frame):
 
 
         (requestId, curr_name, curr_email, curr_phone, curr_address,
-        curr_model, curr_requestDetails, curr_requestStatus) = list(data.to_records(index=False))[0]
+        curr_model, curr_requestDetails, curr_requestStatus, curr_serviceStatus, adminId_serving) = list(data.to_records(index=False))[0]
         
         # Creatinag Text Boxes
         f_name = Label(self, padx= 5, width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
@@ -749,6 +752,12 @@ class Approval_Info_Page(Frame):
         requestStatus = Label(self, padx= 5, width=30, justify="center", text=curr_requestStatus, borderwidth=2, relief="groove")
         requestStatus.grid(row=8, column=1, padx=20, pady=2.5, ipady=5)
 
+        serviceStatus = Label(self, padx= 5,width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
+        serviceStatus.grid(row=9, column=1, padx=20, pady=2.5, ipady=5)
+
+        curr_adminId_serving = Label(self, padx= 5, width=30, justify="center", text=adminId_serving, borderwidth=2, relief="groove")
+        curr_adminId_serving.grid(row=10, column=1, padx=20, pady=2.5, ipady=5)
+
         
 
         # Creating Text Box Labels
@@ -773,12 +782,18 @@ class Approval_Info_Page(Frame):
         requestStatus_label = Label(self, text="Request Status")
         requestStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
+        serviceStatus_label = Label(self, text="Service Status")
+        serviceStatus_label.grid(row=9, column=0, pady=2.5, ipady=5)
+
+        curr_adminId_label = Label(self, text="Admin In-charge")
+        curr_adminId_label.grid(row=10, column=0, pady=2.5, ipady=5)
+
         back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
-        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W", pady=15)
+        back_btn.grid(row=11, column=0, padx=(10,0), sticky="W", pady=15)
         
         
         complete_btn = Button(self, text="Approve", command=lambda requestId = requestId: master.approve_request(requestId))
-        complete_btn.grid(row=9, column=1, padx=(0, 15), sticky="E", pady=15)
+        complete_btn.grid(row=11, column=1, padx=(0, 15), sticky="E", pady=15)
 
     
 class Request_Info_Page(Frame):
@@ -790,7 +805,7 @@ class Request_Info_Page(Frame):
         # print(data)
 
         data = pd.read_sql_query(f"""
-        SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, r.requestDetails, r.requestStatus
+        SELECT r.requestID, c.customerID, c.email, c.phoneNumber, c.address, p.model, r.requestDetails, r.requestStatus, s.serviceStatus, r.administratorID
         FROM Requests r 
         LEFT JOIN Services s USING(requestID)
         LEFT JOIN Payments pay USING (itemID)
@@ -803,7 +818,7 @@ class Request_Info_Page(Frame):
 
 
         (requestId, curr_name, curr_email, curr_phone, curr_address,
-        curr_model, curr_requestDetails, curr_requestStatus) = list(data.to_records(index=False))[0]
+        curr_model, curr_requestDetails, curr_requestStatus,  curr_serviceStatus, adminId_serving) = list(data.to_records(index=False))[0]
         
         f_name = Label(self, padx= 5,width = 30, text=curr_name, borderwidth=2, relief="groove", justify="left", anchor="w")
         f_name.grid(row=0, column=1, padx=20, pady=(10,2.5), ipady=5)
@@ -838,6 +853,12 @@ class Request_Info_Page(Frame):
         # requestStatus.insert(0, curr_requestStatus)
         # requestStatus.configure(state="disabled") 
 
+        serviceStatus = Label(self, padx= 5,width=30, justify="center", text=curr_serviceStatus, borderwidth=2, relief="groove")
+        serviceStatus.grid(row=9, column=1, padx=20, pady=2.5, ipady=5)
+
+        curr_adminId_serving = Label(self, padx= 5, width=30, justify="center", text=adminId_serving, borderwidth=2, relief="groove")
+        curr_adminId_serving.grid(row=10, column=1, padx=20, pady=2.5, ipady=5)
+
         
 
         # Creating Text Box Labels
@@ -862,8 +883,14 @@ class Request_Info_Page(Frame):
         requestStatus_label = Label(self, text="Request Status")
         requestStatus_label.grid(row=8, column=0, pady=2.5, ipady=5)
 
+        serviceStatus_label = Label(self, text="Service Status")
+        serviceStatus_label.grid(row=9, column=0, pady=2.5, ipady=5)
+
+        curr_adminId_label = Label(self, text="Admin In-charge")
+        curr_adminId_label.grid(row=10, column=0, pady=2.5, ipady=5)
+
         back_btn = Button(self, text="Back", command=lambda: master.back_to_request())
-        back_btn.grid(row=9, column=0, padx=(10,0), sticky="W", pady=15)
+        back_btn.grid(row=11, column=0, padx=(10,0), sticky="W", pady=15)
         
 
 
@@ -1123,7 +1150,7 @@ class Admin_Request_Page(Frame):
                 conn.execute(f"""
                 UPDATE Services
                 SET 
-                    serviceStatus = "In Progress"
+                    serviceStatus = "In progress"
                 WHERE
                     requestID = "{requestId}"
                 ;
@@ -1162,7 +1189,7 @@ class Admin_Request_Page(Frame):
         with db.begin() as conn:
             savepoint = conn.begin_nested()
             try:
-                # Create a service for the request        
+                # Update the service status       
                 conn.execute(f"""
                 UPDATE Services
                 SET serviceStatus = "Completed"
