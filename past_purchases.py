@@ -361,8 +361,13 @@ class Request_Page(Frame):
         warranty_label = Label(self, text="Warranty: ", font=('Aerial 9 bold'))
         warranty_label.grid(row=7, column=0)
         end_warranty_date = curr_purchaseDate + relativedelta(months=+int(curr_warrantyMonths))
-        warranty = Label(self, text=self.getValidity(end_warranty_date)) 
-        warranty.grid(row=7, column=1, padx=20)
+        warrantyStatus = self.getValidity(end_warranty_date)
+        if warrantyStatus == "Invalid":
+            warranty = Label(self, text=warrantyStatus, fg='#f00') 
+            warranty.grid(row=7, column=1, padx=20)
+        elif warrantyStatus == "Valid":
+            warranty = Label(self, text=warrantyStatus, fg='green') 
+            warranty.grid(row=7, column=1, padx=20)
 
         issue = Text(self, width = 40,height=3)
         issue.grid(row=8, column=1, padx=20)
@@ -580,6 +585,13 @@ class Request_Details(Frame):
                 ;
                 """
                 conn.execute(query)
+
+                conn.execute(f"""
+                UPDATE Services
+                SET serviceStatus = 'Completed'
+                where requestID = {requestId}
+                ;
+                """)
                 
                 # Commit changes to database
                 savepoint.commit()
