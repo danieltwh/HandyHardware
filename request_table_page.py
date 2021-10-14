@@ -6,6 +6,7 @@ from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
 from dateutil.relativedelta import relativedelta
+import tkinter.font as tkFont
 
 from tkinter import *
 from PIL import ImageTk,Image
@@ -43,7 +44,7 @@ class Request_Table(ScrollableFrame):
             LEFT JOIN Items i USING(itemID)
             LEFT JOIN Products p ON i.productID = p.productID
             WHERE r.itemID IN (SELECT itemID FROM Payments WHERE customerID = "{customerId}") 
-            limit 100;
+            ;
         """, db)
 
 
@@ -175,8 +176,8 @@ class Request_Page_Header(tk.LabelFrame):
         optionMenu.config(width=30)
         optionMenu.grid(row=1, column=0, sticky="ew", padx=10)
 
-        title = tk.Label(self, text="Past Request Page", font=('Aerial 14 bold'))
-        title.grid(row=0, column=0, padx = 5, pady = 10)
+        title = tk.Label(self, text="Past Request Page", font=tkFont.Font(size=20), width = 20)
+        title.grid(row=0, column=0, padx=(10, 5))
 
 # main frame consisting of table and header 
 class Request_Table_Page(Frame):
@@ -197,7 +198,7 @@ class Request_Table_Page(Frame):
             LEFT JOIN Items i USING(itemID)
             LEFT JOIN Products p ON i.productID = p.productID
             WHERE r.itemID IN (SELECT itemID FROM Payments WHERE customerID = "{customerId}") 
-            limit 100;
+            ;
         """, db)
 
 
@@ -227,7 +228,7 @@ class Request_Table_Page(Frame):
             LEFT JOIN Items i USING(itemID)
             LEFT JOIN Products p ON i.productID = p.productID
             WHERE r.itemID IN (SELECT itemID FROM Payments WHERE customerID = "{customerId}") 
-            limit 100;
+            ;
         """, db)
 
         curr_data = self.data.copy()

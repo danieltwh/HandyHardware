@@ -367,7 +367,7 @@ class Admin_Shopping_Catalogue_Page(Frame):
                     if dic in items_data:
                         items_data.remove(dic)
             if c6.get() != "Filter 5: All Production Year":
-                if dic['ProductionYear'] != int(c6.get()):
+                if dic['ProductionYear'] != c6.get():
                     if dic in items_data:
                         items_data.remove(dic)
 
