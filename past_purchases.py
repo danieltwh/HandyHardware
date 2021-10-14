@@ -199,10 +199,10 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
         "Filter by: No filter", 
         command=lambda clicked = clicked: master.filter_status(clicked))
         optionMenu.config(width=30)
-        optionMenu.grid(row=0, column=6, sticky="ew", padx=10)
+        optionMenu.grid(row=1, column=0, sticky="ew", padx=10)
         
         title = tk.Label(self, text="Past Purchases Page", font=('Aerial 14 bold'))
-        title.grid(row=0, column=8, pady =20)
+        title.grid(row=0, column=0,padx = 5, pady = 10)
 # main frame consisting of table and header 
 class Past_Purchase_Page(Frame):
     def __init__(self, master):
@@ -370,7 +370,7 @@ class Request_Page(Frame):
         warranty_label.grid(row=7, column=0)
         end_warranty_date = curr_purchaseDate + relativedelta(months=+int(curr_warrantyMonths))
         warrantyStatus = self.getValidity(end_warranty_date)
-        if warrantyStatus == "Invalid":
+        if warrantyStatus == "Expired":
             warranty = Label(self, text=warrantyStatus, fg='#f00') 
             warranty.grid(row=7, column=1, padx=20)
         elif warrantyStatus == "Valid":
@@ -393,7 +393,7 @@ class Request_Page(Frame):
         if end_date >= today:
             return "Valid"
         else:
-            return "Invalid"
+            return "Expired"
 
     def submitRequest(self,data2,issue):
 
@@ -403,7 +403,7 @@ class Request_Page(Frame):
 
         
         if len(issue) == 0:
-            self.issue_error_label["text"] = "Please fill up the issue row."
+            self.issue_error_label["text"] = "Please fill up this row."
             self.issue_error_label.grid(row=9, column=1, columnspan=1, sticky="EW", padx=20)
 
         if (issue):
@@ -420,7 +420,7 @@ class Request_Page(Frame):
             if self.getValidity(end_warranty_date) == "Valid":
                 reqstatus = 'Submitted'
                 warranty_status = True
-            elif self.getValidity(end_warranty_date) == "Invalid":
+            elif self.getValidity(end_warranty_date) == "Expired":
                 reqstatus = 'Submitted and Waiting for payment'
                 warranty_status = False
 
