@@ -116,6 +116,9 @@ class Past_Purchases_Table(ScrollableFrame):
                 try: 
                     time_diff = date.today() - allRequests['creationDate'][0]
 
+                    print(allRequests["creationDate"][0])
+                    print(time_diff)
+
                     if time_diff.days > 10 and entry.requestStatus == 'Submitted and Waiting for payment':  
 
                         requestStatus = "Cancelled"
@@ -462,7 +465,7 @@ class Request_Details(Frame):
 
 
         data2 = pd.read_sql_query(f"""
-        SELECT r.itemID, p.model,
+        SELECT r.itemID, r.requestID, p.model,
         r.requestDetails, pay.purchaseDate, 
         sf.creationDate,sf.settlementDate,
         sf.amount, r.requestStatus
@@ -471,11 +474,19 @@ class Request_Details(Frame):
         LEFT JOIN Items i USING(itemID)
         LEFT JOIN ServiceFees sf ON r.requestID = sf.requestID
         LEFT JOIN Products p ON i.productID = p.productID
-        WHERE (r.itemID = {curr_itemId} AND r.requestStatus != 'Cancelled' AND r.requestStatus != 'Completed')
+        WHERE (r.itemID = {curr_itemId} AND 
+            r.requestID = (
+                SELECT max(r2.requestID)
+                    FROM Items i2
+                LEFT JOIN Payments c2 USING (itemID)
+                LEFT JOIN Requests r2 USING(itemID)
+                    WHERE i2.itemID = i.itemID
+                    GROUP BY i2.itemID)
+            )
         ;
         """, db)
 
-        (curr_itemId, curr_model, curr_requestDetails,
+        (curr_itemId, curr_requestId, curr_model, curr_requestDetails,
         curr_purchaseDate, curr_creationDate, curr_settlementDate,
         curr_amount, curr_requestStatus) = list(data2.to_records(index=False))[0]
         print(curr_requestStatus)
@@ -515,7 +526,7 @@ class Request_Details(Frame):
 
         if curr_requestStatus in ['Submitted', 'Submitted and Waiting for payment']:
 
-            cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_itemId))
+            cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_requestId))
             cancel_btn.grid(row=9, column=0, pady = 20)
 
             return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
@@ -523,12 +534,12 @@ class Request_Details(Frame):
 
             ## If $0, they cannot return to past_purchases page
             if int(curr_amount) > 0:
-                pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_itemId,curr_amount))
+                pay_btn = Button(self, text="Click for Payment", command= lambda: self.payRequest(curr_requestId,curr_amount))
                 pay_btn.grid(row=9, column=2, pady = 20)
                 
          
         elif curr_requestStatus in ['In progress', 'Approved']:
-            cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_itemId))
+            cancel_btn = Button(self, text="Cancel Request", command= lambda: self.cancelRequest(curr_requestId))
             cancel_btn.grid(row=9, column=0, pady = 20)
             
             return_btn = Button(self, text="Return to Past Payments", command= lambda: self.returnRequest()) # go to past payments
@@ -539,16 +550,16 @@ class Request_Details(Frame):
             return_btn.grid(row=9, column=1, pady = 20)
 
 
-    def cancelRequest(self,itemId):
+    def cancelRequest(self,requestId):
         with db.begin() as conn:
             savepoint = conn.begin_nested()
-            print(itemId)
+            print(requestId)
             try:
                 # Update the request status to Cancelled
                 query = f"""
                 UPDATE Requests r
                 SET r.requestStatus = 'Cancelled'
-                WHERE r.itemID = {itemId}
+                WHERE r.requestID = {requestId}
                 ;
                 """
                 conn.execute(query)
@@ -567,10 +578,10 @@ class Request_Details(Frame):
         self.master.switch_frame(Cancel_Request_Page)
 
     
-    def payRequest(self, itemId, curr_amount):
+    def payRequest(self, requestId, curr_amount):
         with db.begin() as conn:
             savepoint = conn.begin_nested()
-            print(itemId)
+            print(requestId)
             try:
                 if curr_amount == 0:
                     print("curr_amt = 0")
@@ -579,7 +590,7 @@ class Request_Details(Frame):
                     query = f"""
                     UPDATE Requests r
                     SET r.requestStatus = 'In progress'
-                    WHERE (r.itemID = {itemId} AND r.requestStatus != 'Cancelled')
+                    WHERE (r.requestID = {requestId} AND r.requestStatus != 'Cancelled')
                     ;
                     """
                     conn.execute(query)
