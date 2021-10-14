@@ -101,6 +101,14 @@ class Request_Table(ScrollableFrame):
                                 WHERE requestID = {entry.requestID}
                                 ;
                                 """)
+
+                                conn.execute(f"""
+                                UPDATE services
+                                SET serviceStatus = "Completed"
+                                where requestID = {entry.requestID}
+                                ;
+                                """)
+                                
                                 savepoint.commit()
                             except:
                                 savepoint.rollback()
@@ -109,6 +117,10 @@ class Request_Table(ScrollableFrame):
                         requestStatus = entry.requestStatus
                 except: 
                     requestStatus = entry.requestStatus 
+            
+            if requestDetails and len(requestDetails) > 25:
+                requestDetails = requestDetails[:22]
+                requestDetails += "..."
 
             requestId_label = tk.Label(self.frame, text=str(requestId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
             itemId_label = tk.Label(self.frame, text=str(itemId), anchor="w", borderwidth=2, relief="groove", padx=10, bg=bg[row%2])
@@ -147,17 +159,24 @@ class Request_Page_Header(tk.LabelFrame):
 
         global clicked
         clicked = tk.StringVar()
-        clicked.set("None")
+        clicked.set("Filter by: No filter")
 
         # dropdown filter
-        optionMenu = OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
+        optionMenu = OptionMenu(self, clicked, 
+        "Filter by: Submitted", 
+        "Filter by: Submitted and Waiting for payment", 
+        "Filter by: In progress", 
+        "Filter by: Approved", 
+        "Filter by: Cancelled", 
+        "Filter by: Completed", 
+        "Filter by: No request made", 
+        "Filter by: No filter", 
         command=lambda clicked = clicked: master.filter_status(clicked))
         optionMenu.config(width=30)
-        optionMenu.grid(row=0, column=6, sticky="ew", padx=10)
+        optionMenu.grid(row=1, column=0, sticky="ew", padx=10)
 
-        #tk.Label(self.frame, text="Past Request Page", anchor="w").grid(row=0, column=2, sticky="ew", padx=20)
         title = tk.Label(self, text="Past Request Page", font=('Aerial 14 bold'))
-        title.grid(row=0, column=8, pady =20)
+        title.grid(row=0, column=0, padx = 5, pady = 10)
 
 # main frame consisting of table and header 
 class Request_Table_Page(Frame):
@@ -214,11 +233,14 @@ class Request_Table_Page(Frame):
         curr_data = self.data.copy()
 
         
-        if clicked.get() == 'No filter':
+        if clicked.get() == 'Filter by: No request made':
+            curr_data = curr_data[curr_data['requestStatus'].isnull()]
+        
+        elif clicked.get() == 'Filter by: No filter':
             curr_data = curr_data
 
         else:
-            curr_data = curr_data[curr_data['requestStatus'] == clicked.get()]
+            curr_data = curr_data[curr_data['requestStatus'] == clicked.get()[11:]]
 
         self.table = Request_Table(curr_data, self)
         self.table.pack(side="top", fill="both", expand=True)

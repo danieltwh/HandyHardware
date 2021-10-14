@@ -250,7 +250,7 @@ class Customer_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         self.master = master
 
         title = tk.Label(self, text="Shopping Catalogue Page", font=('Aerial 14 bold'))
-        title.grid(row=0, column=0, padx = 5)
+        title.grid(row=0, column=0, padx = 5, pady = 10)
 
         tab1 = tk.Button(self, text="Refresh Shopping Catalogue", command= lambda: master.refresh("All"))
         tab1.grid(row=1, column=0, sticky = "ew", padx = 5)

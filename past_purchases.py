@@ -185,16 +185,24 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
 
         global clicked
         clicked = tk.StringVar()
-        clicked.set("None")
+        clicked.set("Filter by: No filter")
 
         # dropdown filter
-        optionMenu = OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
+        optionMenu = OptionMenu(self, clicked, 
+        "Filter by: Submitted", 
+        "Filter by: Submitted and Waiting for payment", 
+        "Filter by: In progress", 
+        "Filter by: Approved", 
+        "Filter by: Cancelled", 
+        "Filter by: Completed", 
+        "Filter by: No request made", 
+        "Filter by: No filter", 
         command=lambda clicked = clicked: master.filter_status(clicked))
         optionMenu.config(width=30)
-        optionMenu.grid(row=0, column=6, sticky="ew", padx=10)
+        optionMenu.grid(row=1, column=0, sticky="ew", padx=10)
         
         title = tk.Label(self, text="Past Purchases Page", font=('Aerial 14 bold'))
-        title.grid(row=0, column=8, pady =20)
+        title.grid(row=0, column=0,padx = 5, pady = 10)
 # main frame consisting of table and header 
 class Past_Purchase_Page(Frame):
     def __init__(self, master):
@@ -287,14 +295,14 @@ class Past_Purchase_Page(Frame):
 
         curr_data = self.data.copy()
 
-        if clicked.get() == 'No request made':
+        if clicked.get() == 'Filter by: No request made':
             curr_data = curr_data[curr_data['requestStatus'].isnull()]
         
-        elif clicked.get() == 'No filter':
+        elif clicked.get() == 'Filter by: No filter':
             curr_data = curr_data
 
         else:
-            curr_data = curr_data[curr_data['requestStatus'] == clicked.get()]
+            curr_data = curr_data[curr_data['requestStatus'] == clicked.get()[11:]]
 
         self.table = Past_Purchases_Table(curr_data, self)
         self.table.pack(side="top", fill="both", expand=True)
@@ -362,7 +370,7 @@ class Request_Page(Frame):
         warranty_label.grid(row=7, column=0)
         end_warranty_date = curr_purchaseDate + relativedelta(months=+int(curr_warrantyMonths))
         warrantyStatus = self.getValidity(end_warranty_date)
-        if warrantyStatus == "Invalid":
+        if warrantyStatus == "Expired":
             warranty = Label(self, text=warrantyStatus, fg='#f00') 
             warranty.grid(row=7, column=1, padx=20)
         elif warrantyStatus == "Valid":
@@ -374,9 +382,10 @@ class Request_Page(Frame):
         issue_label = Label(self, text="What is the issue of the item?", font=('Aerial 9 bold'))
         issue_label.grid(row=8)
 
+        self.issue_error_label = Label(self, text= "")
 
         submit_btn = Button(self, text="Submit Request", command= lambda: self.submitRequest(data2,issue.get("1.0",'end-1c')))
-        submit_btn.grid(row=9, column=2, columnspan=2)
+        submit_btn.grid(row=10, column=2, columnspan=2)
 
     #Check todays date with the warranty end date
     def getValidity(self,end_date):
@@ -384,90 +393,101 @@ class Request_Page(Frame):
         if end_date >= today:
             return "Valid"
         else:
-            return "Invalid"
+            return "Expired"
 
     def submitRequest(self,data2,issue):
-        # Get the data into variables
-        (paymentId, curr_itemId, curr_customerId, 
-        curr_model,curr_warrantyMonths,curr_powerSupply,
-        curr_colour,curr_cost,curr_purchaseDate) = list(data2.to_records(index=False))[0]
-        curr_adminId = self.master.adminId
-        print("curr_adminId: " + str(curr_adminId))
 
-        # Checking for the warranty status
-        warranty_status = False
-        end_warranty_date = curr_purchaseDate + relativedelta(months=+int(curr_warrantyMonths))
-        if self.getValidity(end_warranty_date) == "Valid":
-            reqstatus = 'Submitted'
-            warranty_status = True
-        elif self.getValidity(end_warranty_date) == "Invalid":
-            reqstatus = 'Submitted and Waiting for payment'
-            warranty_status = False
+        # Reset the error message
+        self.issue_error_label.destroy()
+        self.issue_error_label = Label(self, text= "", fg="red", anchor="w", width = 30)
 
-        print("Purchase Date: " + str(curr_purchaseDate))
-        print("End Warranty Date: " + str(end_warranty_date))
-        print("Issue: " + issue)
-        print("Warranty status: " + str(warranty_status))
-
-        #Push into the database of request table
-        with db.begin() as conn:
-            savepoint = conn.begin_nested()
-            try:
-                
-                query = """
-                SELECT COUNT(*) INTO @r_count FROM Requests;
-                INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES
-                (@r_count + 1,%s,NULL,'%s',"%s");""" % (curr_itemId, reqstatus, str(issue))
-
-                conn.execute(query)
-                print("Added a request row")
-
-                # To find the settlement Date (10 days away)
-                now = date.today()
-                dateStr = now.strftime("%Y-%m-%d")
-                end_date = datetime.now() + timedelta(days = 10)
-                end_dateStr = end_date.strftime("%Y-%m-%d")
-                
-                # 0 Service Fee if it is still in warranty
-                if warranty_status:   
-                    query2 = f"""
-                    SELECT COUNT(*) INTO @r_count FROM Requests;
-                    INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
-                    (@r_count, {0}, '%s', '%s')
-                    ;""" % (dateStr, dateStr)
-                    conn.execute(query2)
-                else:
-                    query2 = f"""
-                    SELECT COUNT(*) INTO @r_count FROM Requests;
-                    INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
-                    (@r_count, 40 + {curr_cost} * 0.2, '%s', NULL)
-                    ;""" % (dateStr)
-                    conn.execute(query2)
-
-                print("Added a ServiceFee row")
-
-                query3 = f"""
-                SELECT COUNT(*) INTO @r_count FROM Requests;
-                INSERT INTO Services(requestID, serviceStatus)VALUES
-                (@r_count, "Waiting for approval")
-                ;
-                """
-                conn.execute(query3)
-                print("Added a Service row")
-
-                
-                # Commit changes to database
-                savepoint.commit()
-
-                # output = conn.execute("SELECT COUNT(*) FROM Requests")
-                # requestID = output.fetchall()[0][0]
-                
-            except:
-                # If fail, rollback the changes
-                savepoint.rollback()
-                print("Failed to submit request & servicefee")
         
-        self.master.id_switch_frame(curr_itemId, Request_Details)
+        if len(issue) == 0:
+            self.issue_error_label["text"] = "Please fill up this row."
+            self.issue_error_label.grid(row=9, column=1, columnspan=1, sticky="EW", padx=20)
+
+        if (issue):
+            # Get the data into variables
+            (paymentId, curr_itemId, curr_customerId, 
+            curr_model,curr_warrantyMonths,curr_powerSupply,
+            curr_colour,curr_cost,curr_purchaseDate) = list(data2.to_records(index=False))[0]
+            curr_adminId = self.master.adminId
+            print("curr_adminId: " + str(curr_adminId))
+
+            # Checking for the warranty status
+            warranty_status = False
+            end_warranty_date = curr_purchaseDate + relativedelta(months=+int(curr_warrantyMonths))
+            if self.getValidity(end_warranty_date) == "Valid":
+                reqstatus = 'Submitted'
+                warranty_status = True
+            elif self.getValidity(end_warranty_date) == "Expired":
+                reqstatus = 'Submitted and Waiting for payment'
+                warranty_status = False
+
+            print("Purchase Date: " + str(curr_purchaseDate))
+            print("End Warranty Date: " + str(end_warranty_date))
+            print("Issue: " + issue)
+            print("Warranty status: " + str(warranty_status))
+
+            #Push into the database of request table
+            with db.begin() as conn:
+                savepoint = conn.begin_nested()
+                try:
+                    
+                    query = """
+                    SELECT COUNT(*) INTO @r_count FROM Requests;
+                    INSERT INTO Requests(requestID, itemID, administratorID, requestStatus, requestDetails) VALUES
+                    (@r_count + 1,%s,NULL,'%s',"%s");""" % (curr_itemId, reqstatus, str(issue))
+
+                    conn.execute(query)
+                    print("Added a request row")
+
+                    # To find the settlement Date (10 days away)
+                    now = date.today()
+                    dateStr = now.strftime("%Y-%m-%d")
+                    end_date = datetime.now() + timedelta(days = 10)
+                    end_dateStr = end_date.strftime("%Y-%m-%d")
+                    
+                    # 0 Service Fee if it is still in warranty
+                    if warranty_status:   
+                        query2 = f"""
+                        SELECT COUNT(*) INTO @r_count FROM Requests;
+                        INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
+                        (@r_count, {0}, '%s', '%s')
+                        ;""" % (dateStr, dateStr)
+                        conn.execute(query2)
+                    else:
+                        query2 = f"""
+                        SELECT COUNT(*) INTO @r_count FROM Requests;
+                        INSERT INTO ServiceFees(requestID, amount, creationDate, settlementDate) VALUES
+                        (@r_count, 40 + {curr_cost} * 0.2, '%s', NULL)
+                        ;""" % (dateStr)
+                        conn.execute(query2)
+
+                    print("Added a ServiceFee row")
+
+                    query3 = f"""
+                    SELECT COUNT(*) INTO @r_count FROM Requests;
+                    INSERT INTO Services(requestID, serviceStatus)VALUES
+                    (@r_count, "Waiting for approval")
+                    ;
+                    """
+                    conn.execute(query3)
+                    print("Added a Service row")
+
+                    
+                    # Commit changes to database
+                    savepoint.commit()
+
+                    # output = conn.execute("SELECT COUNT(*) FROM Requests")
+                    # requestID = output.fetchall()[0][0]
+                    
+                except:
+                    # If fail, rollback the changes
+                    savepoint.rollback()
+                    print("Failed to submit request & servicefee")
+            
+            self.master.id_switch_frame(curr_itemId, Request_Details)
 
 
 class Request_Details(Frame):
