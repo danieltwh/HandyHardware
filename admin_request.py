@@ -1,4 +1,4 @@
-from sys import platform, setdlopenflags
+from sys import platform
 from datetime import *
 from tkinter import *
 import tkinter as tk
