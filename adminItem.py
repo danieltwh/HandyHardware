@@ -184,8 +184,11 @@ class Admin_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         tk.LabelFrame.__init__(self, master, *args, **kwargs)
         self.master = master
 
-        tab1 = tk.Button(self, text="Refresh Shopping Catalogue", command= lambda: master.refresh("All"))
-        tab1.grid(row=0, column=0, padx=(10, 5))
+        title = tk.Label(self, text="Item Catalogue Page", font=('Aerial 14 bold'))
+        title.grid(row=0, column=0, padx = 5)
+
+        tab1 = tk.Button(self, text="Refresh Item Catalogue", command= lambda: master.refresh("All"))
+        tab1.grid(row=1, column=0, sticky = "ew", padx = 5)
 
         #tab3 = tk.Button(self, text="Cart", command= lambda: master.goCart("Cart"))
         #tab2.pack(side="left", fill="both")
@@ -220,8 +223,8 @@ class Admin_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         # tab2 = OptionMenu(self, clicked1, "Simple Search", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3",
         # command=lambda clicked1 = clicked1: master.filter_status1(clicked1)).grid(row=0, column=1, sticky="ew", padx=5)
 
-        tab2 = OptionMenu(self, self.master.clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=0, column=1, sticky="ew", padx=5)
-        tab9 = tk.Button(self, text="Simple Search", command=lambda clicked1 = self.master.clicked1: master.filter_status1(self.master.clicked1)).grid(row=0, column=2, sticky="ew", padx=5) 
+        tab2 = OptionMenu(self, self.master.clicked1, "All Models", "Category: Lights", "Category: Locks", "Model: Light1", "Model: Light2", "Model: SmartHome1", "Model: Safe1", "Model: Safe2", "Model: Safe3").grid(row=1, column=1, sticky="ew", padx=5)
+        tab9 = tk.Button(self, text="Simple Search", command=lambda clicked1 = self.master.clicked1: master.filter_status1(self.master.clicked1)).grid(row=1, column=2, sticky="ew", padx=5) 
 
         tab3 = OptionMenu(self, self.master.clicked2, "Filter 1: All Cost", "$20", "$22", "$30", "$50", "$100").grid(row=2, column=0, sticky="ew", padx=5)
         tab4 = OptionMenu(self, self.master.clicked3, "Filter 2: All Price", "$50", "$60", "$70", "$100", "$120", "$125", "$200").grid(row=2, column=1, sticky="ew", padx=5)

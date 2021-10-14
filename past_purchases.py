@@ -185,10 +185,18 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
 
         global clicked
         clicked = tk.StringVar()
-        clicked.set("None")
+        clicked.set("Filter by: No filter")
 
         # dropdown filter
-        optionMenu = OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
+        optionMenu = OptionMenu(self, clicked, 
+        "Filter by: Submitted", 
+        "Filter by: Submitted and Waiting for payment", 
+        "Filter by: In progress", 
+        "Filter by: Approved", 
+        "Filter by: Cancelled", 
+        "Filter by: Completed", 
+        "Filter by: No request made", 
+        "Filter by: No filter", 
         command=lambda clicked = clicked: master.filter_status(clicked))
         optionMenu.config(width=30)
         optionMenu.grid(row=0, column=6, sticky="ew", padx=10)
@@ -287,14 +295,14 @@ class Past_Purchase_Page(Frame):
 
         curr_data = self.data.copy()
 
-        if clicked.get() == 'No request made':
+        if clicked.get() == 'Filter by: No request made':
             curr_data = curr_data[curr_data['requestStatus'].isnull()]
         
-        elif clicked.get() == 'No filter':
+        elif clicked.get() == 'Filter by: No filter':
             curr_data = curr_data
 
         else:
-            curr_data = curr_data[curr_data['requestStatus'] == clicked.get()]
+            curr_data = curr_data[curr_data['requestStatus'] == clicked.get()[11:]]
 
         self.table = Past_Purchases_Table(curr_data, self)
         self.table.pack(side="top", fill="both", expand=True)
