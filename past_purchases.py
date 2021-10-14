@@ -185,7 +185,7 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
 
         global clicked
         clicked = tk.StringVar()
-        clicked.set("None")
+        clicked.set("Filter by: No filter")
 
         # dropdown filter
         optionMenu = OptionMenu(self, clicked, 
