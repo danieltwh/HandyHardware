@@ -259,8 +259,8 @@ class Admin_Shopping_Catalogue_Page(Frame):
 
         # self.header = Item_Table_Header.pack(self, borderwidth=0, highlightthickness=0, pady=10)
 
-        # self.Item_Table_Header =  Item_Table_Header(master, self)
-        # self.Item_Table_Header.pack(side="top", fill="both", expand=True)
+        self.Item_Table_Header =  Item_Table_Header(master, self)
+        self.Item_Table_Header.pack(side="top", fill="both", expand=True)
 
         self.Item_Table = Item_Table(item_curr_data, self)
         self.Item_Table.pack(side="bottom", fill="both", expand=True)
@@ -455,12 +455,12 @@ class Admin_Shopping_Catalogue_Page(Frame):
         self._frame = new_frame
         self._frame.pack(side="top", fill="both", expand=True)
 
-# class Item_Table_Header(tk.LabelFrame):
-#     def __init__(self, master, *args, **kwargs):
-#         tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
-#         searchBar = tk.Entry(self)
-#         searchBar.grid(row=0, column=0, sticky="ew", padx=5)
-#         searchButton = tk.Button(self, text="Search Item ID", command=lambda: master.filter_status3(searchBar.get())).grid(row=0, column=1, sticky="ew", padx=5)
+class Item_Table_Header(tk.LabelFrame):
+    def __init__(self, master, *args, **kwargs):
+        tk.LabelFrame.__init__(self, width=800, height=800, *args, **kwargs)
+        searchBar = tk.Entry(self)
+        searchBar.grid(row=0, column=0, sticky="ew", padx=5)
+        searchButton = tk.Button(self, text="Search Item ID", command=lambda: master.filter_status3(searchBar.get())).grid(row=0, column=1, sticky="ew", padx=5)
 
 
 class Item_Table(tk.LabelFrame):
