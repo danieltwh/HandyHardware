@@ -1,10 +1,23 @@
+from datetime import *
 from tkinter import *
 from tkinter import ttk
 import tkinter.font as tkFont
 from tkinter.ttk import Label, Style
+from tkinter.messagebox import askyesno, askquestion
 from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
+import pandas as pd
+
+# For SQL query
+from sqlalchemy import create_engine
+from pymysql.constants import CLIENT
+import pandas as pd
+
+from config import USERNAME, MYSQL_PASSWORD
+db = create_engine(f"mysql+pymysql://{USERNAME}:{MYSQL_PASSWORD}@127.0.0.1:3306/ECOMMERCE", 
+        connect_args = {"client_flag": CLIENT.MULTI_STATEMENTS}
+    )
 
 
 
@@ -89,9 +102,11 @@ class AdminSideBar(Frame):
 
     
     def resetDB(self):
-        RESET_DB()
-        # self.master.switch_frame(PAGES.get("customer_shopping_catalogue"))
-        self.master.logout()
+        answer = askyesno(title = 'ResetDB Confirmation', message = 'Are you sure?')
+        if answer:
+            RESET_DB()
+            # self.master.switch_frame(PAGES.get("customer_shopping_catalogue"))
+            self.master.logout()
         
         
 
@@ -177,6 +192,7 @@ class App(Tk):
 
     def login(self, customerId):
         self.customerId = customerId
+        self.auto_cancel_request()
         self.mount_sidebar()
         self.switch_frame(PAGES.get("customer_shopping_catalogue"))
 
@@ -191,6 +207,52 @@ class App(Tk):
         self.adminId = adminId
         self.mount_admin_sidebar()
         self.switch_frame(PAGES.get("admin_request"))
+    
+
+    def auto_cancel_request(self):
+        df_check = pd.read_sql_query(f"""
+                SELECT r.requestID, r.requestStatus, f.creationDate, TIMESTAMPDIFF(DAY, f.creationDate, CURRENT_DATE())
+                FROM Requests r 
+                LEFT JOIN ServiceFees f ON f.requestID = r.requestID
+                WHERE r.requestStatus in ('Submitted and Waiting for payment') AND 
+                TIMESTAMPDIFF(DAY, f.creationDate, CURRENT_DATE()) > 10;
+                """, db)
+
+        for request in df_check.itertuples():
+            requestId = int(request.requestID)
+            requestStatus = request.requestStatus
+            creationDate = request.creationDate
+
+            # Auto-cancel Request not paid after 10 days
+            time_diff = date.today() - creationDate
+
+            if time_diff.days > 10 and requestStatus == 'Submitted and Waiting for payment':  
+                
+                requestStatus = "Cancelled"
+
+                print("Auto-cancel", requestId)
+                
+                with db.begin() as conn2:
+                    try:
+                        savepoint = conn2.begin_nested()
+                        conn2.execute(f"""
+                        UPDATE Requests
+                        SET requestStatus = "Cancelled"
+                        WHERE requestID = {requestId}
+                        ;
+                        """)
+
+                        conn2.execute(f"""
+                        UPDATE Services
+                        SET serviceStatus = "Completed"
+                        where requestID = {requestId}
+                        ;
+                        """)
+
+                        savepoint.commit()
+                    except:
+                        savepoint.rollback()
+                        print("Failed to auto-cancel request")
 
 
 
