@@ -44,7 +44,7 @@ class Request_Table(ScrollableFrame):
             LEFT JOIN Items i USING(itemID)
             LEFT JOIN Products p ON i.productID = p.productID
             WHERE r.itemID IN (SELECT itemID FROM Payments WHERE customerID = "{customerId}") 
-            limit 100;
+            ;
         """, db)
 
 
@@ -198,7 +198,7 @@ class Request_Table_Page(Frame):
             LEFT JOIN Items i USING(itemID)
             LEFT JOIN Products p ON i.productID = p.productID
             WHERE r.itemID IN (SELECT itemID FROM Payments WHERE customerID = "{customerId}") 
-            limit 100;
+            ;
         """, db)
 
 
@@ -228,7 +228,7 @@ class Request_Table_Page(Frame):
             LEFT JOIN Items i USING(itemID)
             LEFT JOIN Products p ON i.productID = p.productID
             WHERE r.itemID IN (SELECT itemID FROM Payments WHERE customerID = "{customerId}") 
-            limit 100;
+            ;
         """, db)
 
         curr_data = self.data.copy()
