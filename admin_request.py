@@ -1,7 +1,8 @@
-from sys import platform
+from sys import platform, setdlopenflags
 from datetime import *
 from tkinter import *
 import tkinter as tk
+import tkinter.font as tkFont
 from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
@@ -302,6 +303,8 @@ service = [
 
 request_view = "All"
 service_view = "All"
+
+
 
 ORDER_BY_SERVICE_STATUS = """
 ORDER BY 
@@ -1123,27 +1126,56 @@ class Admin_Request_Page_Header(tk.LabelFrame):
         tk.LabelFrame.__init__(self, master, *args, **kwargs)
         self.master = master
 
+        self.whereAmI = StringVar()
+        self.whereAmI.set("All Request")
+
+        self.request_loc = {
+            "All Request": "All",
+            "Pending Approval": "Pending Approval"
+        }
+
+        self.service_loc = {
+            "Pending Service" : "Pending Service",
+            "My Service Jobs": "My Service Jobs",
+            "All Service Jobs": "All"
+            
+        }
+
+        location = Label(self, textvariable=self.whereAmI, font=tkFont.Font(size=20), width = 20)
+        location.grid(row=0, column = 0, padx=(10, 5))
+
         tab1 = tk.Button(self, text="All Request",
-                         command=lambda: master.show_request("All"))
-        tab1.grid(row=0, column=0, padx=(10, 5))
+                         command=lambda: self.show_request("All Request"))
+        tab1.grid(row=0, column=1, padx=5)
 
         tab2 = tk.Button(self, text="Pending Approval",
-                         command=lambda: master.show_request("Pending Approval"))
+                         command=lambda: self.show_request("Pending Approval"))
         # tab2.pack(side="left", fill="both")
-        tab2.grid(row=0, column=1, padx=5)
+        tab2.grid(row=0, column=2, padx=5)
 
         tab3 = tk.Button(self, text="Pending Service",
-                         command=lambda: master.show_service("Pending Service"))
-        tab3.grid(row=0, column=2, padx=5)
+                         command=lambda: self.show_service("Pending Service"))
+        tab3.grid(row=0, column=3, padx=5)
 
         tab4 = tk.Button(self, text="My Service Jobs",
-                         command=lambda: master.show_service("My Service Jobs"))
-        tab4.grid(row=0, column=3, padx=5)
+                         command=lambda: self.show_service("My Service Jobs"))
+        tab4.grid(row=0, column=4, padx=5)
 
         tab5 = tk.Button(self, text="All Service Jobs",
-                         command=lambda: master.show_service("All"))
-        tab5.grid(row=0, column=4, padx=5)
+                         command=lambda: self.show_service("All Service Jobs"))
+        tab5.grid(row=0, column=5, padx=5)
         
+    def show_request(self, command):
+        whereTo = self.request_loc.get(command)
+        self.whereAmI.set(command)
+        self.master.show_request(whereTo)
+
+    def show_service(self, command):
+        whereTo = self.service_loc.get(command)
+        self.whereAmI.set(command)
+        self.master.show_service(whereTo)
+
+
 
 
 class Admin_Request_Page(Frame):
