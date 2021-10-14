@@ -101,6 +101,14 @@ class Request_Table(ScrollableFrame):
                                 WHERE requestID = {entry.requestID}
                                 ;
                                 """)
+
+                                conn.execute(f"""
+                                UPDATE services
+                                SET serviceStatus = "Completed"
+                                where requestID = {entry.requestID}
+                                ;
+                                """)
+                                
                                 savepoint.commit()
                             except:
                                 savepoint.rollback()
