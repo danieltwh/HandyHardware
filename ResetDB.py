@@ -1553,11 +1553,13 @@ def RESET_DB():
         (5, 1108, NULL, 'Cancelled', 'torch light spoil but I do not have money'),
         (6, 1001, NULL, 'Submitted', 'light turns on my itself'),
         (7, 1434, NULL, 'Submitted', 'light does not turn on'),
-        (8, 1758, 'admin', 'Approved', 'lock does not have a key'),
+        (8, 1758, 'admin', 'Approved', 'lock does not have a key. What kinda system is this??? Pls get back asap'),
         (9, 1743, 'EddMing321', 'Approved', 'lock is rusty'),
         (10, 1728, 'admin', 'Cancelled', 'the money in my safe is gone, even though i locked it'),
         (11, 1773, 'admin', 'Completed', 'the lock does not auto lock'),
-        (12, 1107, NULL, 'Submitted and Waiting for payment', 'there is a bug in the system');
+        (12, 1107, NULL, 'Submitted and Waiting for payment', 'there is a bug in the system'),
+        (13, 1109, NULL, 'Submitted and Waiting for payment', 'Testing cancellation')
+        ;
 
         
 
@@ -1573,7 +1575,9 @@ def RESET_DB():
         (9, 0.00, '2021-10-02', '2021-10-03'),
         (10, 0.00, '2021-10-03', '2021-10-04'),
         (11, 0.00, '2021-10-04', '2021-10-05'),
-        (12, 44.40, '2021-10-13', NULL);
+        (12, 44.40, '2021-10-13', NULL),
+        (13, 44.40, '2021-10-02', NULL)
+        ;
 
 
     INSERT INTO Services VALUES
@@ -1588,7 +1592,9 @@ def RESET_DB():
         (9, 'In progress'),
         (10, 'Completed'),
         (11, 'Completed'),
-        (12, 'Waiting for approval');
+        (12, 'Waiting for approval'),
+        (13, 'Waiting for approval')
+        ;
 
 
     """)

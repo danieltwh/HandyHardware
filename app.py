@@ -206,7 +206,7 @@ def main():
     app = App()
     
     # app.option_add("*Label.Font", '30')
-    app.geometry("1200x800")
+    app.geometry("1400x800")
     # style = Style(app)
     # style.configure("TLabel", font=('Helvetica', 20))
     app.mainloop()
