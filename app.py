@@ -84,7 +84,8 @@ class AdminSideBar(Frame):
             bg = "#fe5f55", bd=2.5,
             highlightthickness=4, highlightbackground="#fe5f55", highlightcolor="#fe5f55",
             command=lambda: self.resetDB())
-        DB_reset_btn.grid(row=4, column=0, padx=(5, 10), sticky="EW",pady=(660, 5))
+        # DB_reset_btn.grid(row=4, column=0, padx=(5, 10), sticky="EW",pady=(660, 5))
+        DB_reset_btn.grid(row=4, column=0, padx=(5, 10), sticky="EW",pady=(5, 5))
 
     
     def resetDB(self):
