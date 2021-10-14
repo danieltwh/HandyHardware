@@ -150,7 +150,15 @@ class Request_Page_Header(tk.LabelFrame):
         clicked.set("None")
 
         # dropdown filter
-        optionMenu = OptionMenu(self, clicked, "Submitted", "Submitted and Waiting for payment", "In progress", "Approved", "Cancelled", "Completed", "No request made", "No filter", 
+        optionMenu = OptionMenu(self, clicked, 
+        "Filter by: Submitted", 
+        "Filter by: Submitted and Waiting for payment", 
+        "Filter by: In progress", 
+        "Filter by: Approved", 
+        "Filter by: Cancelled", 
+        "Filter by: Completed", 
+        "Filter by: No request made", 
+        "Filter by: No filter", 
         command=lambda clicked = clicked: master.filter_status(clicked))
         optionMenu.config(width=30)
         optionMenu.grid(row=0, column=6, sticky="ew", padx=10)
@@ -214,11 +222,14 @@ class Request_Table_Page(Frame):
         curr_data = self.data.copy()
 
         
-        if clicked.get() == 'No filter':
+        if clicked.get() == 'Filter by: No request made':
+            curr_data = curr_data[curr_data['requestStatus'].isnull()]
+        
+        elif clicked.get() == 'Filter by: No filter':
             curr_data = curr_data
 
         else:
-            curr_data = curr_data[curr_data['requestStatus'] == clicked.get()]
+            curr_data = curr_data[curr_data['requestStatus'] == clicked.get()[11:]]
 
         self.table = Request_Table(curr_data, self)
         self.table.pack(side="top", fill="both", expand=True)
