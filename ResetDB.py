@@ -1579,14 +1579,14 @@ def RESET_DB():
     INSERT INTO Services VALUES
         (1, 'Waiting for approval'),
         (2, 'In progress'),
-        (3, 'In progress'),
+        (3, 'Completed'),
         (4, 'Completed'),
         (5, 'Waiting for approval'),
         (6, 'Waiting for approval'),
         (7, 'Waiting for approval'),
         (8, 'In progress'),
         (9, 'In progress'),
-        (10, 'In progress'),
+        (10, 'Completed'),
         (11, 'Completed'),
         (12, 'Waiting for approval');
 
