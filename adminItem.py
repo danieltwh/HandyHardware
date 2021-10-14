@@ -6,6 +6,7 @@ from PIL import ImageTk, Image
 import sqlite3
 import pymongo
 from tkinter.messagebox import askyesno, askquestion
+import tkinter.font as tkFont
 
 # For SQL query
 from sqlalchemy import create_engine
@@ -184,7 +185,7 @@ class Admin_Shopping_Catalogue_Page_Header(tk.LabelFrame):
         tk.LabelFrame.__init__(self, master, *args, **kwargs)
         self.master = master
 
-        title = tk.Label(self, text="Item Catalogue Page", font=('Aerial 14 bold'))
+        title = tk.Label(self, text="Item Catalogue Page", font=tkFont.Font(size=20), width = 20)
         title.grid(row=0, column=0, padx = 5, pady = 10)
         
 
