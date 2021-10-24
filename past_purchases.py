@@ -6,6 +6,7 @@ from typing import Match
 from PIL import ImageTk, Image
 import sqlite3
 from dateutil.relativedelta import relativedelta
+import tkinter.font as tkFont
 
 from tkinter import *
 from PIL import ImageTk,Image
@@ -201,8 +202,9 @@ class Past_Purchase_Page_Header(tk.LabelFrame):
         optionMenu.config(width=30)
         optionMenu.grid(row=1, column=0, sticky="ew", padx=10)
         
-        title = tk.Label(self, text="Past Purchases Page", font=('Aerial 14 bold'))
-        title.grid(row=0, column=0,padx = 5, pady = 10)
+        title = tk.Label(self, text="Past Purchases Page", font=tkFont.Font(size=20), width = 20)
+        title.grid(row=0, column=0,padx=(10, 5))
+        
 # main frame consisting of table and header 
 class Past_Purchase_Page(Frame):
     def __init__(self, master):
