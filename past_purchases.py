@@ -72,7 +72,7 @@ class Past_Purchases_Table(ScrollableFrame):
             left join payments pay on i.itemID = pay.itemID
             where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
             {ORDER_BY_REQUEST_STATUS}
-            limit 100;
+            ;
         """, db)
 
         self.data = pd.concat([with_request, no_request], axis=0)
@@ -239,7 +239,7 @@ class Past_Purchase_Page(Frame):
             left join payments pay on i.itemID = pay.itemID
             where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
             {ORDER_BY_REQUEST_STATUS}
-            limit 100;
+            ;
         """, db)
 
         self.data = pd.concat([with_request, no_request], axis=0)
@@ -288,7 +288,7 @@ class Past_Purchase_Page(Frame):
             left join payments pay on i.itemID = pay.itemID
             where i.itemID in (select itemID from payments where customerID = "{customerId}") and r.requestStatus is null
             {ORDER_BY_REQUEST_STATUS}
-            limit 100;
+            ;
         """, db)
 
         self.data = pd.concat([with_request, no_request], axis=0)
