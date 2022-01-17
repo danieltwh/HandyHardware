@@ -4,6 +4,7 @@
 ## About The Project
 
 ![Handy Hardware](https://github.com/Onelayer/BT2102Project/blob/main/Assets/HandyHardwarev1.png)
+
 Video link: https://drive.google.com/file/d/17yERTBopsTmJ_y-TDPSkS1S69BtWLxa0/view?usp=sharing
 
 This is an ecommerce application with 2 distinct components. The customer page has various functions such as the ability to purchase items, view purchase history and submit service requests. The administrator page is able to track current stocks, view and approve service requests.
