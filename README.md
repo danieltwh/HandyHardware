@@ -1,4 +1,4 @@
-# BT2102Project
+# Handy Hardware E-commerce Project
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -7,7 +7,7 @@
 
 Video link: https://drive.google.com/file/d/17yERTBopsTmJ_y-TDPSkS1S69BtWLxa0/view?usp=sharing
 
-This is an ecommerce application with 2 distinct components. The customer page has various functions such as the ability to purchase items, view purchase history and submit service requests. The administrator page is able to track current stocks, view and approve service requests.
+This is an e-commerce application with 2 distinct components. The customer page has various functions such as the ability to purchase items, view purchase history and submit service requests. The administrator page is able to track current stocks, view and approve service requests.
 
 We used Python Tkinter for our graphical user interface, MySQL for our back-end, entity relationship modelling concepts for database design, and Git for version control.
 
