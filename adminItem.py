@@ -238,7 +238,7 @@ class Admin_Shopping_Catalogue_Page(Frame):
         Frame.__init__(self, master)
         self.master = master
         curr_data = products.find({})
-        item_curr_data = items.find({}).limit(1)
+        item_curr_data = items.find({"ItemID": "1000"}).limit(1)
 
         self.clicked1 = tk.StringVar()
         self.clicked2 = tk.StringVar()
@@ -295,7 +295,7 @@ class Admin_Shopping_Catalogue_Page(Frame):
         self.Item_Table_Header.pack(side="top", fill="x", expand=False)
 
         curr_data = products.find({})
-        item_curr_data = items.find({}).limit(1)
+        item_curr_data = items.find({"ItemID": "1000"}).limit(1)
 
         self.Item_Table = Item_Table(item_curr_data, self)
         self.Item_Table.pack(side="bottom", fill="both", expand=True)
