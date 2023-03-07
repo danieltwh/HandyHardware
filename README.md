@@ -1,11 +1,21 @@
 # Handy Hardware E-commerce Project
 
+## Table of Contents
+- [Handy Hardware E-commerce Project](#handy-hardware-e-commerce-project)
+  - [Table of Contents](#table-of-contents)
+  - [About The Project](#about-the-project)
+  - [Demo](#demo)
+  - [Getting Started](#getting-started)
+  
+
+
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
 ![Handy Hardware](https://github.com/Onelayer/BT2102Project/blob/main/Assets/HandyHardwarev1.png)
 
-Video link: https://drive.google.com/file/d/17yERTBopsTmJ_y-TDPSkS1S69BtWLxa0/view?usp=sharing
+
+<!-- Video link: https://drive.google.com/file/d/17yERTBopsTmJ_y-TDPSkS1S69BtWLxa0/view?usp=sharing -->
 
 This is an e-commerce application with 2 distinct components. The customer page has various functions such as the ability to purchase items, view purchase history and submit service requests. The administrator page is able to track current stocks, view and approve service requests.
 
@@ -15,6 +25,9 @@ We used Python Tkinter for our graphical user interface, MySQL for our back-end,
 ### Built With
 
 * Tkinter
+
+## Demo
+https://user-images.githubusercontent.com/71161486/223445524-765af5fd-9a09-4f8f-b845-b8e228e172d5.mp4
 
 
 <!-- GETTING STARTED -->
@@ -61,3 +74,4 @@ Users can submit a request for a purchased item. Items that are under warranty w
 
 ### Service management
 Administrators can approve requests once payment has been made (or no payment is needed), and the service status will be updated accordingly
+
